@@ -6,24 +6,41 @@ import { Button } from "@/components/ui/button";
 import { 
   PlusCircle, 
   ShieldCheck, 
-  User, 
+  User as UserIcon, 
   Radar,
-  Sparkles
+  Sparkles,
+  LogOut,
+  LogIn
 } from "lucide-react";
+import { useUser, useAuth } from "@/firebase";
+import { signOut } from "firebase/auth";
 
 export const Navbar = () => {
   const pathname = usePathname();
-  
-  const user = { role: 'Admin', displayName: 'Jane Doe' };
+  const { user, isUserLoading } = useUser();
+  const auth = useAuth();
+
+  // For MVP, we'll assume 'Admin' if we want to show all items, 
+  // but in a real app, you'd fetch this from a user profile doc.
+  const isAdmin = user?.email?.endsWith('@greenberry.nl') || false;
 
   const navItems = [
     { label: "Radar", href: "/", icon: Radar },
     { label: "Experiences", href: "/experiences", icon: Sparkles },
-    { label: "Propose Tool", href: "/items/new", icon: PlusCircle, roles: ['Admin', 'Editor'] },
-    { label: "Governance", href: "/admin", icon: ShieldCheck, roles: ['Admin'] },
+    { label: "Propose Tool", href: "/items/new", icon: PlusCircle, roles: ['authenticated'] },
+    { label: "Governance", href: "/admin", icon: ShieldCheck, roles: ['admin'] },
   ];
 
-  const filteredNav = navItems.filter(item => !item.roles || item.roles.includes(user.role));
+  const filteredNav = navItems.filter(item => {
+    if (!item.roles) return true;
+    if (item.roles.includes('authenticated') && !user) return false;
+    if (item.roles.includes('admin') && !isAdmin) return false;
+    return true;
+  });
+
+  const handleSignOut = () => {
+    signOut(auth);
+  };
 
   return (
     <nav className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur-md">
@@ -55,13 +72,28 @@ export const Navbar = () => {
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="hidden sm:flex flex-col items-end mr-2 text-right">
-            <span className="text-sm font-bold tracking-tight">{user.displayName}</span>
-            <span className="text-[10px] text-primary font-black uppercase tracking-wider">{user.role}</span>
-          </div>
-          <Button variant="outline" size="icon" className="rounded-full border w-11 h-11 bg-secondary/30">
-            <User className="w-5 h-5" />
-          </Button>
+          {!isUserLoading && (
+            user ? (
+              <>
+                <div className="hidden sm:flex flex-col items-end mr-2 text-right">
+                  <span className="text-sm font-bold tracking-tight">{user.displayName || user.email?.split('@')[0]}</span>
+                  <span className="text-[10px] text-primary font-black uppercase tracking-wider">
+                    {isAdmin ? 'Admin' : 'Member'}
+                  </span>
+                </div>
+                <Button variant="outline" size="icon" className="rounded-full border w-11 h-11 bg-secondary/30" onClick={handleSignOut}>
+                  <LogOut className="w-5 h-5" />
+                </Button>
+              </>
+            ) : (
+              <Button asChild variant="default" className="rounded-full px-6 font-bold gap-2">
+                <Link href="/login">
+                  <LogIn className="w-4 h-4" />
+                  Sign In
+                </Link>
+              </Button>
+            )
+          )}
         </div>
       </div>
     </nav>

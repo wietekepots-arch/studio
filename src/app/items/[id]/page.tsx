@@ -20,7 +20,8 @@ import {
   Plus,
   CreditCard,
   CheckCircle2,
-  ChevronRight
+  ChevronRight,
+  Lock
 } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
@@ -42,12 +43,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { useDoc, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useDoc, useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { doc, collection, query, where, orderBy } from 'firebase/firestore';
 
 export default function ItemDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params);
   const db = useFirestore();
+  const { user, isUserLoading } = useUser();
   
   const itemRef = useMemoFirebase(() => (db ? doc(db, 'radarItems', id) : null), [db, id]);
   const { data: item, isLoading: isItemLoading } = useDoc<RadarItem>(itemRef);
@@ -64,12 +66,32 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
 
   const { data: relatedExperiences, isLoading: isExpLoading } = useCollection<Experience>(experiencesQuery);
 
-  if (isItemLoading) {
+  if (isUserLoading || isItemLoading) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Navbar />
         <div className="flex-1 flex items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <Navbar />
+        <div className="flex-1 flex flex-col items-center justify-center space-y-8 text-center px-6">
+          <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+            <Lock className="w-10 h-10" />
+          </div>
+          <div className="space-y-4 max-w-md">
+            <h1 className="text-5xl font-black tracking-tighter">Locked Pulse</h1>
+            <p className="text-xl text-muted-foreground font-medium">Strategic AI documentation is reserved for authenticated Greenberry members.</p>
+          </div>
+          <Button asChild className="rounded-full px-10 h-14 font-black text-lg uppercase tracking-widest shadow-xl shadow-primary/20">
+            <Link href="/login">Sign In to View</Link>
+          </Button>
         </div>
       </div>
     );

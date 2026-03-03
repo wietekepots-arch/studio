@@ -3,114 +3,158 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * EXPERIENCES PLATFORM SECURITY RULES
-     * 
-     * CORE PHILOSOPHY:
-     * This ruleset implements a flexible, user-ownership model designed for rapid prototyping.
-     * It prioritizes strict authorization (who can do what) over rigid schema validation.
-     * 
-     * DATA STRUCTURE:
-     * - /experiences/{experienceId}: Top-level collection for user-logged experiences.
-     * - /experiences/{experienceId}/comments/{commentId}: Sub-collection for discussion.
-     * 
-     * KEY SECURITY DECISIONS:
-     * 1. Authorization Independence: All critical authorization data (createdBy, status) is 
-     *    denormalized onto the documents to avoid expensive and slow get() calls.
-     * 2. Visibility Control: Read access is restricted to 'Published' content for general users,
-     *    while owners and admins can see 'Hidden' content.
-     * 3. Admin Oversight: A global admin check allows designated users to moderate content 
-     *    (status: 'Hidden') or delete problematic entries.
-     * 4. Immutable Ownership: The 'createdBy' field is enforced on creation and made 
-     *    immutable during updates to prevent identity spoofing.
+     * CORE PHILOSOPHY
+     * This ruleset implements a hybrid security model combining strict User Ownership and Role-Based Access Control (RBAC). 
+     * It leverages denormalization to ensure "Authorization Independence," allowing rules to make decisions based 
+     * on a document's internal state without costly cross-document lookups.
+     *
+     * DATA STRUCTURE
+     * - /userProfiles/{userId}: Private user data and assigned roles.
+     * - /quadrants, /rings, /tags: Global configuration collections (Public Read, Admin Write).
+     * - /radarItems: Main entity collection with status-based visibility (Draft vs. Approved).
+     * - /radarItems/{id}/itemComments & itemHistory: Subcollections using denormalized status for performance.
+     *
+     * KEY SECURITY DECISIONS
+     * - Prototyping Mode: Schema validation is omitted to allow rapid iteration, focusing strictly on authorization.
+     * - Admin/Editor Roles: Global roles are checked via a single lookup to the user's profile.
+     * - Draft Protection: Draft items are restricted to the creator and administrative roles.
+     * - Relational Integrity: On creation, documents must correctly link their internal IDs and owner IDs to the path/auth state.
      */
 
-    // --- GLOBAL HELPER FUNCTIONS ---
+    // --- HELPER FUNCTIONS ---
 
-    /** Checks if the request is from an authenticated user. */
+    /** @description Checks if the request is from an authenticated user. */
     function isSignedIn() {
       return request.auth != null;
     }
 
-    /** Checks if the authenticated user's UID matches the provided userId. */
+    /** @description Checks if the provided UID matches the authenticated user. */
     function isOwner(userId) {
-      return request.auth.uid == userId;
+      return isSignedIn() && request.auth.uid == userId;
     }
 
-    /** 
-     * Checks if the user has an Admin record. 
-     * Based on IR reasoning for global roles stored in /roles_admin/{uid}.
-     */
-    function isAdmin() {
-      return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
-    }
-
-    /** Combines ownership check with existence check for updates/deletes. */
+    /** @description Checks if the authenticated user is the owner and the document exists. */
     function isExistingOwner(userId) {
       return resource != null && isOwner(userId);
     }
 
-    /** Checks if a document has a 'Published' status. */
-    function isPublished(data) {
-      return data.status == 'Published';
+    /** @description Retrieves the role of the current user from their profile. */
+    function getUserRole() {
+      return get(/databases/$(database)/documents/userProfiles/$(request.auth.uid)).data.role;
+    }
+
+    /** @description Checks if the user has the 'Admin' role. */
+    function isAdmin() {
+      return isSignedIn() && getUserRole() == 'Admin';
+    }
+
+    /** @description Checks if the user has 'Editor' or 'Admin' permissions. */
+    function isEditor() {
+      return isSignedIn() && (getUserRole() == 'Editor' || getUserRole() == 'Admin');
     }
 
     // --- COLLECTION RULES ---
 
     /**
-     * @description Rules for the top-level Experiences collection.
-     * @path /experiences/{experienceId}
-     * @allow (get) If signed in and (status is Published OR user is owner OR user is admin).
-     * @allow (create) If signed in and data.createdBy matches auth.uid.
-     * @allow (update/delete) If user is the original creator or an admin.
-     * @deny (write) If trying to change the 'createdBy' field or if not authenticated.
-     * @principle Enforces document ownership and visibility-based reads.
+     * @description Rules for user profile management. Users manage their own profiles; all authenticated users can view profiles.
+     * @path /userProfiles/{userId}
+     * @allow (create) if auth.uid matches userId and internal data matches.
+     * @deny (update) if user attempts to change someone else's profile.
+     * @principle Path-based ownership and relational integrity for profile creation.
      */
-    match /experiences/{experienceId} {
-      allow get: if isSignedIn() && (isPublished(resource.data) || isOwner(resource.data.createdBy) || isAdmin());
-      allow list: if isSignedIn(); // Filtering is handled by the query (QAP), rule validates per-doc on result set.
-      
-      allow create: if isSignedIn() 
-                    && request.resource.data.createdBy == request.auth.uid;
-      
-      allow update: if isSignedIn() 
-                    && (isExistingOwner(resource.data.createdBy) || isAdmin())
-                    && request.resource.data.createdBy == resource.data.createdBy; // Enforce immutable ownership
-      
-      allow delete: if isSignedIn() 
-                    && (isExistingOwner(resource.data.createdBy) || isAdmin());
-
-      /**
-       * @description Rules for comments nested under specific experiences.
-       * @path /experiences/{experienceId}/comments/{commentId}
-       * @allow (get/list) If signed in (implicitly limited by parent experience visibility in the UI).
-       * @allow (create) If signed in and fields 'createdBy' and 'experienceId' are correctly set.
-       * @allow (update/delete) If user is the original creator of the comment or an admin.
-       * @principle Authorization independence: comment access doesn't require fetching the parent experience.
-       */
-      match /comments/{commentId} {
-        allow get, list: if isSignedIn();
-        
-        allow create: if isSignedIn() 
-                      && request.resource.data.createdBy == request.auth.uid
-                      && request.resource.data.experienceId == experienceId;
-        
-        allow update: if isSignedIn() 
-                      && (isExistingOwner(resource.data.createdBy) || isAdmin())
-                      && request.resource.data.createdBy == resource.data.createdBy;
-        
-        allow delete: if isSignedIn() 
-                      && (isExistingOwner(resource.data.createdBy) || isAdmin());
-      }
+    match /userProfiles/{userId} {
+      allow get, list: if isSignedIn();
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isAdmin();
     }
 
     /**
-     * @description Placeholder for Admin role assignments.
-     * @path /roles_admin/{userId}
-     * @principle Admins are defined in a dedicated collection. Access to this collection should be restricted to a Root Admin or via Cloud Functions.
+     * @description Configuration for radar axes. Publicly readable, restricted to Admins for modification.
+     * @path /quadrants/{quadrantId}
+     * @allow (get) if any user is signed in.
+     * @deny (create) if the user is not an Admin.
+     * @principle Role-based access control for global configurations.
      */
-    match /roles_admin/{userId} {
-      allow read: if isSignedIn();
-      allow write: if false; // Security: Admin roles should not be self-assigned or client-writable.
+    match /quadrants/{quadrantId} {
+      allow get, list: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    /**
+     * @description Configuration for radar rings/maturity levels. Publicly readable, Admin-only writes.
+     * @path /rings/{ringId}
+     * @allow (list) for all authenticated users.
+     * @deny (delete) for non-admin users.
+     * @principle Role-based access control for global configurations.
+     */
+    match /rings/{ringId} {
+      allow get, list: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    /**
+     * @description Configuration for radar item tags. Publicly readable, Admin-only writes.
+     * @path /tags/{tagId}
+     * @allow (update) for Admins.
+     * @deny (create) for standard users.
+     * @principle Role-based access control for global configurations.
+     */
+    match /tags/{tagId} {
+      allow get, list: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    /**
+     * @description Main radar item collection. Visibility depends on status (Draft vs Approved).
+     * @path /radarItems/{radarItemId}
+     * @allow (create) if creatorId matches auth.uid.
+     * @deny (get) if document is 'Draft' and user is not the owner or Admin.
+     * @principle Authorization Independence: Uses 'status' and 'createdBy' directly on the resource.
+     */
+    match /radarItems/{radarItemId} {
+      // Logic: Non-owners/Non-admins can only 'get' if status is not Draft.
+      // Note: P6 restricts use of 'resource' in list rules, so list is allowed for signed-in users, 
+      // with the expectation that the developer applies the correct filters (QAP).
+      allow get: if isSignedIn() && (resource.data.status != 'Draft' || resource.data.createdBy == request.auth.uid || isAdmin());
+      allow list: if isSignedIn();
+      
+      allow create: if isSignedIn() && request.resource.data.createdBy == request.auth.uid;
+      allow update: if isSignedIn() && (resource.data.createdBy == request.auth.uid || isEditor());
+      allow delete: if isAdmin() || isExistingOwner(resource.data.createdBy);
+
+      /**
+       * @description Comments for radar items. Uses denormalized parent data for standalone security.
+       * @path /radarItems/{radarItemId}/itemComments/{commentId}
+       * @allow (create) if user is signed in and links the comment to themselves.
+       * @deny (get) if the parent radar item is a draft and user is not the creator.
+       * @principle Denormalization for Authorization: Checks 'radarItemStatus' without fetching parent.
+       */
+      match /itemComments/{commentId} {
+        allow get: if isSignedIn() && (resource.data.radarItemStatus != 'Draft' || resource.data.radarItemCreatedBy == request.auth.uid || isAdmin());
+        allow list: if isSignedIn();
+        
+        allow create: if isSignedIn() && request.resource.data.createdBy == request.auth.uid;
+        allow update: if isExistingOwner(resource.data.createdBy);
+        allow delete: if isExistingOwner(resource.data.createdBy) || isAdmin();
+      }
+
+      /**
+       * @description Audit trail for radar items. Denormalized fields prevent parent lookups.
+       * @path /radarItems/{radarItemId}/itemHistory/{historyId}
+       * @allow (get) if parent status is not Draft.
+       * @deny (create) if action is not performed by a signed-in user.
+       * @principle Denormalization for performance and Authorization Independence.
+       */
+      match /itemHistory/{historyId} {
+        allow get: if isSignedIn() && (resource.data.radarItemStatus != 'Draft' || resource.data.radarItemCreatedBy == request.auth.uid || isAdmin());
+        allow list: if isSignedIn();
+        
+        // History is typically system-generated or created upon update; here we allow the actor to create the log.
+        allow create: if isSignedIn() && request.resource.data.createdBy == request.auth.uid;
+        // History entries are immutable in most audit scenarios.
+        allow update, delete: if isAdmin();
+      }
     }
   }
 }

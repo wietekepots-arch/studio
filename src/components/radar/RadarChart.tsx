@@ -54,8 +54,13 @@ export const RadarChart: React.FC<RadarChartProps> = ({ items, config, activeFil
   }, [items, quadrantCount, ringRadii, center]);
 
   return (
-    <div className="relative flex justify-center items-center overflow-visible">
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="max-w-full h-auto overflow-visible">
+    <div className="relative flex justify-center items-center overflow-visible select-none">
+      <svg 
+        width={size} 
+        height={size} 
+        viewBox={`0 0 ${size} ${size}`} 
+        className="max-w-full h-auto overflow-visible touch-none"
+      >
         <defs>
           <radialGradient id="radarGlow" cx="50%" cy="50%" r="50%">
             <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.1" />
@@ -66,7 +71,7 @@ export const RadarChart: React.FC<RadarChartProps> = ({ items, config, activeFil
         {/* Background Glow */}
         <circle cx={center} cy={center} r={ringRadii[ringCount-1] + 20} fill="url(#radarGlow)" />
 
-        {/* Concentric Radar Rings - Enhanced visibility */}
+        {/* Concentric Radar Rings */}
         {ringRadii.slice().reverse().map((radius, i) => (
           <circle
             key={`ring-${i}`}
@@ -142,17 +147,18 @@ export const RadarChart: React.FC<RadarChartProps> = ({ items, config, activeFil
                 />
               )}
 
-              {/* The actual blip circle - Scale isolated here to fix "jumping" bug */}
+              {/* The actual blip circle - isolated scaling with transform-box fix */}
               <circle
                 cx={x}
                 cy={y}
                 r="8"
-                className={`transition-all duration-300 transform-gpu origin-center ${
+                style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
+                className={`transition-all duration-300 transform-gpu ${
                   item.ringId === 3 ? 'fill-muted stroke-muted-foreground' : 'fill-primary stroke-white'
-                } stroke-2 group-hover:scale-[1.3] group-hover:fill-primary-foreground group-hover:stroke-primary`}
+                } stroke-2 group-hover:scale-[1.4] group-hover:fill-primary-foreground group-hover:stroke-primary`}
               />
               
-              {/* Tool Name Tooltip (SVG optimized, positioned relative to blip) */}
+              {/* Tool Name Tooltip */}
               <g className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
                 <rect 
                   x={x - (textWidth / 2) - 8} 

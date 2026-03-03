@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { 
   PlusCircle, 
   ShieldCheck, 
-  User as UserIcon, 
   Radar,
   Sparkles,
   LogOut,
@@ -20,8 +19,7 @@ export const Navbar = () => {
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
 
-  // For MVP, we'll assume 'Admin' if we want to show all items, 
-  // but in a real app, you'd fetch this from a user profile doc.
+  // For Greenberry, anyone with the official domain is a member
   const isAdmin = user?.email?.endsWith('@greenberry.nl') || false;
 
   const navItems = [
@@ -78,9 +76,12 @@ export const Navbar = () => {
                 <div className="hidden sm:flex flex-col items-end mr-2 text-right">
                   <span className="text-sm font-bold tracking-tight">{user.displayName || user.email?.split('@')[0]}</span>
                   <span className="text-[10px] text-primary font-black uppercase tracking-wider">
-                    {isAdmin ? 'Admin' : 'Member'}
+                    {isAdmin ? 'Agency Member' : 'Guest'}
                   </span>
                 </div>
+                {user.photoURL && (
+                  <img src={user.photoURL} className="w-10 h-10 rounded-full border-2 border-primary/20" alt="Profile" />
+                )}
                 <Button variant="outline" size="icon" className="rounded-full border w-11 h-11 bg-secondary/30" onClick={handleSignOut}>
                   <LogOut className="w-5 h-5" />
                 </Button>

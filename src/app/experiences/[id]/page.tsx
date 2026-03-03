@@ -13,35 +13,57 @@ import {
   Sparkles,
   Zap,
   Tag,
-  ChevronRight
+  ChevronRight,
+  Lock
 } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useDoc, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useDoc, useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { Experience, RadarItem } from '@/app/lib/radar-types';
 import { collection, query, where, documentId, doc } from 'firebase/firestore';
 
 export default function ExperienceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params);
   const db = useFirestore();
+  const { user, isUserLoading: isAuthLoading } = useUser();
   
-  const expRef = useMemoFirebase(() => (db ? doc(db, 'experiences', id) : null), [db, id]);
+  const expRef = useMemoFirebase(() => (db && user ? doc(db, 'experiences', id) : null), [db, user, id]);
   const { data: experience, isLoading: isExpLoading } = useDoc<Experience>(expRef);
 
   const toolsQuery = useMemoFirebase(() => {
-    if (!db || !experience?.toolLinks?.length) return null;
+    if (!db || !user || !experience?.toolLinks?.length) return null;
     return query(collection(db, 'radarItems'), where(documentId(), 'in', experience.toolLinks));
-  }, [db, experience?.toolLinks]);
+  }, [db, user, experience?.toolLinks]);
 
   const { data: linkedTools, isLoading: isToolsLoading } = useCollection<RadarItem>(toolsQuery);
 
-  if (isExpLoading) {
+  if (isAuthLoading || isExpLoading) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Navbar />
         <div className="flex-1 flex items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <Navbar />
+        <div className="flex-1 flex flex-col items-center justify-center space-y-8 text-center px-6">
+          <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+            <Lock className="w-10 h-10" />
+          </div>
+          <div className="space-y-4 max-w-md">
+            <h1 className="text-5xl font-black tracking-tighter">Locked Experience</h1>
+            <p className="text-xl text-muted-foreground font-medium">Strategic workflow details are reserved for authenticated Greenberry members.</p>
+          </div>
+          <Button asChild className="rounded-full px-10 h-14 font-black text-lg uppercase tracking-widest shadow-xl shadow-primary/20">
+            <Link href="/login">Sign In to View</Link>
+          </Button>
         </div>
       </div>
     );
@@ -105,9 +127,9 @@ export default function ExperienceDetailPage({ params }: { params: Promise<{ id:
 
             <div className="space-y-12">
               <section className="space-y-8">
-                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary flex items-center gap-3">
+                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-primary flex items-center gap-3">
                   <Zap className="w-6 h-6" /> The Workflow
-                </h3>
+                </div>
                 <div className="prose prose-2xl max-w-none text-foreground/90 leading-relaxed font-medium whitespace-pre-wrap">
                   {experience.howUsed}
                 </div>
@@ -115,9 +137,9 @@ export default function ExperienceDetailPage({ params }: { params: Promise<{ id:
 
               {experience.promptsOrTemplates && (
                 <section className="space-y-8">
-                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary flex items-center gap-3">
+                  <div className="text-[10px] font-black uppercase tracking-[0.3em] text-primary flex items-center gap-3">
                     <MessageSquare className="w-6 h-6" /> Prompts & Templates
-                  </h3>
+                  </div>
                   <div className="p-8 rounded-[2.5rem] bg-secondary/30 font-mono text-lg whitespace-pre-wrap border-2 border-primary/10">
                     {experience.promptsOrTemplates}
                   </div>
@@ -125,9 +147,9 @@ export default function ExperienceDetailPage({ params }: { params: Promise<{ id:
               )}
 
               <section className="space-y-8">
-                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary flex items-center gap-3">
+                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-primary flex items-center gap-3">
                   <Sparkles className="w-6 h-6" /> Key Findings & Outcomes
-                </h3>
+                </div>
                 <div className="p-12 rounded-[3.5rem] bg-primary/5 border-none shadow-inner">
                   <div className="prose prose-2xl max-w-none text-foreground/90 leading-relaxed font-medium whitespace-pre-wrap">
                     {experience.findings}
@@ -137,9 +159,9 @@ export default function ExperienceDetailPage({ params }: { params: Promise<{ id:
 
               {experience.recommendations && (
                 <section className="space-y-8">
-                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary flex items-center gap-3">
+                  <div className="text-[10px] font-black uppercase tracking-[0.3em] text-primary flex items-center gap-3">
                     <Award className="w-6 h-6" /> Strategic Recommendations
-                  </h3>
+                  </div>
                   <div className="prose prose-xl max-w-none text-muted-foreground leading-relaxed font-medium whitespace-pre-wrap italic">
                     {experience.recommendations}
                   </div>
@@ -188,9 +210,9 @@ export default function ExperienceDetailPage({ params }: { params: Promise<{ id:
             </Card>
 
             <div className="px-8 space-y-8">
-              <h4 className="text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-4 text-primary">
+              <div className="text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-4 text-primary">
                 <Tag className="w-5 h-5" /> Linked Tools
-              </h4>
+              </div>
               <div className="space-y-4">
                 {isToolsLoading ? (
                   <div className="animate-pulse space-y-4">

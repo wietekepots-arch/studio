@@ -7,35 +7,34 @@ import { Button } from '@/components/ui/button';
 import { 
   Search, 
   Plus, 
-  Filter, 
   ChevronRight, 
   Star, 
   Clock, 
   User as UserIcon,
-  Tag,
-  ArrowRight
+  Sparkles,
+  Lock
 } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useCollection, useMemoFirebase } from '@/firebase';
+import { useCollection, useMemoFirebase, useUser, useFirestore } from '@/firebase';
 import { collection, query, where, orderBy } from 'firebase/firestore';
-import { useFirestore } from '@/firebase';
 import { Experience } from '@/app/lib/radar-types';
 
 export default function ExperiencesPage() {
   const [search, setSearch] = useState('');
   const [activeTeam, setActiveTeam] = useState<string | undefined>();
   const db = useFirestore();
+  const { user, isUserLoading } = useUser();
 
   const experiencesQuery = useMemoFirebase(() => {
-    if (!db) return null;
+    if (!db || !user) return null;
     return query(
       collection(db, 'experiences'),
       where('status', '==', 'Published'),
       orderBy('createdAt', 'desc')
     );
-  }, [db]);
+  }, [db, user]);
 
   const { data: experiences, isLoading } = useCollection<Experience>(experiencesQuery);
 
@@ -53,6 +52,37 @@ export default function ExperiencesPage() {
     if (!experiences) return [];
     return Array.from(new Set(experiences.map(e => e.team)));
   }, [experiences]);
+
+  if (isUserLoading) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <Navbar />
+        <div className="flex-1 flex flex-col items-center justify-center space-y-8 text-center px-6">
+          <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+            <Lock className="w-10 h-10" />
+          </div>
+          <div className="space-y-4 max-w-md">
+            <h1 className="text-5xl font-black tracking-tighter">Locked Experiences</h1>
+            <p className="text-xl text-muted-foreground font-medium">Real-world AI insights are reserved for authenticated Greenberry members.</p>
+          </div>
+          <Button asChild className="rounded-full px-10 h-14 font-black text-lg uppercase tracking-widest shadow-xl shadow-primary/20">
+            <Link href="/login">Sign In to View Feed</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -76,7 +106,7 @@ export default function ExperiencesPage() {
           {/* Sidebar / Filters */}
           <div className="lg:col-span-3 space-y-10">
             <div className="space-y-4">
-              <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Search Pulses</Label>
+              <div className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Search Pulses</div>
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input 
@@ -89,7 +119,7 @@ export default function ExperiencesPage() {
             </div>
 
             <div className="space-y-6">
-              <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Filter by Studio</Label>
+              <div className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Filter by Studio</div>
               <div className="flex flex-col gap-2">
                 <Button 
                   variant={!activeTeam ? "secondary" : "ghost"} 
@@ -147,7 +177,7 @@ export default function ExperiencesPage() {
                         </p>
                         <div className="space-y-4 pt-6 border-t border-secondary">
                           <div className="flex flex-wrap gap-2">
-                            {exp.toolLinks.slice(0, 2).map((toolId, idx) => (
+                            {exp.toolLinks.slice(0, 2).map((_, idx) => (
                               <Badge key={idx} variant="secondary" className="bg-secondary/40 text-[10px] font-bold uppercase py-1 px-3 rounded-full">
                                 Tool Pulled
                               </Badge>
@@ -172,7 +202,7 @@ export default function ExperiencesPage() {
                   <Sparkles className="w-10 h-10" />
                 </div>
                 <h3 className="text-3xl font-black tracking-tight">No experiences found</h3>
-                <p className="text-muted-foreground max-w-sm mx-auto">Be the first to log a strategic pulse with your favorite AI tools.</p>
+                <p className="text-muted-foreground max-sm mx-auto">Be the first to log a strategic pulse with your favorite AI tools.</p>
                 <Button asChild variant="outline" className="rounded-full px-8 border-2">
                   <Link href="/experiences/new">Start Logging</Link>
                 </Button>
@@ -184,9 +214,3 @@ export default function ExperiencesPage() {
     </div>
   );
 }
-
-const Label = ({ children, className }: { children: React.ReactNode, className?: string }) => (
-  <div className={`text-sm font-bold tracking-tight text-foreground/70 ${className}`}>
-    {children}
-  </div>
-);

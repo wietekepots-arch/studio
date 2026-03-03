@@ -12,9 +12,7 @@ import {
   Tag,
   ChevronRight,
   ArrowRight,
-  Leaf,
-  ShieldCheck,
-  Globe
+  ShieldCheck
 } from 'lucide-react';
 import { 
   RadarItem, 
@@ -30,8 +28,8 @@ const MOCK_ITEMS: RadarItem[] = [
     name: 'Claude 3.5 Sonnet',
     shortDesc: 'State-of-the-art LLM by Anthropic with high reasoning capabilities.',
     notes: 'The current gold standard for coding assistance and complex reasoning tasks.',
-    quadrantId: 0, // Creation & Craft
-    ringId: 0, // Adopt
+    quadrantId: 0,
+    ringId: 0,
     tags: ['LLM', 'Anthropic', 'Coding'],
     team: 'Creative Tech',
     ownerId: 'u1',
@@ -39,7 +37,7 @@ const MOCK_ITEMS: RadarItem[] = [
     scores: { maturity: 5, impact: 5, effort: 1, risk: 2 },
     costRange: 'Medium',
     origin: 'American',
-    sustainabilityNotes: 'Anthropic is committed to safety but large training runs have high energy impact. No local hosting option.',
+    sustainabilityNotes: 'Anthropic is committed to safety but large training runs have high energy impact.',
     securityNotes: 'Enterprise Tier provides data isolation. SOC2 compliant.',
     links: ['https://claude.ai'],
     status: 'Approved',
@@ -50,36 +48,12 @@ const MOCK_ITEMS: RadarItem[] = [
     updatedBy: 'u1'
   },
   {
-    id: '2',
-    name: 'Cursor',
-    shortDesc: 'AI-first code editor built on VS Code.',
-    notes: 'Incredible DX for agentic coding. Most productive tool for our frontend engineers currently.',
-    quadrantId: 0, // Creation & Craft
-    ringId: 0, // Adopt
-    tags: ['Editor', 'Agentic', 'IDE'],
-    team: 'Engineering',
-    ownerId: 'u2',
-    ownerName: 'Bob Jones',
-    scores: { maturity: 4, impact: 5, effort: 1, risk: 1 },
-    costRange: 'Low',
-    origin: 'American',
-    sustainabilityNotes: 'Lightweight client, but cloud features depend on large models.',
-    securityNotes: 'Privacy mode available; does not use your code for training.',
-    links: ['https://cursor.com'],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 15000000,
-    createdBy: 'u2',
-    updatedAt: Date.now() - 500000,
-    updatedBy: 'u2'
-  },
-  {
     id: '3',
     name: 'Transcriptor',
     shortDesc: 'High-accuracy AI transcription and meeting summarization tool.',
     notes: 'Used for automated client meeting minutes and stakeholder interviews.',
-    quadrantId: 2, // Process & Flow
-    ringId: 1, // Trial
+    quadrantId: 2,
+    ringId: 1,
     tags: ['Audio', 'Productivity'],
     team: 'Strategy',
     ownerId: 'u1',
@@ -102,8 +76,8 @@ const MOCK_ITEMS: RadarItem[] = [
     name: 'Firebase Studio',
     shortDesc: 'Integrated prototyping and deployment suite for Firebase apps.',
     notes: 'Excellent for rapid prototyping with built-in Genkit support.',
-    quadrantId: 0, // Creation & Craft
-    ringId: 0, // Adopt
+    quadrantId: 0,
+    ringId: 0,
     tags: ['Platform', 'Firebase', 'Dev'],
     team: 'Engineering',
     ownerId: 'u3',
@@ -126,8 +100,8 @@ const MOCK_ITEMS: RadarItem[] = [
     name: 'Google Stitch',
     shortDesc: 'Experimental AI data-orchestration and linking layer.',
     notes: 'Potentially useful for stitching together disparate RAG sources.',
-    quadrantId: 1, // Strategy & Intelligence
-    ringId: 2, // Assess
+    quadrantId: 1,
+    ringId: 2,
     tags: ['Data', 'RAG', 'Google'],
     team: 'Data Science',
     ownerId: 'u4',
@@ -170,145 +144,118 @@ export default function Home() {
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
       
-      <main className="flex-1 container mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <main className="flex-1 container mx-auto px-6 py-12 grid grid-cols-1 lg:grid-cols-12 gap-12">
         
-        {/* Left Column: Visualization & Filters */}
-        <div className="lg:col-span-8 space-y-6">
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-            <div>
-              <h1 className="text-4xl font-black text-primary uppercase">Design for Progress</h1>
-              <p className="text-muted-foreground font-medium">Tracking tools that make an impact.</p>
+        <div className="lg:col-span-8 space-y-10">
+          <div className="flex flex-col md:flex-row gap-6 items-end justify-between">
+            <div className="space-y-2">
+              <h1 className="text-6xl font-black text-foreground tracking-tighter leading-none">Design for <br/><span className="text-primary">Progress</span></h1>
+              <p className="text-xl text-muted-foreground font-medium max-w-lg">The curated lens on AI tools that amplify our creative and ethical impact at Greenberry.</p>
             </div>
-            <div className="relative w-full md:w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <div className="relative w-full md:w-80">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input 
-                placeholder="Search tools..." 
-                className="pl-10 border-2 focus:border-primary rounded-full h-12"
+                placeholder="Search the radar..." 
+                className="pl-12 border-2 border-border focus:border-primary rounded-full h-14 text-lg bg-secondary/20"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2">
-            <Badge 
-              variant={activeQuadrant === undefined ? "default" : "outline"} 
-              className="cursor-pointer px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all hover:scale-105"
-              onClick={() => setActiveQuadrant(undefined)}
-            >
-              All Focus Areas
-            </Badge>
-            {DEFAULT_CONFIG.quadrants.map((q, i) => (
+          <div className="space-y-6">
+            <div className="flex flex-wrap gap-2">
               <Badge 
-                key={q}
-                variant={activeQuadrant === i ? "default" : "outline"} 
-                className="cursor-pointer px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all hover:scale-105"
-                onClick={() => setActiveQuadrant(i)}
+                variant={activeQuadrant === undefined ? "default" : "outline"} 
+                className="cursor-pointer px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all"
+                onClick={() => setActiveQuadrant(undefined)}
               >
-                {q}
+                All Focus Areas
               </Badge>
-            ))}
-          </div>
+              {DEFAULT_CONFIG.quadrants.map((q, i) => (
+                <Badge 
+                  key={q}
+                  variant={activeQuadrant === i ? "default" : "outline"} 
+                  className="cursor-pointer px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all"
+                  onClick={() => setActiveQuadrant(i)}
+                >
+                  {q}
+                </Badge>
+              ))}
+            </div>
 
-          <div className="flex flex-wrap gap-2">
-            <Badge 
-              variant={activeRing === undefined ? "secondary" : "outline"} 
-              className="cursor-pointer px-4 py-1.5 rounded-full text-[10px] uppercase font-bold"
-              onClick={() => setActiveRing(undefined)}
-            >
-              All Maturity
-            </Badge>
-            {DEFAULT_CONFIG.rings.map((r, i) => (
-              <Badge 
-                key={r}
-                variant={activeRing === i ? "secondary" : "outline"} 
-                className="cursor-pointer px-4 py-1.5 rounded-full text-[10px] uppercase font-bold"
-                onClick={() => setActiveRing(i)}
-              >
-                {r}
-              </Badge>
-            ))}
+            <RadarChart 
+              items={filteredItems} 
+              config={DEFAULT_CONFIG} 
+              activeFilters={{ quadrant: activeQuadrant, ring: activeRing }} 
+            />
           </div>
-
-          <RadarChart 
-            items={filteredItems} 
-            config={DEFAULT_CONFIG} 
-            activeFilters={{ quadrant: activeQuadrant, ring: activeRing }} 
-          />
         </div>
 
-        {/* Right Column: Activity & Lists */}
-        <div className="lg:col-span-4 space-y-6">
-          <Card className="rounded-2xl border-2 overflow-hidden shadow-sm">
-            <CardHeader className="bg-secondary/30">
-              <CardTitle className="flex items-center gap-2 text-lg">
+        <div className="lg:col-span-4 space-y-8">
+          <Card className="rounded-[2rem] border-none bg-secondary/30 overflow-hidden shadow-none">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-2 text-xl font-bold">
                 <History className="w-5 h-5 text-primary" />
-                Latest Updates
+                Latest Pulses
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="divide-y">
+              <div className="divide-y divide-border/50">
                 {recentItems.map((item) => (
                   <Link 
                     key={item.id} 
                     href={`/items/${item.id}`}
-                    className="flex items-center justify-between p-4 hover:bg-primary/5 transition-colors group"
+                    className="flex items-center justify-between p-6 hover:bg-white/50 transition-all group"
                   >
                     <div className="space-y-1">
-                      <div className="font-bold text-sm group-hover:text-primary">{item.name}</div>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
-                        <Clock className="w-3 h-3" />
+                      <div className="font-bold text-lg group-hover:text-primary transition-colors">{item.name}</div>
+                      <div className="flex items-center gap-3 text-sm text-muted-foreground font-medium">
+                        <Clock className="w-3.5 h-3.5" />
                         {new Date(item.updatedAt).toLocaleDateString()}
-                        <Badge variant="outline" className="text-[9px] h-4 py-0 px-1 font-black">
+                        <Badge variant="secondary" className="text-[10px] h-5 px-2 font-bold uppercase tracking-wider">
                           {DEFAULT_CONFIG.rings[item.ringId]}
                         </Badge>
                       </div>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-all group-hover:translate-x-1" />
+                    <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-all group-hover:translate-x-1" />
                   </Link>
                 ))}
               </div>
             </CardContent>
           </Card>
 
-          <Card className="rounded-2xl border-2 shadow-sm">
+          <Card className="rounded-[2rem] border-none bg-primary/10 shadow-none p-4">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Tag className="w-5 h-5 text-primary" />
-                Impact Tags
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {['Sustainability', 'Accessibility', 'AI Safety', 'Efficiency', 'European', 'GDPR'].map(tag => (
-                  <Badge key={tag} variant="secondary" className="hover:bg-primary hover:text-white cursor-pointer transition-colors px-3 py-1 font-medium">
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-primary/10 border-primary/20 rounded-2xl">
-            <CardHeader>
-              <CardTitle className="text-primary text-sm font-black uppercase tracking-widest flex items-center gap-2">
+              <CardTitle className="text-primary text-xs font-black uppercase tracking-widest flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4" />
-                Governance Note
+                Agency Governance
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-foreground/80 leading-relaxed font-medium">
+            <CardContent className="space-y-6">
+              <p className="text-base text-foreground/80 leading-relaxed font-medium">
                 We prioritize tools that align with our <span className="text-primary font-bold">Progress</span> goals. 
-                Always verify the <span className="font-bold">Sustainability score</span> for high-compute tools.
+                Always check the <span className="font-bold">Sustainability score</span> for high-compute models.
               </p>
-              <Button asChild className="w-full gap-2 rounded-full font-bold h-11" size="default">
+              <Button asChild className="w-full gap-2 rounded-full font-bold h-14 text-lg shadow-lg hover:shadow-primary/20" size="default">
                 <Link href="/items/new">
-                  Propose Tool
-                  <ArrowRight className="w-4 h-4" />
+                  Propose a Tool
+                  <ArrowRight className="w-5 h-5" />
                 </Link>
               </Button>
             </CardContent>
           </Card>
+
+          <div className="px-6 space-y-4">
+            <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Strategic Tags</h4>
+            <div className="flex flex-wrap gap-2">
+              {['Sustainable', 'European', 'Privacy-First', 'GDPR', 'Open Source'].map(tag => (
+                <Badge key={tag} variant="secondary" className="bg-white border-2 border-transparent hover:border-primary/30 cursor-pointer transition-all px-4 py-2 text-sm font-bold rounded-full">
+                  #{tag}
+                </Badge>
+              ))}
+            </div>
+          </div>
         </div>
       </main>
     </div>

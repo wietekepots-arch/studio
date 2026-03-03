@@ -51,10 +51,12 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
   const db = useFirestore();
   const { user, isUserLoading } = useUser();
   
-  const itemRef = useMemoFirebase(() => (db ? doc(db, 'radarItems', id) : null), [db, id]);
+  // Gate the reference creation behind the user object to avoid unauthorized requests
+  const itemRef = useMemoFirebase(() => (db && user ? doc(db, 'radarItems', id) : null), [db, user, id]);
   const { data: item, isLoading: isItemLoading } = useDoc<RadarItem>(itemRef);
 
   const experiencesQuery = useMemoFirebase(() => {
+    // Only attempt the query if the user is authenticated and the database is ready
     if (!db || !user) return null;
     return query(
       collection(db, 'experiences'),
@@ -77,6 +79,7 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
     );
   }
 
+  // Display locked state for unauthenticated users
   if (!user) {
     return (
       <div className="min-h-screen bg-background flex flex-col">

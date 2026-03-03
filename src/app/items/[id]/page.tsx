@@ -15,111 +15,68 @@ import {
   Globe,
   ArrowUpRight,
   Sparkles,
-  Info
+  Info,
+  Zap,
+  Star,
+  Plus
 } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { DEFAULT_CONFIG, RadarItem } from '@/app/lib/radar-types';
+import { DEFAULT_CONFIG, RadarItem, Experience } from '@/app/lib/radar-types';
 import { 
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-
-const getItem = (id: string): RadarItem => {
-  const items: Record<string, RadarItem> = {
-    '1': {
-      id: '1',
-      name: 'Claude 3.5 Sonnet',
-      shortDesc: 'State-of-the-art LLM by Anthropic with high reasoning capabilities.',
-      notes: 'Anthropic\'s most capable model to date. Demonstrates exceptional performance in coding and complex reasoning. Now surpassed by 4.6.',
-      quadrantId: 0,
-      ringId: 3, // HOLD
-      previousRingId: 0,
-      tags: ['LLM', 'Anthropic', 'Coding'],
-      team: 'Creative Tech',
-      ownerId: 'u1',
-      ownerName: 'Jane Smith',
-      scores: { maturity: 5, impact: 5, effort: 1, risk: 2 },
-      costRange: 'Medium',
-      origin: 'American',
-      sustainabilityNotes: 'Anthropic is committed to safety but large training runs have high energy impact.',
-      securityNotes: 'Enterprise Tier provides data isolation. SOC2 Type II.',
-      links: ['https://claude.ai'],
-      status: 'Approved',
-      lastReviewedAt: Date.now() - 1000000,
-      createdAt: Date.now() - 10000000,
-      createdBy: 'u1',
-      updatedAt: Date.now() - 500000,
-      updatedBy: 'u1',
-      history: [
-        { id: 'h1', itemId: '1', action: 'Moved to Hold', note: 'Outdated model', createdAt: Date.now(), createdBy: 'Admin' },
-        { id: 'h0', itemId: '1', action: 'Adopted', note: 'Initial implementation', createdAt: Date.now() - 10000000, createdBy: 'Jane Smith' }
-      ]
-    },
-    '12': {
-      id: '12',
-      name: 'Claude 4.6 Sonnet',
-      shortDesc: 'The latest flagship model from Anthropic, surpassing 3.5 in all benchmarks.',
-      notes: 'Enhanced reasoning, vision, and coding efficiency. Replaces 3.5 as our primary focus.',
-      quadrantId: 0,
-      ringId: 0,
-      tags: ['LLM', 'Anthropic', 'New'],
-      team: 'Creative Tech',
-      ownerId: 'u1',
-      ownerName: 'Jane Smith',
-      scores: { maturity: 5, impact: 5, effort: 1, risk: 2 },
-      costRange: 'Medium',
-      origin: 'American',
-      sustainabilityNotes: 'More efficient compute usage than 3.5 Opus.',
-      securityNotes: 'Standard Anthropic safety layer.',
-      links: [],
-      status: 'Approved',
-      lastReviewedAt: Date.now(),
-      createdAt: Date.now(),
-      createdBy: 'u1',
-      updatedAt: Date.now(),
-      updatedBy: 'u1',
-      history: [
-        { id: 'h2', itemId: '12', action: 'Adopted', note: 'New flagship release', createdAt: Date.now(), createdBy: 'Jane Smith' }
-      ]
-    },
-    '3': {
-      id: '3',
-      name: 'Figma AI',
-      shortDesc: 'Generative design and prototyping features directly in Figma.',
-      notes: 'Figma\'s new AI suite allows for rapid layout generation, auto-naming of layers, and intelligent prototyping suggestions.',
-      quadrantId: 0,
-      ringId: 0,
-      tags: ['Design', 'UI', 'Generative'],
-      team: 'Product Design',
-      ownerId: 'u2',
-      ownerName: 'Dave Miller',
-      scores: { maturity: 4, impact: 5, effort: 1, risk: 1 },
-      costRange: 'Medium',
-      origin: 'American',
-      sustainabilityNotes: 'Cloud-based processing within Figma\'s infrastructure.',
-      securityNotes: 'Enterprise plans allow turning off AI data training.',
-      links: ['https://figma.com/ai'],
-      status: 'Approved',
-      lastReviewedAt: Date.now(),
-      createdAt: Date.now() - 4000000,
-      createdBy: 'u2',
-      updatedAt: Date.now(),
-      updatedBy: 'u2'
-    }
-  };
-  
-  return items[id] || items['1'];
-};
+import { useDoc, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { doc, collection, query, where, orderBy } from 'firebase/firestore';
 
 export default function ItemDetailPage({ params }: { params: { id: string } }) {
-  const item = getItem(params.id);
-  const [comment, setComment] = useState('');
+  const db = useFirestore();
+  const { data: item, isLoading: isItemLoading } = useDoc<RadarItem>(
+    useMemoFirebase(() => (db ? doc(db, 'radarItems', params.id) : null), [db, params.id])
+  );
+
+  const experiencesQuery = useMemoFirebase(() => {
+    if (!db) return null;
+    return query(
+      collection(db, 'experiences'),
+      where('toolLinks', 'array-contains', params.id),
+      where('status', '==', 'Published'),
+      orderBy('createdAt', 'desc')
+    );
+  }, [db, params.id]);
+
+  const { data: relatedExperiences, isLoading: isExpLoading } = useCollection<Experience>(experiencesQuery);
+
+  if (isItemLoading) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!item) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <Navbar />
+        <div className="flex-1 flex flex-col items-center justify-center space-y-4">
+          <h1 className="text-4xl font-black">Tool Not Found</h1>
+          <Button asChild rounded-full px-8>
+            <Link href="/">Back to Radar</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   const ScoreRow = ({ label, value }: { label: string, value: number }) => (
     <div className="space-y-3">
@@ -222,6 +179,9 @@ export default function ItemDetailPage({ params }: { params: { id: string } }) {
               <Tabs defaultValue="overview" className="w-full">
                 <TabsList className="bg-secondary/40 p-2 rounded-full h-16 w-full md:w-auto justify-start inline-flex">
                   <TabsTrigger value="overview" className="gap-3 rounded-full px-10 font-black uppercase tracking-widest text-[10px] transition-all data-[state=active]:bg-primary data-[state=active]:text-white">Overview</TabsTrigger>
+                  <TabsTrigger value="experiences" className="gap-3 rounded-full px-10 font-black uppercase tracking-widest text-[10px] transition-all data-[state=active]:bg-primary data-[state=active]:text-white">
+                    <Sparkles className="w-3.5 h-3.5" /> Experiences ({relatedExperiences?.length || 0})
+                  </TabsTrigger>
                   <TabsTrigger value="impact" className="gap-3 rounded-full px-10 font-black uppercase tracking-widest text-[10px] transition-all data-[state=active]:bg-primary data-[state=active]:text-white">Impact</TabsTrigger>
                   <TabsTrigger value="history" className="gap-3 rounded-full px-10 font-black uppercase tracking-widest text-[10px] transition-all data-[state=active]:bg-primary data-[state=active]:text-white">
                     <History className="w-3.5 h-3.5" /> History
@@ -232,6 +192,63 @@ export default function ItemDetailPage({ params }: { params: { id: string } }) {
                   <div className="prose prose-2xl max-w-none text-foreground/90 leading-relaxed font-medium">
                     {item.notes}
                   </div>
+                </TabsContent>
+
+                <TabsContent value="experiences" className="pt-16 space-y-12">
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                    <div>
+                      <h3 className="text-4xl font-black uppercase tracking-tighter">Real-World <span className="text-primary">Pulses</span></h3>
+                      <p className="text-muted-foreground font-medium">How Greenberry teams are using {item.name}.</p>
+                    </div>
+                    <Button asChild className="rounded-full gap-2 font-bold px-8 h-14 shadow-lg shadow-primary/20">
+                      <Link href={`/experiences/new?toolId=${item.id}`}>
+                        <Plus className="w-5 h-5" /> Log Your Experience
+                      </Link>
+                    </Button>
+                  </div>
+
+                  {isExpLoading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-pulse">
+                      <div className="h-48 rounded-[2.5rem] bg-secondary/20" />
+                      <div className="h-48 rounded-[2.5rem] bg-secondary/20" />
+                    </div>
+                  ) : relatedExperiences && relatedExperiences.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      {relatedExperiences.map(exp => (
+                        <Link key={exp.id} href={`/experiences/${exp.id}`}>
+                          <Card className="group h-full rounded-[2.5rem] border-none bg-secondary/10 hover:bg-white hover:shadow-xl hover:shadow-primary/5 transition-all p-8 flex flex-col justify-between">
+                            <div className="space-y-4">
+                              <div className="flex justify-between items-center">
+                                <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest border-primary/20 text-primary">{exp.team}</Badge>
+                                {exp.outcomeRating && (
+                                  <div className="flex items-center gap-1 text-yellow-500 font-black text-sm">
+                                    <Star className="w-4 h-4 fill-current" /> {exp.outcomeRating}
+                                  </div>
+                                )}
+                              </div>
+                              <h4 className="text-2xl font-black tracking-tight group-hover:text-primary transition-colors leading-tight">{exp.title}</h4>
+                              <p className="text-sm text-muted-foreground font-medium line-clamp-2">{exp.summary}</p>
+                            </div>
+                            <div className="pt-6 border-t mt-6 flex items-center justify-between">
+                              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">{exp.creatorName}</span>
+                              <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                            </div>
+                          </Card>
+                        </Link>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-16 rounded-[3.5rem] bg-secondary/10 text-center space-y-6">
+                      <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto text-primary">
+                        <Zap className="w-8 h-8" />
+                      </div>
+                      <h4 className="text-2xl font-black">No experiences logged yet</h4>
+                      <p className="text-muted-foreground max-w-sm mx-auto">Be the first to share how this tool is making an impact in your project.</p>
+                      <Button asChild variant="outline" className="rounded-full px-8 border-2">
+                        <Link href={`/experiences/new?toolId=${item.id}`}>Log First Pulse</Link>
+                      </Button>
+                    </div>
+                  )}
                 </TabsContent>
 
                 <TabsContent value="impact" className="pt-16 space-y-12">
@@ -319,3 +336,5 @@ export default function ItemDetailPage({ params }: { params: { id: string } }) {
     </div>
   );
 }
+
+import { ChevronRight } from 'lucide-react';

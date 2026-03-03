@@ -7,7 +7,8 @@ import {
   PlusCircle, 
   ShieldCheck, 
   User, 
-  Radar
+  Radar,
+  Sparkles
 } from "lucide-react";
 
 export const Navbar = () => {
@@ -17,8 +18,9 @@ export const Navbar = () => {
 
   const navItems = [
     { label: "Radar", href: "/", icon: Radar },
+    { label: "Experiences", href: "/experiences", icon: Sparkles },
     { label: "Propose Tool", href: "/items/new", icon: PlusCircle, roles: ['Admin', 'Editor'] },
-    { label: "Governance", href: "/governance", icon: ShieldCheck, roles: ['Admin'] },
+    { label: "Governance", href: "/admin", icon: ShieldCheck, roles: ['Admin'] },
   ];
 
   const filteredNav = navItems.filter(item => !item.roles || item.roles.includes(user.role));
@@ -41,7 +43,7 @@ export const Navbar = () => {
             {filteredNav.map((item) => (
               <Link key={item.href} href={item.href}>
                 <Button 
-                  variant={pathname === item.href ? "secondary" : "ghost"} 
+                  variant={pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href)) ? "secondary" : "ghost"} 
                   className="gap-2 rounded-full font-bold text-sm px-5 h-10 transition-all hover:bg-secondary/80"
                 >
                   <item.icon className="w-4 h-4" />

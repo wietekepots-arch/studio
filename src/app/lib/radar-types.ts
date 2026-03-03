@@ -17,6 +17,17 @@ export type ItemStatus = 'Draft' | 'In Review' | 'Approved' | 'Archived';
 export type CostRange = 'Free' | 'Low' | 'Medium' | 'High';
 export type Origin = 'European' | 'American' | 'Other';
 
+export interface HistoryEntry {
+  id: string;
+  itemId: string;
+  action: string;
+  note?: string;
+  before?: any;
+  after?: any;
+  createdAt: number;
+  createdBy: string;
+}
+
 export interface RadarItem {
   id: string;
   name: string;
@@ -24,6 +35,7 @@ export interface RadarItem {
   notes: string;
   quadrantId: number; // 0 to 3
   ringId: number;     // 0 to 3
+  previousRingId?: number; // For tracking movement
   tags: string[];
   team: string;
   ownerId: string;
@@ -46,25 +58,7 @@ export interface RadarItem {
   updatedAt: number;
   updatedBy: string;
   viewCount?: number;
-}
-
-export interface Comment {
-  id: string;
-  itemId: string;
-  text: string;
-  createdAt: number;
-  createdBy: string;
-  createdByName: string;
-}
-
-export interface HistoryEntry {
-  id: string;
-  itemId: string;
-  action: string;
-  before?: any;
-  after?: any;
-  createdAt: number;
-  createdBy: string;
+  history?: HistoryEntry[];
 }
 
 export const DEFAULT_CONFIG: RadarConfig = {

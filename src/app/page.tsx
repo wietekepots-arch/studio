@@ -28,27 +28,26 @@ const MOCK_ITEMS: RadarItem[] = [
   {
     id: '1',
     name: 'Claude 3.5 Sonnet',
-    shortDesc: 'State-of-the-art LLM by Anthropic with high reasoning capabilities.',
-    notes: 'The current gold standard for coding assistance and complex reasoning tasks.',
+    shortDesc: 'Legacy reasoning model by Anthropic.',
+    notes: 'Surpassed by 4.6 version. Retained for historical comparison and legacy workflows.',
     quadrantId: 0,
-    ringId: 3, // Moved to HOLD
+    ringId: 3, // HOLD
     previousRingId: 0,
-    tags: ['LLM', 'Anthropic', 'Coding'],
+    tags: ['LLM', 'Anthropic', 'Legacy'],
     team: 'Creative Tech',
     ownerId: 'u1',
     ownerName: 'Jane Smith',
-    scores: { maturity: 5, impact: 5, effort: 1, risk: 2 },
+    scores: { maturity: 5, impact: 3, effort: 1, risk: 2 },
     costRange: 'Medium',
     origin: 'American',
-    sustainabilityNotes: 'Anthropic is committed to safety but large training runs have high energy impact.',
-    securityNotes: 'Enterprise Tier provides data isolation. SOC2 compliant.',
+    sustainabilityNotes: 'Standard LLM energy footprint.',
+    securityNotes: 'Enterprise Tier safety verified.',
     links: ['https://claude.ai'],
     status: 'Approved',
     lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 10000000,
-    createdBy: 'u1',
+    createdAt: Date.now() - 30000000,
     updatedAt: Date.now(),
-    updatedBy: 'u1',
+    updatedBy: 'Admin',
     history: [
       { id: 'h1', itemId: '1', action: 'Moved to Hold', note: 'Outdated model', createdAt: Date.now(), createdBy: 'Admin' }
     ]
@@ -56,58 +55,102 @@ const MOCK_ITEMS: RadarItem[] = [
   {
     id: '12',
     name: 'Claude 4.6 Sonnet',
-    shortDesc: 'The latest flagship model from Anthropic, surpassing 3.5 in all benchmarks.',
-    notes: 'Enhanced reasoning, vision, and coding efficiency. Replaces 3.5 as our primary focus.',
-    quadrantId: 0,
-    ringId: 0,
-    tags: ['LLM', 'Anthropic', 'New'],
+    shortDesc: 'Latest flagship intelligence by Anthropic.',
+    notes: 'Significantly enhanced coding and creative reasoning. Our current primary recommendation.',
+    quadrantId: 1, // Strategy & Intelligence
+    ringId: 0, // ADOPT
+    tags: ['LLM', 'Anthropic', 'Flagship'],
     team: 'Creative Tech',
     ownerId: 'u1',
     ownerName: 'Jane Smith',
     scores: { maturity: 5, impact: 5, effort: 1, risk: 2 },
     costRange: 'Medium',
     origin: 'American',
-    sustainabilityNotes: 'More efficient compute usage than 3.5 Opus.',
-    securityNotes: 'Standard Anthropic safety layer.',
+    sustainabilityNotes: 'Improved tokens-per-watt over 3.5.',
+    securityNotes: 'Anthropic Constitution AI baked in.',
     links: [],
     status: 'Approved',
     lastReviewedAt: Date.now(),
-    createdAt: Date.now(), // NEW ITEM
-    createdBy: 'u1',
+    createdAt: Date.now(), // NEW
     updatedAt: Date.now(),
     updatedBy: 'u1'
   },
   {
-    id: '2',
-    name: 'Claude 3 Opus',
-    shortDesc: 'Anthropic\'s most powerful model for complex creative tasks.',
-    notes: 'Exceptional for deep strategic analysis and long-form creative writing.',
-    quadrantId: 1,
-    ringId: 0,
-    tags: ['LLM', 'Analysis', 'Strategy'],
-    team: 'Strategy',
-    ownerId: 'u1',
-    ownerName: 'Jane Smith',
-    scores: { maturity: 5, impact: 5, effort: 1, risk: 2 },
-    costRange: 'High',
-    origin: 'American',
-    sustainabilityNotes: 'High compute requirements; recommend selective use.',
-    securityNotes: 'Complies with Anthropic\'s safety guidelines.',
-    links: ['https://claude.ai'],
+    id: 'transcriptor',
+    name: 'Transcriptor',
+    shortDesc: 'High-fidelity audio intelligence for agency meetings.',
+    notes: 'Excellent Dutch language support for transcribing stakeholder interviews.',
+    quadrantId: 2, // Process & Flow
+    ringId: 0, // ADOPT
+    tags: ['Audio', 'Productivity', 'EU'],
+    team: 'Operations',
+    ownerId: 'u3',
+    ownerName: 'Mark van Dijk',
+    scores: { maturity: 4, impact: 4, effort: 2, risk: 1 },
+    costRange: 'Low',
+    origin: 'European',
+    sustainabilityNotes: 'Lightweight inference compared to video models.',
+    securityNotes: 'EU-hosted, fully GDPR compliant.',
+    links: [],
     status: 'Approved',
     lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 8000000,
-    createdBy: 'u1',
+    createdAt: Date.now() - 1000000,
     updatedAt: Date.now(),
-    updatedBy: 'u1'
+    updatedBy: 'u3'
+  },
+  {
+    id: 'firebase-studio',
+    name: 'Firebase Studio',
+    shortDesc: 'AI-assisted rapid app prototyping and hosting.',
+    notes: 'Our primary environment for building progress-focused internal tools.',
+    quadrantId: 0, // Creation & Craft
+    ringId: 0, // ADOPT
+    tags: ['Prototyping', 'Google', 'Cloud'],
+    team: 'Engineering',
+    ownerId: 'u4',
+    ownerName: 'Sophie de Boer',
+    scores: { maturity: 5, impact: 5, effort: 1, risk: 1 },
+    costRange: 'Medium',
+    origin: 'American',
+    sustainabilityNotes: 'Managed by Google Cloud with net-zero commitments.',
+    securityNotes: 'Enterprise security rules and Auth integration.',
+    links: [],
+    status: 'Approved',
+    lastReviewedAt: Date.now(),
+    createdAt: Date.now() - 5000000,
+    updatedAt: Date.now(),
+    updatedBy: 'u4'
+  },
+  {
+    id: 'google-stitch',
+    name: 'Google Stitch',
+    shortDesc: 'Next-gen video generation for creative storytelling.',
+    notes: 'Assessing for marketing content and early-stage visualization.',
+    quadrantId: 0, // Creation & Craft
+    ringId: 2, // ASSESS
+    tags: ['Video', 'Generative', 'Google'],
+    team: 'Creative Tech',
+    ownerId: 'u4',
+    ownerName: 'Sophie de Boer',
+    scores: { maturity: 3, impact: 5, effort: 3, risk: 3 },
+    costRange: 'High',
+    origin: 'American',
+    sustainabilityNotes: 'High compute requirements; use sparingly.',
+    securityNotes: 'Workspace enterprise privacy tier required.',
+    links: [],
+    status: 'In Review',
+    lastReviewedAt: Date.now(),
+    createdAt: Date.now() - 200000, // NEW
+    updatedAt: Date.now(),
+    updatedBy: 'u4'
   },
   {
     id: '3',
     name: 'Figma AI',
-    shortDesc: 'Generative design and prototyping features directly in Figma.',
-    notes: 'Significantly speeds up layout exploration and component generation.',
-    quadrantId: 0,
-    ringId: 0,
+    shortDesc: 'Generative design features inside Figma.',
+    notes: 'Speeds up layout exploration and component generation significantly.',
+    quadrantId: 0, // Creation & Craft
+    ringId: 0, // ADOPT
     tags: ['Design', 'UI', 'Generative'],
     team: 'Product Design',
     ownerId: 'u2',
@@ -115,38 +158,36 @@ const MOCK_ITEMS: RadarItem[] = [
     scores: { maturity: 4, impact: 5, effort: 1, risk: 1 },
     costRange: 'Medium',
     origin: 'American',
-    sustainabilityNotes: 'Integrated into Figma\'s cloud infrastructure.',
-    securityNotes: 'Standard Figma workspace permissions apply.',
+    sustainabilityNotes: 'Cloud processing via Figma infra.',
+    securityNotes: 'Training toggle available for enterprise.',
     links: ['https://figma.com/ai'],
     status: 'Approved',
     lastReviewedAt: Date.now(),
     createdAt: Date.now() - 4000000,
-    createdBy: 'u2',
-    updatedAt: Date.now() - 100000,
+    updatedAt: Date.now(),
     updatedBy: 'u2'
   },
   {
-    id: '6',
+    id: 'lovable',
     name: 'Lovable',
-    shortDesc: 'AI-powered full-stack app builder for rapid web deployment.',
-    notes: 'Great for building functional MVPs in hours instead of days.',
+    shortDesc: 'Full-stack AI app builder.',
+    notes: 'Moved from Assess to Trial after successful internal MVP pilot.',
     quadrantId: 0,
-    ringId: 1,
+    ringId: 1, // TRIAL
     previousRingId: 2, // MOVED
-    tags: ['App Builder', 'Fullstack', 'MVP'],
+    tags: ['App Builder', 'EU', 'MVP'],
     team: 'Strategy',
     ownerId: 'u1',
     ownerName: 'Jane Smith',
     scores: { maturity: 3, impact: 4, effort: 2, risk: 2 },
     costRange: 'Medium',
     origin: 'European',
-    sustainabilityNotes: 'Stockholm-based team, modern cloud infra.',
-    securityNotes: 'Emerging platform; review data handling.',
+    sustainabilityNotes: 'Stockholm-based team.',
+    securityNotes: 'Reviewing data isolation policies.',
     links: ['https://lovable.dev'],
     status: 'In Review',
     lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 1000000,
-    createdBy: 'u1',
+    createdAt: Date.now() - 2000000,
     updatedAt: Date.now(),
     updatedBy: 'u1'
   }
@@ -194,14 +235,14 @@ export default function Home() {
         <div className="lg:col-span-8 space-y-12">
           <div className="flex flex-col md:flex-row gap-6 items-end justify-between">
             <div className="space-y-2">
-              <h1 className="text-6xl font-black text-foreground tracking-tighter leading-none">Design for <br/><span className="text-primary">Progress</span></h1>
-              <p className="text-xl text-muted-foreground font-medium max-w-lg">Tracking the pulse of AI tools that amplify our creative and ethical impact at Greenberry.</p>
+              <h1 className="text-6xl font-black text-foreground tracking-tighter leading-none uppercase">Design for <br/><span className="text-primary">Progress</span></h1>
+              <p className="text-xl text-muted-foreground font-medium max-w-lg">Tracking AI tools that amplify creative and ethical impact at Greenberry.</p>
             </div>
             <div className="relative w-full md:w-80">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input 
-                placeholder="Search the pulse..." 
-                className="pl-12 border-2 border-border focus:border-primary rounded-full h-14 text-lg bg-secondary/20"
+                placeholder="Search the network..." 
+                className="pl-12 border-2 border-border focus:border-primary rounded-full h-14 text-lg bg-secondary/30"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -229,10 +270,10 @@ export default function Home() {
               ))}
             </div>
 
-            <div className="bg-white rounded-[3rem] p-12 shadow-2xl shadow-primary/5 border-2 border-secondary/20 relative overflow-hidden group">
+            <div className="bg-white rounded-[3rem] p-12 shadow-2xl shadow-primary/5 border-2 border-secondary/20 relative overflow-hidden">
               <div className="absolute top-8 right-12 flex gap-4 z-10">
                 <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full border">
-                  <Sparkles className="w-3 h-3 text-primary" /> New Pulse
+                  <Sparkles className="w-3 h-3 text-primary" /> New
                 </div>
                 <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full border">
                   <ArrowUpRight className="w-3 h-3 text-blue-500" /> Changed
@@ -246,26 +287,26 @@ export default function Home() {
             </div>
 
             {activeQuadrant !== undefined && (
-              <div className="space-y-6 pt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-3xl font-black uppercase tracking-tighter">
+              <div className="space-y-6 pt-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="flex items-center justify-between border-b pb-6">
+                  <h3 className="text-4xl font-black uppercase tracking-tighter">
                     Focus: <span className="text-primary">{DEFAULT_CONFIG.quadrants[activeQuadrant]}</span>
                   </h3>
                   <Badge variant="secondary" className="font-bold px-4 py-1.5 rounded-full">
-                    {quadrantItems.length} Tools Tracked
+                    {quadrantItems.length} Pulses
                   </Badge>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {quadrantItems.map(item => (
                     <Link 
                       key={item.id} 
                       href={`/items/${item.id}`}
-                      className="group p-6 bg-secondary/20 rounded-[2rem] border-2 border-transparent hover:border-primary/20 hover:bg-white transition-all flex justify-between items-center"
+                      className="group p-8 bg-secondary/30 rounded-[2.5rem] border-2 border-transparent hover:border-primary/20 hover:bg-white transition-all flex justify-between items-center"
                     >
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xl font-bold group-hover:text-primary transition-colors">{item.name}</span>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl font-black group-hover:text-primary transition-colors tracking-tight">{item.name}</span>
                           {isItemNew(item) && (
                             <Sparkles className="w-4 h-4 text-primary animate-pulse" />
                           )}
@@ -275,11 +316,11 @@ export default function Home() {
                         </div>
                         <div className="text-sm text-muted-foreground font-medium line-clamp-1">{item.shortDesc}</div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <Badge className="font-bold uppercase text-[9px] tracking-widest h-6 rounded-full">
+                      <div className="flex items-center gap-4">
+                        <Badge className="font-black uppercase text-[10px] tracking-widest h-8 px-4 rounded-full">
                           {DEFAULT_CONFIG.rings[item.ringId]}
                         </Badge>
-                        <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                        <ChevronRight className="w-6 h-6 text-muted-foreground group-hover:translate-x-1 transition-transform" />
                       </div>
                     </Link>
                   ))}
@@ -290,7 +331,7 @@ export default function Home() {
         </div>
 
         <div className="lg:col-span-4 space-y-8">
-          <Card className="rounded-[2rem] border-none bg-secondary/30 overflow-hidden shadow-none">
+          <Card className="rounded-[2.5rem] border-none bg-secondary/30 overflow-hidden shadow-none">
             <CardHeader className="p-8 pb-4">
               <CardTitle className="flex items-center gap-3 text-2xl font-black uppercase tracking-tighter">
                 <History className="w-6 h-6 text-primary" />
@@ -307,7 +348,7 @@ export default function Home() {
                   >
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-xl group-hover:text-primary transition-colors">{item.name}</span>
+                        <span className="font-bold text-xl group-hover:text-primary transition-colors tracking-tight">{item.name}</span>
                         {isItemNew(item) && <Badge className="text-[9px] h-4 font-black bg-primary/20 text-primary border-none">NEW</Badge>}
                       </div>
                       <div className="flex items-center gap-3 text-[10px] text-muted-foreground font-black uppercase tracking-widest">
@@ -324,7 +365,7 @@ export default function Home() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-[2rem] border-none bg-primary text-primary-foreground shadow-2xl shadow-primary/20 p-4">
+          <Card className="rounded-[2.5rem] border-none bg-primary text-primary-foreground shadow-2xl shadow-primary/20 p-4">
             <CardHeader className="p-8 pb-4">
               <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4" />
@@ -346,7 +387,7 @@ export default function Home() {
           </Card>
 
           <div className="px-8 space-y-6">
-            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Strategic Tags</h4>
+            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Strategic Pulse</h4>
             <div className="flex flex-wrap gap-2">
               {['Sustainable', 'European', 'Privacy-First', 'GDPR', 'Open Source'].map(tag => (
                 <Badge key={tag} variant="outline" className="bg-white border-2 border-transparent hover:border-primary/30 cursor-pointer transition-all px-6 py-2.5 text-xs font-bold rounded-full uppercase tracking-widest">

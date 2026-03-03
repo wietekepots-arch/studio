@@ -3,8 +3,8 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'Agency Radar | Knowledge Program',
-  description: 'Internal tech radar for agency tools, methods, and governance.',
+  title: 'AI Tooling Radar | Agency Knowledge',
+  description: 'Internal tech radar for tracking AI models, coding assistants, and generative agents.',
 };
 
 export default function RootLayout({

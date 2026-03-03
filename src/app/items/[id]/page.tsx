@@ -27,28 +27,55 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 
-// Mock fetching logic
-const getItem = (id: string): RadarItem => ({
-  id,
-  name: 'Next.js',
-  shortDesc: 'React framework for production grade apps.',
-  notes: 'Next.js gives you the best developer experience with all the features you need for production: hybrid static & server rendering, TypeScript support, smart bundling, route pre-fetching, and more. No config needed.\n\nAt the agency, we have used this on over 20 client projects in the last year with great success. It handles SEO exceptionally well compared to pure client-side React apps.',
-  quadrantId: 0,
-  ringId: 0,
-  tags: ['Frontend', 'React', 'Framework'],
-  team: 'Engineering',
-  ownerId: 'u1',
-  ownerName: 'Jane Smith',
-  scores: { maturity: 5, impact: 5, effort: 2, risk: 1 },
-  costRange: 'Free',
-  links: ['https://nextjs.org', 'https://github.com/vercel/next.js'],
-  status: 'Approved',
-  lastReviewedAt: Date.now() - 1000000,
-  createdAt: Date.now() - 10000000,
-  createdBy: 'u1',
-  updatedAt: Date.now() - 500000,
-  updatedBy: 'u1'
-});
+// Mock fetching logic updated for AI tools
+const getItem = (id: string): RadarItem => {
+  const items: Record<string, RadarItem> = {
+    '1': {
+      id: '1',
+      name: 'Claude 3.5 Sonnet',
+      shortDesc: 'State-of-the-art LLM by Anthropic with high reasoning capabilities.',
+      notes: 'Anthropic\'s most capable model to date. It demonstrates exceptional performance in coding, complex reasoning, and creative writing. We use it extensively for pair programming and data analysis.\n\nGovernance Note: Ensure that PII is masked before submission, though our enterprise tier includes high privacy standards.',
+      quadrantId: 0,
+      ringId: 0,
+      tags: ['LLM', 'Anthropic', 'Coding'],
+      team: 'AI Research',
+      ownerId: 'u1',
+      ownerName: 'Jane Smith',
+      scores: { maturity: 5, impact: 5, effort: 1, risk: 2 },
+      costRange: 'Medium',
+      links: ['https://claude.ai', 'https://www.anthropic.com/news/claude-3-5-sonnet'],
+      status: 'Approved',
+      lastReviewedAt: Date.now() - 1000000,
+      createdAt: Date.now() - 10000000,
+      createdBy: 'u1',
+      updatedAt: Date.now() - 500000,
+      updatedBy: 'u1'
+    },
+    '4': {
+      id: '4',
+      name: 'Firebase Studio',
+      shortDesc: 'Integrated prototyping and deployment suite for Firebase apps.',
+      notes: 'Firebase Studio is our preferred environment for rapid application prototyping. It provides a seamless bridge between local development and cloud deployment, specifically optimized for GenAI applications using Genkit.',
+      quadrantId: 0,
+      ringId: 0,
+      tags: ['Platform', 'Firebase', 'Dev'],
+      team: 'Engineering',
+      ownerId: 'u3',
+      ownerName: 'Alice Wong',
+      scores: { maturity: 4, impact: 5, effort: 1, risk: 1 },
+      costRange: 'Free',
+      links: ['https://firebase.google.com'],
+      status: 'Approved',
+      lastReviewedAt: Date.now() - 500000,
+      createdAt: Date.now() - 2000000,
+      createdBy: 'u3',
+      updatedAt: Date.now(),
+      updatedBy: 'u3'
+    }
+  };
+  
+  return items[id] || items['1'];
+};
 
 export default function ItemDetailPage({ params }: { params: { id: string } }) {
   const item = getItem(params.id);
@@ -197,7 +224,7 @@ export default function ItemDetailPage({ params }: { params: { id: string } }) {
                         </div>
                         <p className="text-sm text-foreground/80 leading-relaxed">
                           We should also consider how this plays with the new CMS initiative. 
-                          Next.js seems to have great integration with Contentful which we are trailing.
+                          Claude seems to have great integration with our current toolchain.
                         </p>
                         <div className="flex items-center gap-4">
                           <button className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary">
@@ -253,7 +280,7 @@ export default function ItemDetailPage({ params }: { params: { id: string } }) {
                     <div className="text-muted-foreground">by Admin • 1 week ago</div>
                   </div>
                   <div className="p-4 space-y-1">
-                    <div className="font-medium">Moved from Assess to Trial</div>
+                    <div className="font-medium">Moved from Assess to Adopt</div>
                     <div className="text-muted-foreground">by Jane Smith • 3 weeks ago</div>
                   </div>
                   <div className="p-4 space-y-1">

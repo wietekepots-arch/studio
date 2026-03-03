@@ -23,22 +23,22 @@ import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-// Seed data
+// Seed data focused on AI Tooling
 const MOCK_ITEMS: RadarItem[] = [
   {
     id: '1',
-    name: 'Next.js',
-    shortDesc: 'React framework for production grade apps.',
-    notes: 'Standard for all client projects.',
+    name: 'Claude 3.5 Sonnet',
+    shortDesc: 'State-of-the-art LLM by Anthropic with high reasoning capabilities.',
+    notes: 'The current gold standard for coding assistance and complex reasoning tasks. Integrated into most of our internal workflows.',
     quadrantId: 0,
-    ringId: 0,
-    tags: ['Frontend', 'React'],
-    team: 'Engineering',
+    ringId: 0, // Adopt
+    tags: ['LLM', 'Anthropic', 'Coding'],
+    team: 'AI Research',
     ownerId: 'u1',
     ownerName: 'Jane Smith',
-    scores: { maturity: 5, impact: 5, effort: 2, risk: 1 },
-    costRange: 'Free',
-    links: ['https://nextjs.org'],
+    scores: { maturity: 5, impact: 5, effort: 1, risk: 2 },
+    costRange: 'Medium',
+    links: ['https://claude.ai'],
     status: 'Approved',
     lastReviewedAt: Date.now(),
     createdAt: Date.now() - 10000000,
@@ -48,18 +48,18 @@ const MOCK_ITEMS: RadarItem[] = [
   },
   {
     id: '2',
-    name: 'Tailwind CSS',
-    shortDesc: 'Utility-first CSS framework.',
-    notes: 'Speeds up UI development significantly.',
+    name: 'Cursor',
+    shortDesc: 'AI-first code editor built on VS Code.',
+    notes: 'Incredible DX for agentic coding. Most productive tool for our frontend engineers currently.',
     quadrantId: 0,
-    ringId: 0,
-    tags: ['Styling', 'UI'],
-    team: 'Design',
+    ringId: 0, // Adopt
+    tags: ['Editor', 'Agentic', 'IDE'],
+    team: 'Engineering',
     ownerId: 'u2',
     ownerName: 'Bob Jones',
-    scores: { maturity: 5, impact: 4, effort: 1, risk: 1 },
-    costRange: 'Free',
-    links: ['https://tailwindcss.com'],
+    scores: { maturity: 4, impact: 5, effort: 1, risk: 1 },
+    costRange: 'Low',
+    links: ['https://cursor.com'],
     status: 'Approved',
     lastReviewedAt: Date.now(),
     createdAt: Date.now() - 15000000,
@@ -69,17 +69,17 @@ const MOCK_ITEMS: RadarItem[] = [
   },
   {
     id: '3',
-    name: 'LLM Prompt Engineering',
-    shortDesc: 'Optimizing inputs for generative AI.',
-    notes: 'Critical skill for modern workflows.',
+    name: 'Transcriptor',
+    shortDesc: 'High-accuracy AI transcription and meeting summarization tool.',
+    notes: 'Used for automated client meeting minutes and stakeholder interviews. Great multi-language support.',
     quadrantId: 1,
-    ringId: 1,
-    tags: ['AI', 'Workflow'],
-    team: 'Creative',
+    ringId: 1, // Trial
+    tags: ['Audio', 'Productivity'],
+    team: 'Operations',
     ownerId: 'u1',
     ownerName: 'Jane Smith',
-    scores: { maturity: 3, impact: 5, effort: 2, risk: 2 },
-    costRange: 'Free',
+    scores: { maturity: 3, impact: 4, effort: 2, risk: 2 },
+    costRange: 'Medium',
     links: [],
     status: 'Approved',
     lastReviewedAt: Date.now(),
@@ -87,6 +87,48 @@ const MOCK_ITEMS: RadarItem[] = [
     createdBy: 'u1',
     updatedAt: Date.now() - 100000,
     updatedBy: 'u1'
+  },
+  {
+    id: '4',
+    name: 'Firebase Studio',
+    shortDesc: 'Integrated prototyping and deployment suite for Firebase apps.',
+    notes: 'The tool we are using right now! Excellent for rapid prototyping with built-in Genkit support.',
+    quadrantId: 0,
+    ringId: 0, // Adopt
+    tags: ['Platform', 'Firebase', 'Dev'],
+    team: 'Engineering',
+    ownerId: 'u3',
+    ownerName: 'Alice Wong',
+    scores: { maturity: 4, impact: 5, effort: 1, risk: 1 },
+    costRange: 'Free',
+    links: ['https://firebase.google.com'],
+    status: 'Approved',
+    lastReviewedAt: Date.now(),
+    createdAt: Date.now() - 2000000,
+    createdBy: 'u3',
+    updatedAt: Date.now(),
+    updatedBy: 'u3'
+  },
+  {
+    id: '5',
+    name: 'Google Stitch',
+    shortDesc: 'Experimental AI data-orchestration and linking layer.',
+    notes: 'Potentially useful for stitching together disparate RAG sources. Under heavy evaluation.',
+    quadrantId: 2,
+    ringId: 2, // Assess
+    tags: ['Data', 'RAG', 'Google'],
+    team: 'Data Science',
+    ownerId: 'u4',
+    ownerName: 'Kevin Chen',
+    scores: { maturity: 2, impact: 4, effort: 3, risk: 3 },
+    costRange: 'High',
+    links: [],
+    status: 'In Review',
+    lastReviewedAt: Date.now(),
+    createdAt: Date.now() - 1000000,
+    createdBy: 'u4',
+    updatedAt: Date.now(),
+    updatedBy: 'u4'
   }
 ];
 
@@ -118,11 +160,11 @@ export default function Home() {
         {/* Left Column: Visualization & Filters */}
         <div className="lg:col-span-8 space-y-6">
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-            <h1 className="text-3xl font-bold text-primary">Tech Radar</h1>
+            <h1 className="text-3xl font-bold text-primary">AI Tech Radar</h1>
             <div className="relative w-full md:w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input 
-                placeholder="Search items..." 
+                placeholder="Search AI tools..." 
                 className="pl-10"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -215,12 +257,12 @@ export default function Home() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
                 <Tag className="w-5 h-5 text-primary" />
-                Popular Tags
+                Trending Tags
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">
-                {['AI', 'Frontend', 'Design', 'Data', 'Process', 'Infrastructure'].map(tag => (
+                {['LLM', 'Agentic', 'Coding', 'RAG', 'Image Gen', 'Transcription'].map(tag => (
                   <Badge key={tag} variant="secondary" className="hover:bg-primary hover:text-white cursor-pointer transition-colors">
                     {tag}
                   </Badge>
@@ -235,12 +277,12 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Items in the <strong>Adopt</strong> ring are approved for all projects. 
-                If you want to suggest a new tool, create a <strong>Draft</strong> and submit it for review.
+                Tools in the <strong>Adopt</strong> ring are verified for use with client data. 
+                Always check the security evaluation before using <strong>Assess</strong> items with sensitive info.
               </p>
               <Button asChild className="w-full mt-4 gap-2" size="sm">
                 <Link href="/items/new">
-                  Propose New Item
+                  Propose AI Tool
                   <ArrowRight className="w-3 h-3" />
                 </Link>
               </Button>

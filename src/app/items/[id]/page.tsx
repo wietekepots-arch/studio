@@ -52,9 +52,58 @@ const getItem = (id: string): RadarItem => {
       createdBy: 'u1',
       updatedAt: Date.now() - 500000,
       updatedBy: 'u1'
+    },
+    '2': {
+      id: '2',
+      name: 'Claude 3 Opus',
+      shortDesc: 'Anthropic\'s most powerful model for complex creative tasks.',
+      notes: 'Exceptional for deep strategic analysis and long-form creative writing. While more expensive, the reasoning depth is currently unmatched for non-coding strategy work.',
+      quadrantId: 1,
+      ringId: 0,
+      tags: ['LLM', 'Analysis', 'Strategy'],
+      team: 'Strategy',
+      ownerId: 'u1',
+      ownerName: 'Jane Smith',
+      scores: { maturity: 5, impact: 5, effort: 1, risk: 2 },
+      costRange: 'High',
+      origin: 'American',
+      sustainabilityNotes: 'High compute requirements; recommend selective use for high-value strategic outputs.',
+      securityNotes: 'Enterprise Tier available with full data isolation.',
+      links: ['https://claude.ai'],
+      status: 'Approved',
+      lastReviewedAt: Date.now(),
+      createdAt: Date.now() - 8000000,
+      createdBy: 'u1',
+      updatedAt: Date.now(),
+      updatedBy: 'u1'
+    },
+    '3': {
+      id: '3',
+      name: 'Figma AI',
+      shortDesc: 'Generative design and prototyping features directly in Figma.',
+      notes: 'Figma\'s new AI suite allows for rapid layout generation, auto-naming of layers, and intelligent prototyping suggestions. It bridges the gap between wireframing and high-fidelity design.',
+      quadrantId: 0,
+      ringId: 0,
+      tags: ['Design', 'UI', 'Generative'],
+      team: 'Product Design',
+      ownerId: 'u2',
+      ownerName: 'Dave Miller',
+      scores: { maturity: 4, impact: 5, effort: 1, risk: 1 },
+      costRange: 'Medium',
+      origin: 'American',
+      sustainabilityNotes: 'Cloud-based processing within Figma\'s existing AWS infrastructure.',
+      securityNotes: 'Enterprise plans allow turning off AI data training on organizational files.',
+      links: ['https://figma.com/ai'],
+      status: 'Approved',
+      lastReviewedAt: Date.now(),
+      createdAt: Date.now() - 4000000,
+      createdBy: 'u2',
+      updatedAt: Date.now(),
+      updatedBy: 'u2'
     }
   };
   
+  // Default fallback if ID not found in detail map
   return items[id] || items['1'];
 };
 

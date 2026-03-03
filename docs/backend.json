@@ -1,0 +1,215 @@
+{
+  "entities": {
+    "Experience": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Experience",
+      "type": "object",
+      "description": "Represents an individual's documented experience using one or more radar items (tools, techniques) within a specific project context.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Experience entity."
+        },
+        "title": {
+          "type": "string",
+          "description": "A concise title summarizing the experience."
+        },
+        "summary": {
+          "type": "string",
+          "description": "A brief overview of the experience."
+        },
+        "toolRadarItemIds": {
+          "type": "array",
+          "description": "References to RadarItem entities that were used in this experience. (Relationship: Experience N:N RadarItem)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "howUsed": {
+          "type": "string",
+          "description": "Detailed description of how the tools were used, including workflows or steps."
+        },
+        "promptsOrTemplates": {
+          "type": "string",
+          "description": "Optional text area for prompts, code templates, or specific configurations used."
+        },
+        "findings": {
+          "type": "string",
+          "description": "Key findings, outcomes, what worked, what didn't work, and any surprises."
+        },
+        "recommendations": {
+          "type": "string",
+          "description": "Recommendations on when to use or when not to use the tools based on this experience."
+        },
+        "roleTitle": {
+          "type": "string",
+          "description": "The professional role of the user logging the experience (e.g., Strategist, Designer)."
+        },
+        "jobDescription": {
+          "type": "string",
+          "description": "Optional detailed description of the user's job or responsibilities relevant to the experience."
+        },
+        "teamDiscipline": {
+          "type": "string",
+          "description": "The team or discipline associated with the experience (e.g., 'Creative', 'Development')."
+        },
+        "projectContext": {
+          "type": "string",
+          "description": "Details about the project, such as client/internal, project type, or scope."
+        },
+        "dataSensitivity": {
+          "type": "string",
+          "description": "The sensitivity level of the data involved in the experience (e.g., 'Public', 'Internal', 'Client Confidential').",
+          "format": "string",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcomeRating": {
+          "type": "number",
+          "description": "A rating of the outcome of the experience, typically on a scale of 1 to 5."
+        },
+        "timeSavedHours": {
+          "type": "number",
+          "description": "Optional estimate of hours saved due to this experience or the tools used."
+        },
+        "tags": {
+          "type": "array",
+          "description": "A list of tags to categorize the experience.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "links": {
+          "type": "array",
+          "description": "An array of URLs to relevant documentation, examples, or assets.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "status": {
+          "type": "string",
+          "description": "The moderation status of the experience (e.g., 'Published' or 'Hidden').",
+          "format": "string",
+          "items": {
+            "type": "string"
+          }
+        },
+        "viewsCount": {
+          "type": "number",
+          "description": "The number of times this experience has been viewed."
+        },
+        "likesCount": {
+          "type": "number",
+          "description": "The number of likes this experience has received."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the experience was first created.",
+          "format": "date-time"
+        },
+        "createdBy": {
+          "type": "string",
+          "description": "Reference to the User who created this experience. (Relationship: User 1:N Experience)"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the experience was last updated.",
+          "format": "date-time"
+        },
+        "updatedBy": {
+          "type": "string",
+          "description": "Reference to the User who last updated this experience. (Relationship: User 1:N Experience)"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "summary",
+        "toolRadarItemIds",
+        "howUsed",
+        "findings",
+        "roleTitle",
+        "teamDiscipline",
+        "status",
+        "createdAt",
+        "createdBy",
+        "updatedAt",
+        "updatedBy"
+      ]
+    },
+    "ExperienceComment": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ExperienceComment",
+      "type": "object",
+      "description": "Represents a comment associated with a specific user experience.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the ExperienceComment entity."
+        },
+        "experienceId": {
+          "type": "string",
+          "description": "Reference to the Experience entity this comment belongs to. (Relationship: Experience 1:N ExperienceComment)"
+        },
+        "text": {
+          "type": "string",
+          "description": "The content of the comment."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the comment was created.",
+          "format": "date-time"
+        },
+        "createdBy": {
+          "type": "string",
+          "description": "Reference to the User who created the comment. (Relationship: User 1:N ExperienceComment)"
+        }
+      },
+      "required": [
+        "id",
+        "experienceId",
+        "text",
+        "createdAt",
+        "createdBy"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/experiences",
+        "definition": {
+          "entityName": "Experience",
+          "schema": {
+            "$ref": "#/backend/entities/Experience"
+          },
+          "description": "Top-level collection for all Experience entries. Documents include `createdBy` for ownership, `status` for moderation (Published/Hidden), and `toolRadarItemIds` for linking to RadarItems. This structure ensures Authorization Independence by denormalizing authorization context directly into the document, avoiding `get()` calls in rules for ownership or status checks. Supports QAPs by allowing `list` queries filtered by `status == 'Published'` for authenticated users."
+        }
+      },
+      {
+        "path": "/experiences/{experienceId}/comments",
+        "definition": {
+          "entityName": "ExperienceComment",
+          "schema": {
+            "$ref": "#/backend/entities/ExperienceComment"
+          },
+          "description": "Subcollection for comments related to a specific Experience. Each comment document includes `createdBy` for ownership and `experienceId` for explicit linking to its parent. This provides Authorization Independence for comment-specific permissions and supports QAPs for listing comments for a given experience.",
+          "params": [
+            {
+              "name": "experienceId",
+              "description": "The unique identifier of the Experience document to which the comments belong."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure for Experiences prioritizes Authorization Independence and Query-After-Permissions (QAPs) by leveraging structural segregation and denormalization. The core principle is to avoid `get()` calls in security rules for authorization, minimizing complexity and improving debuggability.\n\n1.  **`/experiences` Collection:** This top-level collection will store all `Experience` documents. Each `Experience` document includes essential authorization context directly within itself:\n    *   `createdBy`: Stores the `uid` of the user who created the experience. This allows for direct ownership checks (`request.auth.uid == resource.data.createdBy`) without needing to fetch additional user data for individual document access.\n    *   `status`: This field, with values like `Published` or `Hidden`, dictates the visibility and moderation state. It's directly queried in rules (`resource.data.status == 'Published'`) to control read access.\n    *   **Authorization Independence:** By having `createdBy` and `status` directly on the `Experience` document, rules for read, update, and delete can be evaluated atomically. For Admin roles, an existence check on a global `/roles_admin/{uid}` collection is used, which is an accepted pattern for global roles and doesn't introduce hierarchical dependencies for specific *data* authorization. This design ensures that creating an experience or updating its fields (except `createdBy`, which is protected) does not require complex cross-document lookups.\n    *   **QAPs (Query-After-Permissions):** The `/experiences` collection is designed to support secure `list` operations. Users can query this collection, for example, to find all experiences where `toolRadarItemIds` contains a specific `radarItemId`. The security rules will then filter results to only include documents where `status == 'Published'` (for non-admins) and where the user has appropriate permissions (owner for edit/delete). This allows the frontend to perform broad queries while the backend enforces fine-grained access, adhering to the QAP principle.\n\n2.  **`/experiences/{experienceId}/comments` Subcollection:** This subcollection stores `ExperienceComment` documents, directly nested under their respective `Experience` parent document. Each comment document will include:\n    *   `createdBy`: Stores the `uid` of the user who authored the comment, enabling direct ownership checks for modifying their own comments.\n    *   `experienceId`: Redundantly stores the parent `Experience`'s ID. While implicitly part of the path, storing it directly can simplify certain index-based queries and data integrity checks.\n    *   **Authorization Independence:** Comment authorization is independent of the parent `Experience`'s owner. A comment's owner can modify their comment, and read access to comments typically mirrors read access to the parent experience. This avoids `get()` calls to the parent `Experience` document for comment-specific permissions.\n    *   **QAPs:** Listing comments for a specific experience (`/experiences/{experienceId}/comments`) is straightforward and secure, as read access for comments would typically be granted if the user has read access to the parent `Experience` (e.g., if the parent `Experience` is `Published`).\n\nThis structure ensures clear, explicit authorization rules, supports atomic operations, and facilitates efficient, secure list queries for all defined use cases."
+  }
+}

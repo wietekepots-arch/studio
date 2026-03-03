@@ -45,21 +45,22 @@ import {
 import { useDoc, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { doc, collection, query, where, orderBy } from 'firebase/firestore';
 
-export default function ItemDetailPage({ params }: { params: { id: string } }) {
+export default function ItemDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = React.use(params);
   const db = useFirestore();
-  const { data: item, isLoading: isItemLoading } = useDoc<RadarItem>(
-    useMemoFirebase(() => (db ? doc(db, 'radarItems', params.id) : null), [db, params.id])
-  );
+  
+  const itemRef = useMemoFirebase(() => (db ? doc(db, 'radarItems', id) : null), [db, id]);
+  const { data: item, isLoading: isItemLoading } = useDoc<RadarItem>(itemRef);
 
   const experiencesQuery = useMemoFirebase(() => {
     if (!db) return null;
     return query(
       collection(db, 'experiences'),
-      where('toolLinks', 'array-contains', params.id),
+      where('toolLinks', 'array-contains', id),
       where('status', '==', 'Published'),
       orderBy('createdAt', 'desc')
     );
-  }, [db, params.id]);
+  }, [db, id]);
 
   const { data: relatedExperiences, isLoading: isExpLoading } = useCollection<Experience>(experiencesQuery);
 

@@ -1,34 +1,33 @@
 "use client";
 
-import React, { useMemo } from 'react';
+import React from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Button } from '@/components/ui/button';
 import { 
   ArrowLeft, 
-  Clock, 
   User as UserIcon, 
-  Building, 
   Award,
   ShieldCheck,
   Star,
-  ExternalLink,
   MessageSquare,
   Sparkles,
   Zap,
-  Tag
+  Tag,
+  ChevronRight
 } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDoc, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { Experience, RadarItem } from '@/app/lib/radar-types';
-import { collection, query, where, documentId } from 'firebase/firestore';
+import { collection, query, where, documentId, doc } from 'firebase/firestore';
 
-export default function ExperienceDetailPage({ params }: { params: { id: string } }) {
+export default function ExperienceDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = React.use(params);
   const db = useFirestore();
-  const { data: experience, isLoading: isExpLoading } = useDoc<Experience>(
-    useMemoFirebase(() => (db ? doc(db, 'experiences', params.id) : null), [db, params.id])
-  );
+  
+  const expRef = useMemoFirebase(() => (db ? doc(db, 'experiences', id) : null), [db, id]);
+  const { data: experience, isLoading: isExpLoading } = useDoc<Experience>(expRef);
 
   const toolsQuery = useMemoFirebase(() => {
     if (!db || !experience?.toolLinks?.length) return null;
@@ -54,7 +53,7 @@ export default function ExperienceDetailPage({ params }: { params: { id: string 
         <Navbar />
         <div className="container mx-auto px-6 py-32 text-center">
           <h1 className="text-4xl font-black mb-6">Experience Not Found</h1>
-          <Button asChild rounded-full px-8>
+          <Button asChild className="rounded-full px-8">
             <Link href="/experiences">Back to Feed</Link>
           </Button>
         </div>
@@ -156,7 +155,7 @@ export default function ExperienceDetailPage({ params }: { params: { id: string 
               </CardHeader>
               <CardContent className="p-12 space-y-12">
                 <div className="space-y-2">
-                  <div className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Contributor</div>
+                  <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Contributor</div>
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center">
                       <UserIcon className="w-6 h-6 text-primary" />
@@ -170,18 +169,18 @@ export default function ExperienceDetailPage({ params }: { params: { id: string 
 
                 <div className="grid grid-cols-2 gap-8">
                   <div className="space-y-2">
-                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Studio</div>
+                    <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Studio</div>
                     <div className="text-lg font-black tracking-tight">{experience.team}</div>
                   </div>
                   <div className="space-y-2">
-                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Date Logged</div>
+                    <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Date Logged</div>
                     <div className="text-lg font-black tracking-tight">{new Date(experience.createdAt).toLocaleDateString()}</div>
                   </div>
                 </div>
 
                 {experience.timeSavedHours && (
                   <div className="p-8 rounded-[2.5rem] bg-yellow-50 border-2 border-yellow-100 flex items-center justify-between">
-                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-yellow-700">Efficiency Gain</div>
+                    <div className="text-[10px] font-black uppercase tracking-widest text-yellow-700">Efficiency Gain</div>
                     <div className="text-3xl font-black text-yellow-700">+{experience.timeSavedHours}h</div>
                   </div>
                 )}
@@ -218,6 +217,3 @@ export default function ExperienceDetailPage({ params }: { params: { id: string 
     </div>
   );
 }
-
-import { doc } from 'firebase/firestore';
-import { ChevronRight } from 'lucide-react';

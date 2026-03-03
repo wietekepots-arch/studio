@@ -15,14 +15,17 @@ import {
 } from '@/components/ui/select';
 import { 
   DEFAULT_CONFIG, 
-  CostRange 
+  CostRange,
+  Origin
 } from '@/app/lib/radar-types';
 import { 
   Sparkles, 
   ArrowLeft, 
   Save, 
   Wand2,
-  HelpCircle
+  Leaf,
+  Shield,
+  Globe
 } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -45,6 +48,9 @@ export default function NewItemPage() {
     ringId: '2', // Default to Assess
     team: '',
     costRange: 'Low' as CostRange,
+    origin: 'European' as Origin,
+    sustainabilityNotes: '',
+    securityNotes: '',
     links: [''],
     tags: '',
   });
@@ -61,7 +67,7 @@ export default function NewItemPage() {
         itemName: formData.name,
         itemDescription: formData.notes,
         availableQuadrants: DEFAULT_CONFIG.quadrants,
-        availableTags: ['Frontend', 'Backend', 'Design', 'AI', 'DevOps']
+        availableTags: ['Sustainable', 'European', 'Privacy-First', 'GDPR']
       });
 
       const quadIdx = DEFAULT_CONFIG.quadrants.indexOf(result.suggestedQuadrant);
@@ -72,7 +78,7 @@ export default function NewItemPage() {
         tags: result.suggestedTags.join(', ')
       }));
 
-      toast({ title: "AI Success", description: "Updated quadrant and tags based on your description." });
+      toast({ title: "AI Success", description: "Updated focus area and tags." });
     } catch (e) {
       toast({ title: "AI Error", description: "Failed to categorize item.", variant: "destructive" });
     } finally {
@@ -94,7 +100,7 @@ export default function NewItemPage() {
       });
       
       setFormData(prev => ({ ...prev, shortDesc: result }));
-      toast({ title: "AI Success", description: "Generated short description." });
+      toast({ title: "AI Success", description: "Drafted summary." });
     } catch (e) {
       toast({ title: "AI Error", description: "Failed to generate summary.", variant: "destructive" });
     } finally {
@@ -105,9 +111,8 @@ export default function NewItemPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Simulation of save
     setTimeout(() => {
-      toast({ title: "Success", description: "Radar item created as Draft." });
+      toast({ title: "Proposal Submitted", description: "Your tool is now in review." });
       router.push('/');
     }, 1000);
   };
@@ -116,9 +121,9 @@ export default function NewItemPage() {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
+      <main className="container mx-auto px-4 py-8 max-w-5xl">
         <div className="mb-6">
-          <Button variant="ghost" asChild className="gap-2 -ml-2 text-muted-foreground">
+          <Button variant="ghost" asChild className="gap-2 -ml-2 text-muted-foreground font-bold hover:text-primary">
             <Link href="/">
               <ArrowLeft className="w-4 h-4" />
               Back to Radar
@@ -126,33 +131,36 @@ export default function NewItemPage() {
           </Button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
-          <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold text-primary">Propose New Item</h1>
+        <form onSubmit={handleSubmit} className="space-y-10">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-4xl font-black text-primary uppercase">Propose New Tool</h1>
+              <p className="text-muted-foreground font-medium">Help us evolve our digital craft.</p>
+            </div>
             <div className="flex gap-3">
-              <Button type="button" variant="outline" onClick={() => router.push('/')}>
+              <Button type="button" variant="outline" className="rounded-full px-6 font-bold" onClick={() => router.push('/')}>
                 Cancel
               </Button>
-              <Button type="submit" className="gap-2" disabled={loading}>
+              <Button type="submit" className="gap-2 rounded-full px-8 font-bold" disabled={loading}>
                 <Save className="w-4 h-4" />
-                Save as Draft
+                Submit Proposal
               </Button>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="md:col-span-2 space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Core Information</CardTitle>
-                  <CardDescription>Tell us about the technology or process.</CardDescription>
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+            <div className="md:col-span-8 space-y-8">
+              <Card className="rounded-3xl border-2 overflow-hidden shadow-sm">
+                <CardHeader className="bg-secondary/30">
+                  <CardTitle className="uppercase font-black tracking-widest text-sm">Core Identity</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="p-8 space-y-6">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Item Name</Label>
+                    <Label htmlFor="name" className="font-bold text-xs uppercase tracking-widest">Tool Name</Label>
                     <Input 
                       id="name" 
-                      placeholder="e.g. Next.js" 
+                      placeholder="e.g. Framer AI" 
+                      className="h-12 border-2 rounded-xl focus:ring-primary"
                       required 
                       value={formData.name}
                       onChange={e => setFormData({...formData, name: e.target.value})}
@@ -161,12 +169,12 @@ export default function NewItemPage() {
 
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
-                      <Label htmlFor="notes">Detailed Notes</Label>
+                      <Label htmlFor="notes" className="font-bold text-xs uppercase tracking-widest">Context & Experience</Label>
                       <Button 
                         type="button" 
                         variant="ghost" 
                         size="sm" 
-                        className="h-7 text-accent gap-1"
+                        className="h-7 text-primary gap-1 font-bold rounded-full"
                         onClick={handleAiCategorize}
                         disabled={aiLoading}
                       >
@@ -176,8 +184,8 @@ export default function NewItemPage() {
                     </div>
                     <Textarea 
                       id="notes" 
-                      placeholder="Describe what it is, why we should care, and any relevant experience." 
-                      className="min-h-[150px]"
+                      placeholder="Why should this be on our radar? What progress does it enable?" 
+                      className="min-h-[150px] border-2 rounded-xl font-medium"
                       required
                       value={formData.notes}
                       onChange={e => setFormData({...formData, notes: e.target.value})}
@@ -186,12 +194,12 @@ export default function NewItemPage() {
 
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
-                      <Label htmlFor="shortDesc">Short Description</Label>
+                      <Label htmlFor="shortDesc" className="font-bold text-xs uppercase tracking-widest">Progress Summary</Label>
                       <Button 
                         type="button" 
                         variant="ghost" 
                         size="sm" 
-                        className="h-7 text-accent gap-1"
+                        className="h-7 text-primary gap-1 font-bold rounded-full"
                         onClick={handleAiSummarize}
                         disabled={aiLoading}
                       >
@@ -201,7 +209,8 @@ export default function NewItemPage() {
                     </div>
                     <Input 
                       id="shortDesc" 
-                      placeholder="One sentence summary for list views" 
+                      placeholder="One powerful sentence..." 
+                      className="h-12 border-2 rounded-xl"
                       required
                       value={formData.shortDesc}
                       onChange={e => setFormData({...formData, shortDesc: e.target.value})}
@@ -210,48 +219,49 @@ export default function NewItemPage() {
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Resources & Links</CardTitle>
+              <Card className="rounded-3xl border-2 overflow-hidden shadow-sm">
+                <CardHeader className="bg-secondary/30">
+                  <CardTitle className="uppercase font-black tracking-widest text-sm">Impact Analysis</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>External Links (Docs, Vendor, Repo)</Label>
-                    {formData.links.map((link, idx) => (
-                      <Input 
-                        key={idx} 
-                        placeholder="https://..." 
-                        value={link}
-                        onChange={e => {
-                          const newLinks = [...formData.links];
-                          newLinks[idx] = e.target.value;
-                          setFormData({...formData, links: newLinks});
-                        }}
+                <CardContent className="p-8 space-y-6">
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2 font-bold text-xs uppercase tracking-widest">
+                        <Leaf className="w-4 h-4 text-primary" /> Sustainability Report
+                      </Label>
+                      <Textarea 
+                        placeholder="Describe the environmental impact or energy efficiency." 
+                        className="border-2 rounded-xl font-medium"
+                        value={formData.sustainabilityNotes}
+                        onChange={e => setFormData({...formData, sustainabilityNotes: e.target.value})}
                       />
-                    ))}
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => setFormData({...formData, links: [...formData.links, '']})}
-                    >
-                      Add Another Link
-                    </Button>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2 font-bold text-xs uppercase tracking-widest">
+                        <Shield className="w-4 h-4 text-primary" /> Security & Privacy
+                      </Label>
+                      <Textarea 
+                        placeholder="GDPR compliance, data isolation, certifications." 
+                        className="border-2 rounded-xl font-medium"
+                        value={formData.securityNotes}
+                        onChange={e => setFormData({...formData, securityNotes: e.target.value})}
+                      />
+                    </div>
                   </div>
                 </CardContent>
               </Card>
             </div>
 
-            <div className="space-y-6">
-              <Card>
+            <div className="md:col-span-4 space-y-8">
+              <Card className="rounded-3xl border-2 shadow-sm">
                 <CardHeader>
-                  <CardTitle>Placement</CardTitle>
+                  <CardTitle className="uppercase font-black tracking-widest text-xs">Placement</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-6">
                   <div className="space-y-2">
-                    <Label>Quadrant</Label>
+                    <Label className="font-bold text-[10px] uppercase">Focus Area</Label>
                     <Select value={formData.quadrantId} onValueChange={val => setFormData({...formData, quadrantId: val})}>
-                      <SelectTrigger>
+                      <SelectTrigger className="rounded-xl border-2">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -263,12 +273,9 @@ export default function NewItemPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <div className="flex items-center gap-1">
-                      <Label>Ring</Label>
-                      <HelpCircle className="w-3 h-3 text-muted-foreground" />
-                    </div>
+                    <Label className="font-bold text-[10px] uppercase">Trial Ring</Label>
                     <Select value={formData.ringId} onValueChange={val => setFormData({...formData, ringId: val})}>
-                      <SelectTrigger>
+                      <SelectTrigger className="rounded-xl border-2">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -280,40 +287,48 @@ export default function NewItemPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Tags (Comma separated)</Label>
-                    <Input 
-                      placeholder="e.g. AI, React, Design" 
-                      value={formData.tags}
-                      onChange={e => setFormData({...formData, tags: e.target.value})}
-                    />
+                    <Label className="font-bold text-[10px] uppercase flex items-center gap-1">
+                      <Globe className="w-3 h-3" /> Origin
+                    </Label>
+                    <Select value={formData.origin} onValueChange={val => setFormData({...formData, origin: val as Origin})}>
+                      <SelectTrigger className="rounded-xl border-2">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="European">European</SelectItem>
+                        <SelectItem value="American">American</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="rounded-3xl border-2 shadow-sm">
                 <CardHeader>
-                  <CardTitle>Details</CardTitle>
+                  <CardTitle className="uppercase font-black tracking-widest text-xs">Commercials</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-6">
                   <div className="space-y-2">
-                    <Label>Cost Range</Label>
+                    <Label className="font-bold text-[10px] uppercase">Investment Level</Label>
                     <Select value={formData.costRange} onValueChange={val => setFormData({...formData, costRange: val as CostRange})}>
-                      <SelectTrigger>
+                      <SelectTrigger className="rounded-xl border-2">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Free">Free / Open Source</SelectItem>
+                        <SelectItem value="Free">Free / Progress First</SelectItem>
                         <SelectItem value="Low">Low Cost</SelectItem>
                         <SelectItem value="Medium">Medium Cost</SelectItem>
-                        <SelectItem value="High">Enterprise / High Cost</SelectItem>
+                        <SelectItem value="High">Enterprise</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Relevant Team / Discipline</Label>
+                    <Label className="font-bold text-[10px] uppercase">Responsible Team</Label>
                     <Input 
-                      placeholder="e.g. Frontend Engineering" 
+                      placeholder="e.g. Creative Strategy" 
+                      className="rounded-xl border-2"
                       value={formData.team}
                       onChange={e => setFormData({...formData, team: e.target.value})}
                     />

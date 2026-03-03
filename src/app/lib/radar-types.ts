@@ -15,6 +15,7 @@ export interface RadarConfig {
 
 export type ItemStatus = 'Draft' | 'In Review' | 'Approved' | 'Archived';
 export type CostRange = 'Free' | 'Low' | 'Medium' | 'High';
+export type Origin = 'European' | 'American' | 'Other';
 
 export interface RadarItem {
   id: string;
@@ -34,6 +35,9 @@ export interface RadarItem {
     risk: number;
   };
   costRange: CostRange;
+  origin: Origin;
+  sustainabilityNotes: string;
+  securityNotes: string;
   links: string[];
   status: ItemStatus;
   lastReviewedAt: number;
@@ -65,10 +69,10 @@ export interface HistoryEntry {
 
 export const DEFAULT_CONFIG: RadarConfig = {
   quadrants: [
-    "Tools & Platforms",
-    "Methods & Workflow",
-    "Data & Governance",
-    "Delivery & Client Impact"
+    "Creation & Craft",
+    "Strategy & Intelligence",
+    "Process & Flow",
+    "Positive Impact"
   ],
   rings: [
     "Adopt",

@@ -13,8 +13,7 @@ import {
   ArrowRight,
   ShieldCheck,
   ArrowUpRight,
-  Sparkles,
-  Info
+  Sparkles
 } from 'lucide-react';
 import { 
   RadarItem, 
@@ -26,170 +25,112 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const MOCK_ITEMS: RadarItem[] = [
   {
-    id: '1',
+    id: 'claude-3-5',
     name: 'Claude 3.5 Sonnet',
-    shortDesc: 'Legacy reasoning model by Anthropic.',
-    notes: 'Surpassed by 4.6 version. Retained for historical comparison and legacy workflows.',
+    shortDesc: 'High-performance reasoning model.',
+    notes: 'Legacy support for existing workflows. Superseded by newer models for primary production.',
     quadrantId: 0,
     ringId: 3, // HOLD
     previousRingId: 0,
     tags: ['LLM', 'Anthropic', 'Legacy'],
     team: 'Creative Tech',
-    ownerId: 'u1',
-    ownerName: 'Jane Smith',
+    ownerId: 'admin-1',
+    ownerName: 'Greenberry Admin',
     scores: { maturity: 5, impact: 3, effort: 1, risk: 2 },
     costRange: 'Medium',
     origin: 'American',
-    sustainabilityNotes: 'Standard LLM energy footprint.',
-    securityNotes: 'Enterprise Tier safety verified.',
-    links: ['https://claude.ai'],
+    sustainabilityNotes: 'Standard inference footprint.',
+    securityNotes: 'Enterprise safety verified.',
+    links: ['https://anthropic.com'],
     status: 'Approved',
     lastReviewedAt: Date.now(),
     createdAt: Date.now() - 30000000,
     updatedAt: Date.now(),
     updatedBy: 'Admin',
     history: [
-      { id: 'h1', itemId: '1', action: 'Moved to Hold', note: 'Outdated model', createdAt: Date.now(), createdBy: 'Admin' }
+      { id: 'h1', itemId: 'claude-3-5', action: 'Moved to Hold', note: 'Outdated model', createdAt: Date.now(), createdBy: 'Admin' }
+    ],
+    pricingTiers: [
+      { name: 'Individual', cost: 'Free', features: ['Basic usage', 'Standard support'] },
+      { name: 'Pro', cost: '$20', billing: 'per user/month', features: ['High limits', 'Priority access', 'Latest features'] }
     ]
   },
   {
-    id: '12',
+    id: 'claude-4-6',
     name: 'Claude 4.6 Sonnet',
-    shortDesc: 'Latest flagship intelligence by Anthropic.',
-    notes: 'Significantly enhanced coding and creative reasoning. Our current primary recommendation.',
-    quadrantId: 1, // Strategy & Intelligence
+    shortDesc: 'Latest intelligence flagship.',
+    notes: 'Primary recommendation for reasoning and complex coding tasks.',
+    quadrantId: 1,
     ringId: 0, // ADOPT
     tags: ['LLM', 'Anthropic', 'Flagship'],
     team: 'Creative Tech',
-    ownerId: 'u1',
-    ownerName: 'Jane Smith',
+    ownerId: 'admin-1',
+    ownerName: 'Greenberry Admin',
     scores: { maturity: 5, impact: 5, effort: 1, risk: 2 },
     costRange: 'Medium',
     origin: 'American',
-    sustainabilityNotes: 'Improved tokens-per-watt over 3.5.',
-    securityNotes: 'Anthropic Constitution AI baked in.',
-    links: [],
+    sustainabilityNotes: 'Optimized efficiency metrics.',
+    securityNotes: 'Full privacy compliance.',
+    links: ['https://anthropic.com'],
     status: 'Approved',
     lastReviewedAt: Date.now(),
-    createdAt: Date.now(), // NEW
+    createdAt: Date.now(),
     updatedAt: Date.now(),
-    updatedBy: 'u1'
+    updatedBy: 'Admin',
+    pricingTiers: [
+      { name: 'Developer', cost: 'Usage-based', billing: 'per million tokens', features: ['API Access', 'Enterprise Support'] },
+      { name: 'Pro', cost: '$20', billing: 'per month', features: ['Unlimited Web Access', 'Team workspace'] }
+    ]
   },
   {
     id: 'transcriptor',
     name: 'Transcriptor',
-    shortDesc: 'High-fidelity audio intelligence for agency meetings.',
-    notes: 'Excellent Dutch language support for transcribing stakeholder interviews.',
-    quadrantId: 2, // Process & Flow
-    ringId: 0, // ADOPT
+    shortDesc: 'Meeting intelligence for studios.',
+    notes: 'Excellent support for Dutch language and studio-wide integration.',
+    quadrantId: 2,
+    ringId: 0,
     tags: ['Audio', 'Productivity', 'EU'],
     team: 'Operations',
-    ownerId: 'u3',
-    ownerName: 'Mark van Dijk',
+    ownerId: 'admin-1',
+    ownerName: 'Admin',
     scores: { maturity: 4, impact: 4, effort: 2, risk: 1 },
     costRange: 'Low',
     origin: 'European',
-    sustainabilityNotes: 'Lightweight inference compared to video models.',
-    securityNotes: 'EU-hosted, fully GDPR compliant.',
+    sustainabilityNotes: 'Low energy overhead.',
+    securityNotes: 'EU-hosted, GDPR compliant.',
     links: [],
     status: 'Approved',
     lastReviewedAt: Date.now(),
     createdAt: Date.now() - 1000000,
     updatedAt: Date.now(),
-    updatedBy: 'u3'
+    updatedBy: 'Admin',
+    pricingTiers: [
+      { name: 'Starter', cost: 'Free', features: ['10h per month', 'Basic export'] },
+      { name: 'Business', cost: '€12', billing: 'per seat/month', features: ['Unlimited hours', 'Team sharing', 'AI Summaries'] }
+    ]
   },
   {
     id: 'firebase-studio',
     name: 'Firebase Studio',
-    shortDesc: 'AI-assisted rapid app prototyping and hosting.',
-    notes: 'Our primary environment for building progress-focused internal tools.',
-    quadrantId: 0, // Creation & Craft
-    ringId: 0, // ADOPT
-    tags: ['Prototyping', 'Google', 'Cloud'],
+    shortDesc: 'Rapid prototyping environment.',
+    notes: 'Our core platform for building internal tools and MVPs.',
+    quadrantId: 0,
+    ringId: 0,
+    tags: ['Prototyping', 'Cloud'],
     team: 'Engineering',
-    ownerId: 'u4',
-    ownerName: 'Sophie de Boer',
+    ownerId: 'admin-1',
+    ownerName: 'Admin',
     scores: { maturity: 5, impact: 5, effort: 1, risk: 1 },
     costRange: 'Medium',
     origin: 'American',
-    sustainabilityNotes: 'Managed by Google Cloud with net-zero commitments.',
-    securityNotes: 'Enterprise security rules and Auth integration.',
+    sustainabilityNotes: 'Google Cloud managed.',
+    securityNotes: 'Enterprise Auth & Rules.',
     links: [],
     status: 'Approved',
     lastReviewedAt: Date.now(),
     createdAt: Date.now() - 5000000,
     updatedAt: Date.now(),
-    updatedBy: 'u4'
-  },
-  {
-    id: 'google-stitch',
-    name: 'Google Stitch',
-    shortDesc: 'Next-gen video generation for creative storytelling.',
-    notes: 'Assessing for marketing content and early-stage visualization.',
-    quadrantId: 0, // Creation & Craft
-    ringId: 2, // ASSESS
-    tags: ['Video', 'Generative', 'Google'],
-    team: 'Creative Tech',
-    ownerId: 'u4',
-    ownerName: 'Sophie de Boer',
-    scores: { maturity: 3, impact: 5, effort: 3, risk: 3 },
-    costRange: 'High',
-    origin: 'American',
-    sustainabilityNotes: 'High compute requirements; use sparingly.',
-    securityNotes: 'Workspace enterprise privacy tier required.',
-    links: [],
-    status: 'In Review',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 200000, // NEW
-    updatedAt: Date.now(),
-    updatedBy: 'u4'
-  },
-  {
-    id: '3',
-    name: 'Figma AI',
-    shortDesc: 'Generative design features inside Figma.',
-    notes: 'Speeds up layout exploration and component generation significantly.',
-    quadrantId: 0, // Creation & Craft
-    ringId: 0, // ADOPT
-    tags: ['Design', 'UI', 'Generative'],
-    team: 'Product Design',
-    ownerId: 'u2',
-    ownerName: 'Dave Miller',
-    scores: { maturity: 4, impact: 5, effort: 1, risk: 1 },
-    costRange: 'Medium',
-    origin: 'American',
-    sustainabilityNotes: 'Cloud processing via Figma infra.',
-    securityNotes: 'Training toggle available for enterprise.',
-    links: ['https://figma.com/ai'],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 4000000,
-    updatedAt: Date.now(),
-    updatedBy: 'u2'
-  },
-  {
-    id: 'lovable',
-    name: 'Lovable',
-    shortDesc: 'Full-stack AI app builder.',
-    notes: 'Moved from Assess to Trial after successful internal MVP pilot.',
-    quadrantId: 0,
-    ringId: 1, // TRIAL
-    previousRingId: 2, // MOVED
-    tags: ['App Builder', 'EU', 'MVP'],
-    team: 'Strategy',
-    ownerId: 'u1',
-    ownerName: 'Jane Smith',
-    scores: { maturity: 3, impact: 4, effort: 2, risk: 2 },
-    costRange: 'Medium',
-    origin: 'European',
-    sustainabilityNotes: 'Stockholm-based team.',
-    securityNotes: 'Reviewing data isolation policies.',
-    links: ['https://lovable.dev'],
-    status: 'In Review',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 2000000,
-    updatedAt: Date.now(),
-    updatedBy: 'u1'
+    updatedBy: 'Admin'
   }
 ];
 

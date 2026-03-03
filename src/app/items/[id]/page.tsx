@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Button } from '@/components/ui/button';
 import { 
   ArrowLeft, 
-  MessageSquare, 
   History, 
   Edit,
   MoreVertical,
@@ -18,13 +17,24 @@ import {
   Info,
   Zap,
   Star,
-  Plus
+  Plus,
+  CreditCard,
+  CheckCircle2,
+  ChevronRight
 } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from '@/components/ui/table';
 import { DEFAULT_CONFIG, RadarItem, Experience } from '@/app/lib/radar-types';
 import { 
   DropdownMenu,
@@ -70,7 +80,7 @@ export default function ItemDetailPage({ params }: { params: { id: string } }) {
         <Navbar />
         <div className="flex-1 flex flex-col items-center justify-center space-y-4">
           <h1 className="text-4xl font-black">Tool Not Found</h1>
-          <Button asChild rounded-full px-8>
+          <Button asChild className="rounded-full px-8">
             <Link href="/">Back to Radar</Link>
           </Button>
         </div>
@@ -150,7 +160,7 @@ export default function ItemDetailPage({ params }: { params: { id: string } }) {
                   </div>
                 </CardHeader>
                 <CardContent className="text-lg font-bold text-foreground/80">
-                  {item.sustainabilityNotes ? 'Critical Pulse' : 'Assessment Pending'}
+                  {item.sustainabilityNotes || 'Assessment Pending'}
                 </CardContent>
               </Card>
               <Card className="border-none rounded-[3rem] bg-secondary/20 p-4 shadow-none">
@@ -160,7 +170,7 @@ export default function ItemDetailPage({ params }: { params: { id: string } }) {
                   </div>
                 </CardHeader>
                 <CardContent className="text-lg font-bold text-foreground/80">
-                  {item.securityNotes ? 'Governance Logged' : 'Review Required'}
+                  {item.securityNotes || 'Review Required'}
                 </CardContent>
               </Card>
               <Card className="border-none rounded-[3rem] bg-secondary/20 p-4 shadow-none">
@@ -179,18 +189,86 @@ export default function ItemDetailPage({ params }: { params: { id: string } }) {
               <Tabs defaultValue="overview" className="w-full">
                 <TabsList className="bg-secondary/40 p-2 rounded-full h-16 w-full md:w-auto justify-start inline-flex">
                   <TabsTrigger value="overview" className="gap-3 rounded-full px-10 font-black uppercase tracking-widest text-[10px] transition-all data-[state=active]:bg-primary data-[state=active]:text-white">Overview</TabsTrigger>
+                  <TabsTrigger value="pricing" className="gap-3 rounded-full px-10 font-black uppercase tracking-widest text-[10px] transition-all data-[state=active]:bg-primary data-[state=active]:text-white">
+                    <CreditCard className="w-3.5 h-3.5" /> Pricing
+                  </TabsTrigger>
                   <TabsTrigger value="experiences" className="gap-3 rounded-full px-10 font-black uppercase tracking-widest text-[10px] transition-all data-[state=active]:bg-primary data-[state=active]:text-white">
                     <Sparkles className="w-3.5 h-3.5" /> Experiences ({relatedExperiences?.length || 0})
                   </TabsTrigger>
-                  <TabsTrigger value="impact" className="gap-3 rounded-full px-10 font-black uppercase tracking-widest text-[10px] transition-all data-[state=active]:bg-primary data-[state=active]:text-white">Impact</TabsTrigger>
                   <TabsTrigger value="history" className="gap-3 rounded-full px-10 font-black uppercase tracking-widest text-[10px] transition-all data-[state=active]:bg-primary data-[state=active]:text-white">
                     <History className="w-3.5 h-3.5" /> History
                   </TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="overview" className="pt-16">
-                  <div className="prose prose-2xl max-w-none text-foreground/90 leading-relaxed font-medium">
+                  <div className="prose prose-2xl max-w-none text-foreground/90 leading-relaxed font-medium whitespace-pre-wrap">
                     {item.notes}
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="pricing" className="pt-16">
+                  <div className="space-y-12">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                      <div>
+                        <h3 className="text-4xl font-black uppercase tracking-tighter">Investment <span className="text-primary">Tiers</span></h3>
+                        <p className="text-muted-foreground font-medium">Commercial structure for {item.name}.</p>
+                      </div>
+                      <Badge variant="secondary" className="rounded-full px-6 h-10 font-bold uppercase tracking-widest text-[10px]">
+                        Category: {item.costRange}
+                      </Badge>
+                    </div>
+
+                    <Card className="rounded-[3rem] border-none bg-secondary/10 overflow-hidden">
+                      <Table>
+                        <TableHeader className="bg-primary/5">
+                          <TableRow className="hover:bg-transparent border-none">
+                            <TableHead className="w-[200px] font-black uppercase tracking-widest text-[10px] text-primary p-8">Tier</TableHead>
+                            <TableHead className="font-black uppercase tracking-widest text-[10px] text-primary p-8">Investment</TableHead>
+                            <TableHead className="font-black uppercase tracking-widest text-[10px] text-primary p-8">Key Progress Enablers</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {item.pricingTiers && item.pricingTiers.length > 0 ? (
+                            item.pricingTiers.map((tier, idx) => (
+                              <TableRow key={idx} className="border-secondary hover:bg-white/40 transition-colors">
+                                <TableCell className="font-black text-xl p-8">{tier.name}</TableCell>
+                                <TableCell className="p-8">
+                                  <div className="flex flex-col">
+                                    <span className="text-2xl font-black text-primary">{tier.cost}</span>
+                                    {tier.billing && <span className="text-xs font-bold text-muted-foreground uppercase">{tier.billing}</span>}
+                                  </div>
+                                </TableCell>
+                                <TableCell className="p-8">
+                                  <ul className="space-y-2">
+                                    {tier.features.map((feature, fIdx) => (
+                                      <li key={fIdx} className="flex items-center gap-3 text-sm font-medium">
+                                        <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
+                                        {feature}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          ) : (
+                            <TableRow>
+                              <TableCell colSpan={3} className="p-16 text-center text-muted-foreground font-medium italic">
+                                Detailed pricing matrix pending review. See official site for latest commercials.
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </Card>
+                    
+                    <div className="flex justify-center">
+                      <Button asChild variant="outline" className="rounded-full border-2 gap-2 h-14 px-10 font-black uppercase tracking-widest text-[10px]">
+                        <a href={item.links?.[0] || '#'} target="_blank" rel="noopener noreferrer">
+                          View Vendor Details
+                          <ArrowUpRight className="w-4 h-4" />
+                        </a>
+                      </Button>
+                    </div>
                   </div>
                 </TabsContent>
 
@@ -251,39 +329,25 @@ export default function ItemDetailPage({ params }: { params: { id: string } }) {
                   )}
                 </TabsContent>
 
-                <TabsContent value="impact" className="pt-16 space-y-12">
-                  <div className="space-y-12">
-                    <div className="p-10 rounded-[3rem] bg-secondary/10 border-none">
-                      <h4 className="text-primary font-black uppercase tracking-[0.25em] text-xs mb-8 flex items-center gap-4">
-                        <Leaf className="w-8 h-8" /> Sustainability Review
-                      </h4>
-                      <p className="text-3xl leading-snug font-medium text-foreground/80">{item.sustainabilityNotes}</p>
-                    </div>
-                    
-                    <div className="p-10 rounded-[3rem] bg-secondary/10 border-none">
-                      <h4 className="text-primary font-black uppercase tracking-[0.25em] text-xs mb-8 flex items-center gap-4">
-                        <Shield className="w-8 h-8" /> Security & Privacy
-                      </h4>
-                      <p className="text-3xl leading-snug font-medium text-foreground/80">{item.securityNotes}</p>
-                    </div>
-                  </div>
-                </TabsContent>
-
                 <TabsContent value="history" className="pt-16">
                   <div className="space-y-8">
-                    {item.history?.map((entry, idx) => (
-                      <div key={entry.id} className="relative pl-12 pb-12 last:pb-0 border-l-2 border-secondary/40 last:border-transparent">
-                        <div className="absolute left-[-9px] top-0 w-4 h-4 rounded-full bg-primary" />
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <span className="text-2xl font-black uppercase tracking-tighter">{entry.action}</span>
-                            <span className="text-sm font-black text-muted-foreground uppercase tracking-widest">{new Date(entry.createdAt).toLocaleDateString()}</span>
+                    {item.history && item.history.length > 0 ? (
+                      item.history.map((entry, idx) => (
+                        <div key={entry.id} className="relative pl-12 pb-12 last:pb-0 border-l-2 border-secondary/40 last:border-transparent">
+                          <div className="absolute left-[-9px] top-0 w-4 h-4 rounded-full bg-primary" />
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-2xl font-black uppercase tracking-tighter">{entry.action}</span>
+                              <span className="text-sm font-black text-muted-foreground uppercase tracking-widest">{new Date(entry.createdAt).toLocaleDateString()}</span>
+                            </div>
+                            <p className="text-xl text-muted-foreground/80 font-medium italic">"{entry.note}"</p>
+                            <div className="text-[10px] font-black uppercase tracking-widest opacity-50">By {entry.createdBy}</div>
                           </div>
-                          <p className="text-xl text-muted-foreground/80 font-medium italic">"{entry.note}"</p>
-                          <div className="text-[10px] font-black uppercase tracking-widest opacity-50">By {entry.createdBy}</div>
                         </div>
-                      </div>
-                    ))}
+                      ))
+                    ) : (
+                      <div className="text-center py-20 text-muted-foreground font-medium italic">No lifecycle entries yet.</div>
+                    )}
                   </div>
                 </TabsContent>
               </Tabs>
@@ -336,5 +400,3 @@ export default function ItemDetailPage({ params }: { params: { id: string } }) {
     </div>
   );
 }
-
-import { ChevronRight } from 'lucide-react';

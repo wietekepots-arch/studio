@@ -18,6 +18,13 @@ export type CostRange = 'Free' | 'Low' | 'Medium' | 'High';
 export type Origin = 'European' | 'American' | 'Other';
 export type DataSensitivity = 'Public' | 'Internal' | 'Client Confidential';
 
+export interface PricingTier {
+  name: string;
+  cost: string;
+  billing?: string; // e.g. "per month", "per user/month"
+  features: string[];
+}
+
 export interface HistoryEntry {
   id: string;
   itemId: string;
@@ -51,6 +58,7 @@ export interface RadarItem {
   origin: Origin;
   sustainabilityNotes: string;
   securityNotes: string;
+  pricingTiers?: PricingTier[];
   links: string[];
   status: ItemStatus;
   lastReviewedAt: number;

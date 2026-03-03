@@ -55,14 +55,14 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
   const { data: item, isLoading: isItemLoading } = useDoc<RadarItem>(itemRef);
 
   const experiencesQuery = useMemoFirebase(() => {
-    if (!db) return null;
+    if (!db || !user) return null;
     return query(
       collection(db, 'experiences'),
       where('toolLinks', 'array-contains', id),
       where('status', '==', 'Published'),
       orderBy('createdAt', 'desc')
     );
-  }, [db, id]);
+  }, [db, id, user]);
 
   const { data: relatedExperiences, isLoading: isExpLoading } = useCollection<Experience>(experiencesQuery);
 

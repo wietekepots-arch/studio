@@ -50,9 +50,9 @@ export default function NewExperiencePage() {
   const [toolSearch, setToolSearch] = useState('');
   
   const toolsQuery = useMemoFirebase(() => {
-    if (!db) return null;
+    if (!db || !user) return null;
     return query(collection(db, 'radarItems'), where('status', '==', 'Approved'));
-  }, [db]);
+  }, [db, user]);
 
   const { data: allTools } = useCollection<RadarItem>(toolsQuery);
 

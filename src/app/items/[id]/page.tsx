@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Button } from '@/components/ui/button';
 import { 
@@ -50,6 +50,11 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
   const { id } = React.use(params);
   const db = useFirestore();
   const { user, isUserLoading } = useUser();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   
   // Gate the reference creation behind the user object to avoid unauthorized requests
   const itemRef = useMemoFirebase(() => (db && user ? doc(db, 'radarItems', id) : null), [db, user, id]);
@@ -67,6 +72,11 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
   }, [db, id, user]);
 
   const { data: relatedExperiences, isLoading: isExpLoading } = useCollection<Experience>(experiencesQuery);
+
+  const formatDate = (timestamp: number) => {
+    if (!mounted) return "";
+    return new Date(timestamp).toLocaleDateString();
+  };
 
   if (isUserLoading || isItemLoading) {
     return (
@@ -364,7 +374,7 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
                           <div className="space-y-2">
                             <div className="flex items-center justify-between">
                               <span className="text-2xl font-black uppercase tracking-tighter">{entry.action}</span>
-                              <span className="text-sm font-black text-muted-foreground uppercase tracking-widest">{new Date(entry.createdAt).toLocaleDateString()}</span>
+                              <span className="text-sm font-black text-muted-foreground uppercase tracking-widest">{formatDate(entry.createdAt)}</span>
                             </div>
                             <p className="text-xl text-muted-foreground/80 font-medium italic">"{entry.note}"</p>
                             <div className="text-[10px] font-black uppercase tracking-widest opacity-50">By {entry.createdBy}</div>
@@ -416,7 +426,7 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
                 </div>
                 <div className="space-y-1">
                   <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Added to Radar</div>
-                  <div className="text-xl font-bold">{new Date(item.createdAt).toLocaleDateString()}</div>
+                  <div className="text-xl font-bold">{formatDate(item.createdAt)}</div>
                 </div>
               </div>
             </div>

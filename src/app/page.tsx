@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { RadarChart } from '@/components/radar/RadarChart';
 import { Input } from '@/components/ui/input';
@@ -43,12 +43,12 @@ const MOCK_ITEMS: RadarItem[] = [
     securityNotes: 'Enterprise safety verified.',
     links: ['https://anthropic.com'],
     status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 30000000,
-    updatedAt: Date.now(),
+    lastReviewedAt: 1740960000000,
+    createdAt: 1730960000000,
+    updatedAt: 1740960000000,
     updatedBy: 'Admin',
     history: [
-      { id: 'h1', itemId: 'claude-3-5', action: 'Moved to Hold', note: 'Outdated model', createdAt: Date.now(), createdBy: 'Admin' }
+      { id: 'h1', itemId: 'claude-3-5', action: 'Moved to Hold', note: 'Outdated model', createdAt: 1740960000000, createdBy: 'Admin' }
     ],
     pricingTiers: [
       { name: 'Individual', cost: 'Free', features: ['Basic usage', 'Standard support'] },
@@ -73,9 +73,9 @@ const MOCK_ITEMS: RadarItem[] = [
     securityNotes: 'Full privacy compliance.',
     links: ['https://anthropic.com'],
     status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
+    lastReviewedAt: 1740960000000,
+    createdAt: 1740960000000,
+    updatedAt: 1740960000000,
     updatedBy: 'Admin',
     pricingTiers: [
       { name: 'Developer', cost: 'Usage-based', billing: 'per million tokens', features: ['API Access', 'Enterprise Support'] },
@@ -100,9 +100,9 @@ const MOCK_ITEMS: RadarItem[] = [
     securityNotes: 'EU-hosted, GDPR compliant.',
     links: [],
     status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 1000000,
-    updatedAt: Date.now(),
+    lastReviewedAt: 1740960000000,
+    createdAt: 1740960000000,
+    updatedAt: 1740960000000,
     updatedBy: 'Admin',
     pricingTiers: [
       { name: 'Starter', cost: 'Free', features: ['10h per month', 'Basic export'] },
@@ -127,9 +127,9 @@ const MOCK_ITEMS: RadarItem[] = [
     securityNotes: 'Enterprise Auth & Rules.',
     links: [],
     status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 5000000,
-    updatedAt: Date.now(),
+    lastReviewedAt: 1740960000000,
+    createdAt: 1740960000000,
+    updatedAt: 1740960000000,
     updatedBy: 'Admin'
   }
 ];
@@ -138,6 +138,11 @@ export default function Home() {
   const [search, setSearch] = useState('');
   const [activeQuadrant, setActiveQuadrant] = useState<number | undefined>();
   const [activeRing, setActiveRing] = useState<number | undefined>();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const filteredItems = useMemo(() => {
     return MOCK_ITEMS.filter(item => {
@@ -165,6 +170,11 @@ export default function Home() {
 
   const hasItemMoved = (item: RadarItem) => {
     return item.previousRingId !== undefined && item.previousRingId !== item.ringId;
+  };
+
+  const formatDate = (timestamp: number) => {
+    if (!mounted) return "";
+    return new Date(timestamp).toLocaleDateString();
   };
 
   return (
@@ -294,7 +304,7 @@ export default function Home() {
                       </div>
                       <div className="flex items-center gap-3 text-[10px] text-muted-foreground font-black uppercase tracking-widest">
                         <Clock className="w-3 h-3" />
-                        {new Date(item.updatedAt).toLocaleDateString()}
+                        {formatDate(item.updatedAt)}
                         <div className="w-1 h-1 rounded-full bg-border" />
                         {DEFAULT_CONFIG.rings[item.ringId]}
                       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -26,6 +26,11 @@ export default function ExperiencesPage() {
   const [activeTeam, setActiveTeam] = useState<string | undefined>();
   const db = useFirestore();
   const { user, isUserLoading } = useUser();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const experiencesQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -52,6 +57,11 @@ export default function ExperiencesPage() {
     if (!experiences) return [];
     return Array.from(new Set(experiences.map(e => e.team)));
   }, [experiences]);
+
+  const formatDate = (timestamp: number) => {
+    if (!mounted) return "";
+    return new Date(timestamp).toLocaleDateString();
+  };
 
   if (isUserLoading) {
     return (
@@ -188,7 +198,7 @@ export default function ExperiencesPage() {
                           </div>
                           <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
                             <span className="flex items-center gap-2"><UserIcon className="w-3.5 h-3.5" /> {exp.creatorName || 'Member'}</span>
-                            <span className="flex items-center gap-2"><Clock className="w-3.5 h-3.5" /> {new Date(exp.createdAt).toLocaleDateString()}</span>
+                            <span className="flex items-center gap-2"><Clock className="w-3.5 h-3.5" /> {formatDate(exp.createdAt)}</span>
                           </div>
                         </div>
                       </CardContent>

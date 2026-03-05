@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -9,20 +10,21 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { useAuth, useUser } from '@/firebase';
 import { initiateAnonymousSignIn, initiateEmailSignIn, initiateGoogleSignIn } from '@/firebase/non-blocking-login';
 import { useRouter } from 'next/navigation';
-import { Sparkles, ShieldCheck, Zap, LogIn, Loader2 } from 'lucide-react';
+import { Sparkles, ShieldCheck, Zap, LogIn, Loader2, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { signOut } from 'firebase/auth';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [setupError, setSetupError] = useState(false);
   const auth = useAuth();
   const router = useRouter();
   const { user } = useUser();
   const { toast } = useToast();
 
-  // Domain restriction check
   useEffect(() => {
     if (user) {
       const isGreenberry = user.email?.endsWith('@greenberry.nl');
@@ -46,9 +48,10 @@ export default function LoginPage() {
     console.error("Auth Error:", error);
     
     if (error.code === 'auth/operation-not-allowed') {
+      setSetupError(true);
       toast({
-        title: "Sign-in Disabled",
-        description: "This authentication method is not yet enabled in the Firebase Console. Please enable Google, Anonymous, and Email providers.",
+        title: "Action Required",
+        description: "Authentication providers are not yet enabled in your Firebase Console.",
         variant: "destructive"
       });
     } else {
@@ -93,6 +96,25 @@ export default function LoginPage() {
               Access the Greenberry AI Radar to track, propose, and log strategic technological progress.
             </p>
             
+            {setupError && (
+              <Alert variant="destructive" className="border-2 rounded-3xl bg-destructive/5">
+                <AlertCircle className="h-5 w-5" />
+                <AlertTitle className="font-black uppercase tracking-widest text-xs mb-2">Setup Required</AlertTitle>
+                <AlertDescription className="text-sm font-medium leading-relaxed">
+                  Sign-in providers must be enabled in the Firebase Console. 
+                  <a 
+                    href="https://console.firebase.google.com/project/_/authentication/providers" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="block mt-2 underline font-bold hover:text-primary transition-colors"
+                  >
+                    Open Firebase Console Settings →
+                  </a>
+                  <p className="mt-2 text-xs opacity-70 italic">Enable Google, Anonymous, and Email/Password to continue.</p>
+                </AlertDescription>
+              </Alert>
+            )}
+
             <div className="space-y-6">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">

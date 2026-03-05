@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { useAuth, useUser, useFirestore } from '@/firebase';
 import { initiateAnonymousSignIn, initiateEmailSignIn, initiateGoogleSignIn } from '@/firebase/non-blocking-login';
 import { useRouter } from 'next/navigation';
-import { ShieldCheck, Zap, Loader2, AlertCircle } from 'lucide-react';
+import { ShieldCheck, Zap, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { signOut } from 'firebase/auth';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -43,22 +43,23 @@ export default function LoginPage() {
               id: user.uid,
               displayName: user.displayName || user.email?.split('@')[0] || 'Greenberry Member',
               email: user.email,
-              role: 'Viewer',
-              team: 'Agency',
+              role: isGreenberry ? 'Editor' : 'Viewer', // Greenberry members are Editors by default
+              team: isGreenberry ? 'Agency' : 'Guest',
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString()
             }, { merge: true });
           }
-          // Immediate navigation is fine as the non-blocking write will follow
           router.push('/');
         });
       } else {
         toast({
-          title: "Access Denied",
-          description: "Please sign in with your official @greenberry.nl Google account.",
+          title: "Access Restricted",
+          description: "This network is exclusive to @greenberry.nl accounts. Personal accounts are not permitted.",
           variant: "destructive"
         });
-        signOut(auth);
+        signOut(auth).then(() => {
+          setLoading(false);
+        });
       }
     }
   }, [user, db, router, auth, toast]);
@@ -110,27 +111,18 @@ export default function LoginPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center max-w-6xl w-full">
           <div className="space-y-10">
             <h1 className="text-8xl font-black text-foreground tracking-tighter leading-[0.85] uppercase">
-              Join the <br/><span className="text-primary">Network</span>
+              Agency <br/><span className="text-primary">Domain</span>
             </h1>
             <p className="text-3xl text-muted-foreground font-medium leading-tight">
-              Access the Greenberry AI Radar to track, propose, and log strategic technological progress.
+              Only @greenberry.nl accounts are authorized to access the full strategic pulse.
             </p>
             
             {setupError && (
-              <Alert variant="destructive" className="border-2 rounded-3xl bg-destructive/5 animate-in fade-in slide-in-from-top-4">
+              <Alert variant="destructive" className="border-2 rounded-3xl bg-destructive/5">
                 <AlertCircle className="h-5 w-5" />
                 <AlertTitle className="font-black uppercase tracking-widest text-xs mb-2">Setup Required</AlertTitle>
-                <AlertDescription className="text-sm font-medium leading-relaxed">
-                  Sign-in providers must be enabled in the Firebase Console. 
-                  <a 
-                    href={`https://console.firebase.google.com/project/${auth.app.options.projectId}/authentication/providers`}
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="block mt-2 underline font-bold hover:text-primary transition-colors"
-                  >
-                    Open Firebase Console Settings →
-                  </a>
-                  <p className="mt-2 text-xs opacity-70 italic">Enable Google, Anonymous, and Email/Password to continue.</p>
+                <AlertDescription className="text-sm font-medium">
+                  Please enable Google, Anonymous, and Email providers in your Firebase Console.
                 </AlertDescription>
               </Alert>
             )}
@@ -138,11 +130,11 @@ export default function LoginPage() {
             <div className="space-y-6">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
-                  <Zap className="w-6 h-6" />
+                  <CheckCircle2 className="w-6 h-6" />
                 </div>
                 <div>
-                  <div className="font-black uppercase tracking-widest text-xs">Real-world Insights</div>
-                  <div className="text-muted-foreground">Share and learn from studio experiences.</div>
+                  <div className="font-black uppercase tracking-widest text-xs">Domain Exclusive</div>
+                  <div className="text-muted-foreground text-sm">Protected by @greenberry.nl verification.</div>
                 </div>
               </div>
               <div className="flex items-center gap-4">
@@ -150,8 +142,8 @@ export default function LoginPage() {
                   <ShieldCheck className="w-6 h-6" />
                 </div>
                 <div>
-                  <div className="font-black uppercase tracking-widest text-xs">Governance First</div>
-                  <div className="text-muted-foreground">Track sustainability and security across tools.</div>
+                  <div className="font-black uppercase tracking-widest text-xs">Internal Governance</div>
+                  <div className="text-muted-foreground text-sm">Strategic tools are kept private and secure.</div>
                 </div>
               </div>
             </div>
@@ -159,8 +151,8 @@ export default function LoginPage() {
 
           <Card className="rounded-[3rem] border-none bg-white shadow-2xl shadow-primary/10 p-8">
             <CardHeader className="text-center pb-10">
-              <CardTitle className="text-4xl font-black tracking-tighter">Sign In</CardTitle>
-              <CardDescription className="text-lg font-medium">Connect with your Greenberry account.</CardDescription>
+              <CardTitle className="text-4xl font-black tracking-tighter">Greenberry SSO</CardTitle>
+              <CardDescription className="text-lg font-medium">Authentication required to view Pulses.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-8">
               <Button 
@@ -186,51 +178,27 @@ export default function LoginPage() {
                   <span className="w-full border-t" />
                 </div>
                 <div className="relative flex justify-center text-[10px] uppercase font-black tracking-widest bg-white px-2 text-muted-foreground/50">
-                  Developer / Legacy Access
+                  Guest Access
                 </div>
               </div>
 
-              <form onSubmit={handleEmailSignIn} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-widest opacity-50">Email</Label>
-                  <Input 
-                    id="email" 
-                    type="email" 
-                    placeholder="name@greenberry.nl" 
-                    className="h-12 rounded-xl border-2 border-border focus:border-primary bg-secondary/20"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password" className="text-[10px] font-black uppercase tracking-widest opacity-50">Password</Label>
-                  <Input 
-                    id="password" 
-                    type="password" 
-                    className="h-12 rounded-xl border-2 border-border focus:border-primary bg-secondary/20"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                </div>
-                <Button type="submit" variant="outline" className="w-full h-12 rounded-full font-bold uppercase tracking-widest border-2" disabled={loading}>
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Legacy Login"}
-                </Button>
-              </form>
-
-              <div className="pt-4">
+              <div className="space-y-4">
                 <Button 
                   variant="ghost" 
-                  className="w-full h-12 rounded-full font-black text-xs border-2 border-dashed uppercase tracking-widest gap-2 opacity-50 hover:opacity-100"
+                  className="w-full h-14 rounded-full font-black text-xs border-2 border-dashed uppercase tracking-widest gap-2 opacity-70 hover:opacity-100"
                   onClick={handleAnonymousSignIn}
                   disabled={loading}
                 >
                   {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : (
                     <>
-                      <AlertCircle className="w-4 h-4 text-primary" />
-                      Enter as Guest (View Only)
+                      <Zap className="w-4 h-4 text-primary" />
+                      Enter as Guest (Dutch Studio Only)
                     </>
                   )}
                 </Button>
+                <p className="text-[9px] text-center text-muted-foreground uppercase font-bold tracking-widest">
+                  Personal Gmail accounts will be denied entry.
+                </p>
               </div>
             </CardContent>
           </Card>

@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -10,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { useAuth, useUser } from '@/firebase';
 import { initiateAnonymousSignIn, initiateEmailSignIn, initiateGoogleSignIn } from '@/firebase/non-blocking-login';
 import { useRouter } from 'next/navigation';
-import { Sparkles, ShieldCheck, Zap, LogIn, Loader2, AlertCircle } from 'lucide-react';
+import { ShieldCheck, Zap, Loader2, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { signOut } from 'firebase/auth';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -97,13 +96,13 @@ export default function LoginPage() {
             </p>
             
             {setupError && (
-              <Alert variant="destructive" className="border-2 rounded-3xl bg-destructive/5">
+              <Alert variant="destructive" className="border-2 rounded-3xl bg-destructive/5 animate-in fade-in slide-in-from-top-4">
                 <AlertCircle className="h-5 w-5" />
                 <AlertTitle className="font-black uppercase tracking-widest text-xs mb-2">Setup Required</AlertTitle>
                 <AlertDescription className="text-sm font-medium leading-relaxed">
                   Sign-in providers must be enabled in the Firebase Console. 
                   <a 
-                    href="https://console.firebase.google.com/project/_/authentication/providers" 
+                    href="https://console.firebase.google.com/project/studio-6608207418-ad56b/authentication/providers" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="block mt-2 underline font-bold hover:text-primary transition-colors"
@@ -206,7 +205,7 @@ export default function LoginPage() {
                 >
                   {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : (
                     <>
-                      <Sparkles className="w-4 h-4 text-primary" />
+                      <AlertCircle className="w-4 h-4 text-primary" />
                       Enter as Guest (View Only)
                     </>
                   )}

@@ -37,7 +37,6 @@ export default function LoginPage() {
         // Ensure a UserProfile document exists for the user
         const profileRef = doc(db, 'userProfiles', user.uid);
         
-        // We check if it exists first to avoid overwriting existing roles (like Admin)
         getDoc(profileRef).then((snapshot) => {
           if (!snapshot.exists()) {
             setDocumentNonBlocking(profileRef, {
@@ -50,6 +49,7 @@ export default function LoginPage() {
               updatedAt: new Date().toISOString()
             }, { merge: true });
           }
+          // Immediate navigation is fine as the non-blocking write will follow
           router.push('/');
         });
       } else {
@@ -138,7 +138,7 @@ export default function LoginPage() {
             <div className="space-y-6">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
-                  < Zap className="w-6 h-6" />
+                  <Zap className="w-6 h-6" />
                 </div>
                 <div>
                   <div className="font-black uppercase tracking-widest text-xs">Real-world Insights</div>

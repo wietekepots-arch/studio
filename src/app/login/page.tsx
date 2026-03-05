@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -6,13 +7,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { useAuth, useUser } from '@/firebase';
+import { useAuth, useUser, useFirestore } from '@/firebase';
 import { initiateAnonymousSignIn, initiateEmailSignIn, initiateGoogleSignIn } from '@/firebase/non-blocking-login';
 import { useRouter } from 'next/navigation';
 import { ShieldCheck, Zap, Loader2, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { signOut } from 'firebase/auth';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { doc } from 'firebase/firestore';
+import { setDocumentNonBlocking } from '@/firebase';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -20,12 +23,24 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [setupError, setSetupError] = useState(false);
   const auth = useAuth();
+  const db = useFirestore();
   const router = useRouter();
   const { user } = useUser();
   const { toast } = useToast();
 
   useEffect(() => {
-    if (user) {
+    if (user && db) {
+      // Ensure a UserProfile document exists for the user
+      const profileRef = doc(db, 'userProfiles', user.uid);
+      setDocumentNonBlocking(profileRef, {
+        id: user.uid,
+        displayName: user.displayName || user.email?.split('@')[0] || 'Greenberry Member',
+        email: user.email,
+        role: 'Viewer', // Default role for new users
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }, { merge: true });
+
       const isGreenberry = user.email?.endsWith('@greenberry.nl');
       const isAnonymous = user.isAnonymous;
 
@@ -40,7 +55,7 @@ export default function LoginPage() {
         signOut(auth);
       }
     }
-  }, [user, router, auth, toast]);
+  }, [user, db, router, auth, toast]);
 
   const handleAuthError = (error: any) => {
     setLoading(false);
@@ -102,7 +117,7 @@ export default function LoginPage() {
                 <AlertDescription className="text-sm font-medium leading-relaxed">
                   Sign-in providers must be enabled in the Firebase Console. 
                   <a 
-                    href="https://console.firebase.google.com/project/studio-6608207418-ad56b/authentication/providers" 
+                    href={`https://console.firebase.google.com/project/${auth.app.options.projectId}/authentication/providers`}
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="block mt-2 underline font-bold hover:text-primary transition-colors"

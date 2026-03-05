@@ -1,3 +1,4 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -11,7 +12,9 @@ service cloud.firestore {
     }
 
     function getUserRole() {
-      return get(/databases/$(database)/documents/userProfiles/$(request.auth.uid)).data.role;
+      // Safely check for profile existence to avoid rule evaluation errors
+      let profilePath = /databases/$(database)/documents/userProfiles/$(request.auth.uid);
+      return exists(profilePath) ? get(profilePath).data.role : 'Viewer';
     }
 
     function isAdmin() {
@@ -61,8 +64,9 @@ service cloud.firestore {
     }
 
     match /experiences/{experienceId} {
-      allow read: if isSignedIn() && (resource.data.status == 'Published' || resource.data.createdBy == request.auth.uid || isAdmin());
-      allow list: if isSignedIn();
+      // Use explicit get/list for better QAP satisfaction
+      allow get: if isSignedIn() && (resource.data.status == 'Published' || resource.data.createdBy == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && (request.query.limit <= 100);
       allow create: if isSignedIn() && request.resource.data.createdBy == request.auth.uid;
       allow update: if isSignedIn() && (resource.data.createdBy == request.auth.uid || isAdmin());
       allow delete: if isOwner(resource.data.createdBy) || isAdmin();

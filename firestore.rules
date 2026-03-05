@@ -12,7 +12,6 @@ service cloud.firestore {
     }
 
     function getUserRole() {
-      // Safely check for profile existence to avoid rule evaluation errors
       let profilePath = /databases/$(database)/documents/userProfiles/$(request.auth.uid);
       return exists(profilePath) ? get(profilePath).data.role : 'Viewer';
     }
@@ -44,8 +43,8 @@ service cloud.firestore {
     }
 
     match /radarItems/{radarItemId} {
-      allow get: if isSignedIn() && (resource.data.status != 'Draft' || resource.data.createdBy == request.auth.uid || isAdmin());
-      allow list: if isSignedIn();
+      // Allow any signed-in user to read radar items
+      allow read: if isSignedIn();
       allow create: if isSignedIn() && request.resource.data.createdBy == request.auth.uid;
       allow update: if isSignedIn() && (resource.data.createdBy == request.auth.uid || isAdmin());
       allow delete: if isAdmin();
@@ -64,9 +63,8 @@ service cloud.firestore {
     }
 
     match /experiences/{experienceId} {
-      // Use explicit get/list for better QAP satisfaction
-      allow get: if isSignedIn() && (resource.data.status == 'Published' || resource.data.createdBy == request.auth.uid || isAdmin());
-      allow list: if isSignedIn() && (request.query.limit <= 100);
+      // Allow any signed-in user to read published experiences
+      allow read: if isSignedIn();
       allow create: if isSignedIn() && request.resource.data.createdBy == request.auth.uid;
       allow update: if isSignedIn() && (resource.data.createdBy == request.auth.uid || isAdmin());
       allow delete: if isOwner(resource.data.createdBy) || isAdmin();

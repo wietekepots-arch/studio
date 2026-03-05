@@ -14,7 +14,7 @@ import { ShieldCheck, Zap, Loader2, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { signOut } from 'firebase/auth';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { doc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { setDocumentNonBlocking } from '@/firebase';
 
 export default function LoginPage() {
@@ -30,22 +30,28 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (user && db) {
-      // Ensure a UserProfile document exists for the user
-      const profileRef = doc(db, 'userProfiles', user.uid);
-      setDocumentNonBlocking(profileRef, {
-        id: user.uid,
-        displayName: user.displayName || user.email?.split('@')[0] || 'Greenberry Member',
-        email: user.email,
-        role: 'Viewer', // Default role for new users
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }, { merge: true });
-
       const isGreenberry = user.email?.endsWith('@greenberry.nl');
       const isAnonymous = user.isAnonymous;
 
       if (isGreenberry || isAnonymous) {
-        router.push('/');
+        // Ensure a UserProfile document exists for the user
+        const profileRef = doc(db, 'userProfiles', user.uid);
+        
+        // We check if it exists first to avoid overwriting existing roles (like Admin)
+        getDoc(profileRef).then((snapshot) => {
+          if (!snapshot.exists()) {
+            setDocumentNonBlocking(profileRef, {
+              id: user.uid,
+              displayName: user.displayName || user.email?.split('@')[0] || 'Greenberry Member',
+              email: user.email,
+              role: 'Viewer',
+              team: 'Agency',
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            }, { merge: true });
+          }
+          router.push('/');
+        });
       } else {
         toast({
           title: "Access Denied",
@@ -132,7 +138,7 @@ export default function LoginPage() {
             <div className="space-y-6">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
-                  <Zap className="w-6 h-6" />
+                  < Zap className="w-6 h-6" />
                 </div>
                 <div>
                   <div className="font-black uppercase tracking-widest text-xs">Real-world Insights</div>

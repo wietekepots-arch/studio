@@ -1,14 +1,11 @@
-
 "use client";
 
 import React, { useState, useEffect } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useAuth, useUser, useFirestore } from '@/firebase';
-import { initiateAnonymousSignIn, initiateEmailSignIn, initiateGoogleSignIn } from '@/firebase/non-blocking-login';
+import { initiateAnonymousSignIn, initiateGoogleSignIn } from '@/firebase/non-blocking-login';
 import { useRouter } from 'next/navigation';
 import { ShieldCheck, Zap, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -18,8 +15,6 @@ import { doc, getDoc } from 'firebase/firestore';
 import { setDocumentNonBlocking } from '@/firebase';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [setupError, setSetupError] = useState(false);
   const auth = useAuth();
@@ -30,31 +25,35 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (user && db) {
-      const isGreenberry = user.email?.endsWith('@greenberry.nl');
+      const email = user.email || '';
+      const isGreenberry = email.toLowerCase().endsWith('@greenberry.nl');
       const isAnonymous = user.isAnonymous;
 
       if (isGreenberry || isAnonymous) {
-        // Ensure a UserProfile document exists for the user
         const profileRef = doc(db, 'userProfiles', user.uid);
         
         getDoc(profileRef).then((snapshot) => {
           if (!snapshot.exists()) {
             setDocumentNonBlocking(profileRef, {
               id: user.uid,
-              displayName: user.displayName || user.email?.split('@')[0] || 'Greenberry Member',
-              email: user.email,
-              role: isGreenberry ? 'Editor' : 'Viewer', // Greenberry members are Editors by default
+              displayName: user.displayName || email.split('@')[0] || 'Greenberry Member',
+              email: email,
+              role: isGreenberry ? 'Editor' : 'Viewer',
               team: isGreenberry ? 'Agency' : 'Guest',
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString()
             }, { merge: true });
           }
           router.push('/');
+        }).catch(() => {
+          // If profile check fails due to rules, we still redirect to home
+          // where secondary guards will handle it.
+          router.push('/');
         });
       } else {
         toast({
           title: "Access Restricted",
-          description: "This network is exclusive to @greenberry.nl accounts. Personal accounts are not permitted.",
+          description: "This network is exclusive to @greenberry.nl accounts.",
           variant: "destructive"
         });
         signOut(auth).then(() => {
@@ -66,41 +65,30 @@ export default function LoginPage() {
 
   const handleAuthError = (error: any) => {
     setLoading(false);
-    console.error("Auth Error:", error);
-    
     if (error.code === 'auth/operation-not-allowed') {
       setSetupError(true);
       toast({
         title: "Action Required",
-        description: "Authentication providers are not yet enabled in your Firebase Console.",
+        description: "Please enable Google and Anonymous providers in your Firebase Console.",
         variant: "destructive"
       });
     } else {
       toast({
         title: "Sign-in Error",
-        description: error.message || "An unexpected error occurred during sign-in.",
+        description: error.message || "An unexpected error occurred.",
         variant: "destructive"
       });
     }
   };
 
-  const handleEmailSignIn = (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    initiateEmailSignIn(auth, email, password)
-      .catch(handleAuthError);
-  };
-
   const handleGoogleSignIn = () => {
     setLoading(true);
-    initiateGoogleSignIn(auth)
-      .catch(handleAuthError);
+    initiateGoogleSignIn(auth).catch(handleAuthError);
   };
 
   const handleAnonymousSignIn = () => {
     setLoading(true);
-    initiateAnonymousSignIn(auth)
-      .catch(handleAuthError);
+    initiateAnonymousSignIn(auth).catch(handleAuthError);
   };
 
   return (
@@ -122,7 +110,7 @@ export default function LoginPage() {
                 <AlertCircle className="h-5 w-5" />
                 <AlertTitle className="font-black uppercase tracking-widest text-xs mb-2">Setup Required</AlertTitle>
                 <AlertDescription className="text-sm font-medium">
-                  Please enable Google, Anonymous, and Email providers in your Firebase Console.
+                  Please enable Google and Anonymous providers in your <a href="https://console.firebase.google.com/" target="_blank" className="underline">Firebase Console</a>.
                 </AlertDescription>
               </Alert>
             )}
@@ -192,12 +180,12 @@ export default function LoginPage() {
                   {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : (
                     <>
                       <Zap className="w-4 h-4 text-primary" />
-                      Enter as Guest (Dutch Studio Only)
+                      Enter as Guest
                     </>
                   )}
                 </Button>
                 <p className="text-[9px] text-center text-muted-foreground uppercase font-bold tracking-widest">
-                  Personal Gmail accounts will be denied entry.
+                  Only @greenberry.nl accounts can propose new tools.
                 </p>
               </div>
             </CardContent>

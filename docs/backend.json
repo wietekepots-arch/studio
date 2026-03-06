@@ -21,7 +21,8 @@
         },
         "role": {
           "type": "string",
-          "description": "The assigned role of the user (e.g., Admin, Editor, Viewer), dictating their permissions."
+          "description": "The assigned role of the user (e.g., Admin, Editor, Viewer), dictating their permissions.",
+          "enum": ["Admin", "Editor", "Viewer"]
         },
         "team": {
           "type": "string",
@@ -50,327 +51,87 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Quadrant",
       "type": "object",
-      "description": "Defines a customizable category or axis on the Tech Radar, used for classifying items.",
+      "description": "Defines a customizable category or axis on the Tech Radar.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Quadrant entity."
-        },
-        "name": {
-          "type": "string",
-          "description": "The name of the quadrant (e.g., 'Tools & Platforms')."
-        },
-        "description": {
-          "type": "string",
-          "description": "A brief description of what this quadrant represents."
-        },
-        "order": {
-          "type": "number",
-          "description": "A numerical value indicating the display order of the quadrant on the radar."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp when the quadrant was created.",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "description": "Timestamp when the quadrant was last updated.",
-          "format": "date-time"
-        }
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "order": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
       },
-      "required": [
-        "id",
-        "name",
-        "order",
-        "createdAt"
-      ]
+      "required": ["id", "name", "order", "createdAt"]
     },
     "Ring": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Ring",
       "type": "object",
-      "description": "Defines a customizable adoption stage or concentric ring on the Tech Radar, indicating the maturity or recommendation status of an item.",
+      "description": "Defines a customizable adoption stage or concentric ring on the Tech Radar.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Ring entity."
-        },
-        "name": {
-          "type": "string",
-          "description": "The name of the ring (e.g., 'Adopt', 'Trial')."
-        },
-        "description": {
-          "type": "string",
-          "description": "A brief description of what this ring's status implies."
-        },
-        "order": {
-          "type": "number",
-          "description": "A numerical value indicating the display order of the ring on the radar, typically from inner to outer."
-        },
-        "color": {
-          "type": "string",
-          "description": "A color code (e.g., hex) associated with the ring for visualization purposes."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp when the ring was created.",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "description": "Timestamp when the ring was last updated.",
-          "format": "date-time"
-        }
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "order": { "type": "number" },
+        "color": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
       },
-      "required": [
-        "id",
-        "name",
-        "order",
-        "color",
-        "createdAt"
-      ]
+      "required": ["id", "name", "order", "color", "createdAt"]
     },
     "Tag": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Tag",
       "type": "object",
-      "description": "Represents a keyword or category used to label and organize Radar Items for filtering and search.",
+      "description": "Represents a keyword used to label Radar Items.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Tag entity."
-        },
-        "name": {
-          "type": "string",
-          "description": "The name of the tag (e.g., 'AI', 'Cloud Computing')."
-        },
-        "description": {
-          "type": "string",
-          "description": "A brief description of the tag's purpose or scope."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp when the tag was created.",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "description": "Timestamp when the tag was last updated.",
-          "format": "date-time"
-        }
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": [
-        "id",
-        "name",
-        "createdAt"
-      ]
+      "required": ["id", "name", "createdAt"]
     },
     "RadarItem": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "RadarItem",
       "type": "object",
-      "description": "Represents a single tool, technique, or process placed on the Tech Radar.",
+      "description": "Represents a single tool or technique on the Tech Radar.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the RadarItem entity."
-        },
-        "name": {
-          "type": "string",
-          "description": "The official name of the radar item."
-        },
-        "shortDescription": {
-          "type": "string",
-          "description": "A brief summary of the radar item."
-        },
-        "detailedNotes": {
-          "type": "string",
-          "description": "Comprehensive notes and details about the radar item."
-        },
-        "quadrantId": {
-          "type": "string",
-          "description": "Reference to the Quadrant this item belongs to. (Relationship: Quadrant 1:N RadarItem)"
-        },
-        "ringId": {
-          "type": "string",
-          "description": "Reference to the Ring this item belongs to. (Relationship: Ring 1:N RadarItem)"
-        },
-        "tagIds": {
-          "type": "array",
-          "description": "References to Tags associated with this item. (Relationship: Tag N:N RadarItem)",
-          "items": {
-            "type": "string"
-          }
-        },
-        "ownerId": {
-          "type": "string",
-          "description": "Reference to the UserProfile who is the primary owner or champion of this item. (Relationship: UserProfile 1:N RadarItem)"
-        },
-        "team": {
-          "type": "string",
-          "description": "The discipline or team primarily associated with this radar item."
-        },
-        "maturityScore": {
-          "type": "number",
-          "description": "A score (1-5) indicating the maturity level of the item."
-        },
-        "impactScore": {
-          "type": "number",
-          "description": "A score (1-5) indicating the potential impact of the item."
-        },
-        "effortScore": {
-          "type": "number",
-          "description": "A score (1-5) indicating the effort required to adopt or implement the item."
-        },
-        "riskScore": {
-          "type": "number",
-          "description": "A score (1-5) indicating the associated risk of the item."
-        },
-        "costRange": {
-          "type": "string",
-          "description": "The estimated cost range of the item (e.g., 'Free', 'Low', 'Medium', 'High')."
-        },
-        "links": {
-          "type": "array",
-          "description": "An array of URLs providing additional documentation or vendor information for the item.",
-          "items": {
-            "type": "string"
-          }
-        },
-        "lastReviewedAt": {
-          "type": "string",
-          "description": "The date and time when the item was last officially reviewed.",
-          "format": "date-time"
-        },
-        "status": {
-          "type": "string",
-          "description": "The current governance status of the item (e.g., 'Draft', 'In Review', 'Approved', 'Archived')."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp when the radar item was initially created.",
-          "format": "date-time"
-        },
-        "createdBy": {
-          "type": "string",
-          "description": "Reference to the UserProfile who created this item. (Relationship: UserProfile 1:N RadarItem)"
-        },
-        "updatedAt": {
-          "type": "string",
-          "description": "Timestamp when the radar item was last updated.",
-          "format": "date-time"
-        },
-        "updatedBy": {
-          "type": "string",
-          "description": "Reference to the UserProfile who last updated this item. (Relationship: UserProfile 1:N RadarItem)"
-        }
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "shortDescription": { "type": "string" },
+        "quadrantId": { "type": "string" },
+        "ringId": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "status": { "type": "string", "enum": ["Draft", "In Review", "Approved", "Archived"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "createdBy": { "type": "string" }
       },
-      "required": [
-        "id",
-        "name",
-        "shortDescription",
-        "quadrantId",
-        "ringId",
-        "ownerId",
-        "status",
-        "createdAt",
-        "createdBy"
-      ]
+      "required": ["id", "name", "shortDescription", "quadrantId", "ringId", "ownerId", "status", "createdAt", "createdBy"]
     },
-    "ItemComment": {
+    "Experience": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "ItemComment",
+      "title": "Experience",
       "type": "object",
-      "description": "Represents a comment made on a specific Radar Item, supporting discussions.",
+      "description": "Represents a user's strategic experience with specific radar items.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the ItemComment entity."
-        },
-        "radarItemId": {
-          "type": "string",
-          "description": "Reference to the RadarItem the comment belongs to. (Relationship: RadarItem 1:N ItemComment)"
-        },
-        "text": {
-          "type": "string",
-          "description": "The content of the comment."
-        },
-        "parentId": {
-          "type": "string",
-          "description": "Optional reference to a parent comment, enabling threaded discussions. (Relationship: ItemComment 1:N ItemComment)"
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp when the comment was created.",
-          "format": "date-time"
-        },
-        "createdBy": {
-          "type": "string",
-          "description": "Reference to the UserProfile who created the comment. (Relationship: UserProfile 1:N ItemComment)"
-        }
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "summary": { "type": "string" },
+        "toolLinks": { "type": "array", "items": { "type": "string" } },
+        "howUsed": { "type": "string" },
+        "findings": { "type": "string" },
+        "status": { "type": "string", "enum": ["Published", "Hidden"] },
+        "createdAt": { "type": "number" },
+        "createdBy": { "type": "string" }
       },
-      "required": [
-        "id",
-        "radarItemId",
-        "text",
-        "createdAt",
-        "createdBy"
-      ]
-    },
-    "ItemHistory": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "ItemHistory",
-      "type": "object",
-      "description": "Records an audit trail of significant changes and actions performed on a Radar Item.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the ItemHistory entity."
-        },
-        "radarItemId": {
-          "type": "string",
-          "description": "Reference to the RadarItem this history entry pertains to. (Relationship: RadarItem 1:N ItemHistory)"
-        },
-        "action": {
-          "type": "string",
-          "description": "A description of the action performed (e.g., 'created', 'status_change', 'approved', 'ring_moved')."
-        },
-        "comment": {
-          "type": "string",
-          "description": "An optional comment or justification for the action, especially for approval/rejection."
-        },
-        "beforeValue": {
-          "type": "string",
-          "description": "The state or value of a specific field before the action, if applicable."
-        },
-        "afterValue": {
-          "type": "string",
-          "description": "The state or value of a specific field after the action, if applicable."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp when the history event occurred.",
-          "format": "date-time"
-        },
-        "createdBy": {
-          "type": "string",
-          "description": "Reference to the UserProfile who performed the action. (Relationship: UserProfile 1:N ItemHistory)"
-        }
-      },
-      "required": [
-        "id",
-        "radarItemId",
-        "action",
-        "createdAt",
-        "createdBy"
-      ]
+      "required": ["id", "title", "summary", "toolLinks", "howUsed", "findings", "status", "createdAt", "createdBy"]
     }
   },
   "auth": {
     "providers": [
       "password",
-      "anonymous"
+      "anonymous",
+      "google.com"
     ]
   },
   "firestore": {
@@ -379,123 +140,26 @@
         "path": "/userProfiles/{userId}",
         "definition": {
           "entityName": "UserProfile",
-          "schema": {
-            "$ref": "#/backend/entities/UserProfile"
-          },
-          "description": "Stores individual user profiles, including their role for access control. The `userId` in the path matches `request.auth.uid` to establish path-based ownership for profile management.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique ID of the user, corresponding to `request.auth.uid`."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/quadrants/{quadrantId}",
-        "definition": {
-          "entityName": "Quadrant",
-          "schema": {
-            "$ref": "#/backend/entities/Quadrant"
-          },
-          "description": "Global configuration for radar quadrants. Accessible by all for reading, modifiable by Admins for writing.",
-          "params": [
-            {
-              "name": "quadrantId",
-              "description": "The unique ID of the quadrant."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/rings/{ringId}",
-        "definition": {
-          "entityName": "Ring",
-          "schema": {
-            "$ref": "#/backend/entities/Ring"
-          },
-          "description": "Global configuration for radar rings. Accessible by all for reading, modifiable by Admins for writing.",
-          "params": [
-            {
-              "name": "ringId",
-              "description": "The unique ID of the ring."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/tags/{tagId}",
-        "definition": {
-          "entityName": "Tag",
-          "schema": {
-            "$ref": "#/backend/entities/Tag"
-          },
-          "description": "Global configuration for radar item tags. Accessible by all for reading, modifiable by Admins for writing.",
-          "params": [
-            {
-              "name": "tagId",
-              "description": "The unique ID of the tag."
-            }
-          ]
+          "schema": { "$ref": "#/backend/entities/UserProfile" },
+          "description": "Stores individual user profiles."
         }
       },
       {
         "path": "/radarItems/{radarItemId}",
         "definition": {
           "entityName": "RadarItem",
-          "schema": {
-            "$ref": "#/backend/entities/RadarItem"
-          },
-          "description": "Stores individual radar items, including their `status` for workflow management and `createdBy` for ownership. These fields are critical for Authorization Independence and QAP-compliant security rules, allowing direct evaluation without hierarchical dependencies.",
-          "params": [
-            {
-              "name": "radarItemId",
-              "description": "The unique ID of the radar item."
-            }
-          ]
+          "schema": { "$ref": "#/backend/entities/RadarItem" },
+          "description": "Stores individual radar items."
         }
       },
       {
-        "path": "/radarItems/{radarItemId}/itemComments/{commentId}",
+        "path": "/experiences/{experienceId}",
         "definition": {
-          "entityName": "ItemComment",
-          "schema": {
-            "$ref": "#/backend/entities/ItemComment"
-          },
-          "description": "Stores comments related to a specific radar item. Includes `createdBy` for ownership and denormalized `radarItemStatus` and `radarItemCreatedBy` from the parent `RadarItem` to ensure Authorization Independence for security rules.",
-          "params": [
-            {
-              "name": "radarItemId",
-              "description": "The unique ID of the parent radar item."
-            },
-            {
-              "name": "commentId",
-              "description": "The unique ID of the comment."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/radarItems/{radarItemId}/itemHistory/{historyId}",
-        "definition": {
-          "entityName": "ItemHistory",
-          "schema": {
-            "$ref": "#/backend/entities/ItemHistory"
-          },
-          "description": "Stores audit trail entries for significant changes on a radar item. Includes `createdBy` for the action performer and denormalized `radarItemStatus` and `radarItemCreatedBy` from the parent `RadarItem` to ensure Authorization Independence for security rules.",
-          "params": [
-            {
-              "name": "radarItemId",
-              "description": "The unique ID of the parent radar item."
-            },
-            {
-              "name": "historyId",
-              "description": "The unique ID of the history entry."
-            }
-          ]
+          "entityName": "Experience",
+          "schema": { "$ref": "#/backend/entities/Experience" },
+          "description": "Stores strategic experiences shared by users."
         }
       }
-    ],
-    "reasoning": "The Firestore data structure is designed to adhere strictly to the core design principles, especially Authorization Independence and QAPs (Queries Are Not Filters), to ensure a secure, scalable, and debuggable system for the 'Agency Radar' application. \n\n**Authorization Independence:**\n1.  **User Profiles:** User roles are stored directly within each user's profile document at `/userProfiles/{userId}`. This allows security rules to check `get(/userProfiles/$(request.auth.uid)).data.role` for role-based access control without complex lookups or dependencies, satisfying DBAC. The `userId` in the path directly corresponds to `request.auth.uid`, ensuring path-based ownership for profile management.\n2.  **Radar Items:** Each `RadarItem` document in `/radarItems/{radarItemId}` contains all necessary authorization context: `ownerId`, `createdBy`, and `status`. Security rules can directly evaluate `resource.data.ownerId == request.auth.uid` or `resource.data.status == 'Approved'` without performing any `get()` operations on parent documents or other collections. This makes rules atomic, predictable, and robust against transactional complexities.\n3.  **Item Comments & History (Denormalization for Subcollections):** To maintain strict Authorization Independence for subcollections, `ItemComment` and `ItemHistory` documents include denormalized fields from their parent `RadarItem`. Specifically, `radarItemStatus` and `radarItemCreatedBy` (representing the `status` and `createdBy` of the parent `RadarItem`) are copied into each `itemComment` and `itemHistory` document. This means that rules governing access to a comment or history entry can check its own fields (`resource.data.createdBy`, `resource.data.radarItemStatus`) without needing to fetch the parent `RadarItem` document. This is critical for simplifying security rules and enabling atomic writes to subcollections.\n\n**QAPs (Queries Are Not Filters):**\n1.  **Global Configuration Collections (`/quadrants`, `/rings`, `/tags`):** These collections are designed with a homogeneous security posture: read-only for all authenticated users and write-access for Admins. Since these are configuration data, full list reads are expected and efficient. Rules will simply allow `read` for authenticated users and `write` for Admins, ensuring no client-side filtering is required by the rules themselves.\n2.  **Radar Items (`/radarItems/{radarItemId}`):** This collection handles various item states (Draft, In Review, Approved, Archived). Instead of segregating into separate collections, the `status` field is used as the primary mechanism for access control, alongside `createdBy` for ownership. \n    *   **Viewer Access:** Viewers can query `radarItems` where `status != 'Draft'`. The security rule will match this query exactly, allowing reads only for documents where `resource.data.status != 'Draft'`. This is a highly efficient and QAP-compliant query pattern. Editors/Admins will have broader read access.\n    *   **Editor Access (Drafts):** Editors can list their own draft items by querying `radarItems` where `createdBy == request.auth.uid` AND `status == 'Draft'`. The rule will permit this read based on `resource.data.createdBy`, adhering to QAP.\n3.  **Item Comments & History (`/radarItems/{radarItemId}/itemComments`, `/radarItems/{radarItemId}/itemHistory`):** Because the `radarItemStatus` and `radarItemCreatedBy` fields are denormalized into each comment/history document, security rules can evaluate read access for these subcollections directly based on their own document fields (e.g., `resource.data.radarItemStatus != 'Draft'`). This ensures that `list` operations on these subcollections for a given `radarItemId` are also QAP-compliant, as no `get()` calls to the parent `RadarItem` are needed to determine access rights for the comment/history entry itself."
+    ]
   }
 }

@@ -10,7 +10,7 @@ service cloud.firestore {
     // Anonymous users are allowed as 'Guests'.
     function isGreenberryUser() {
       return isSignedIn() && (
-        (request.auth.token.email != null && request.auth.token.email.matches('(?i).*@greenberry\\.nl$')) || 
+        (request.auth.token.email != null && request.auth.token.email.lower().matches('.*@greenberry\\.nl$')) || 
         request.auth.token.firebase.sign_in_provider == 'anonymous'
       );
     }

@@ -41,6 +41,14 @@ import {
   sortRadarItems,
 } from "@/lib/radar-firestore";
 
+function getErrorMessage(error: unknown, fallback: string): string {
+  if (error instanceof Error && error.message.trim()) {
+    return error.message;
+  }
+
+  return fallback;
+}
+
 export default function DashboardPage(): React.ReactElement {
   const db = useFirestore();
   const { toast } = useToast();
@@ -224,12 +232,16 @@ export default function DashboardPage(): React.ReactElement {
       const result = await seedRadarCollections(db, profile);
       toast({
         title: "Radar seeded",
-        description: `Added ${result.items} blips and ${result.tags} tags.`,
+        description: `Added ${result.items} blips, ${result.tags} tags, and ${result.historyEntries} history entries.`,
       });
     } catch (error) {
+      console.error("Failed to seed starter radar", error);
       toast({
         title: "Seed failed",
-        description: "Starter radar data could not be written to Firestore.",
+        description: getErrorMessage(
+          error,
+          "Starter radar data could not be written to Firestore.",
+        ),
         variant: "destructive",
       });
     } finally {

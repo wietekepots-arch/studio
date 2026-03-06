@@ -3,6 +3,7 @@ import {
   collection,
   doc,
   getDocs,
+  setDoc,
   updateDoc,
   writeBatch,
   type Firestore,
@@ -30,6 +31,23 @@ export interface SeedResult {
   tags: number;
   items: number;
   historyEntries: number;
+}
+
+function canFinalizeSeedItem(
+  item: Partial<RadarItem> | undefined,
+  userId: string,
+): boolean {
+  if (!item) {
+    return true;
+  }
+
+  return (
+    item.status === "Pending" &&
+    item.createdBy === userId &&
+    item.updatedBy === userId &&
+    item.ownerId === userId &&
+    item.submittedBy === userId
+  );
 }
 
 export function sortConfigOptions(
@@ -153,8 +171,10 @@ export async function seedRadarCollections(
   const existingQuadrants = new Set(quadrantDocs.docs.map((item) => item.id));
   const existingRings = new Set(ringDocs.docs.map((item) => item.id));
   const existingTags = new Set(tagDocs.docs.map((item) => item.id));
-  const existingRadarItems = new Set(radarItemDocs.docs.map((item) => item.id));
-  const batch = writeBatch(db);
+  const existingRadarItems = new Map(
+    radarItemDocs.docs.map((item) => [item.id, item.data() as Partial<RadarItem>]),
+  );
+  const configBatch = writeBatch(db);
   let result: SeedResult = {
     quadrants: 0,
     rings: 0,
@@ -163,13 +183,15 @@ export async function seedRadarCollections(
     historyEntries: 0,
   };
   const now = Date.now();
+  let hasConfigWrites = false;
 
   for (const quadrant of seedQuadrants) {
     if (existingQuadrants.has(quadrant.id)) {
       continue;
     }
 
-    batch.set(doc(db, "quadrants", quadrant.id), quadrant);
+    configBatch.set(doc(db, "quadrants", quadrant.id), quadrant);
+    hasConfigWrites = true;
     result = { ...result, quadrants: result.quadrants + 1 };
   }
 
@@ -178,7 +200,8 @@ export async function seedRadarCollections(
       continue;
     }
 
-    batch.set(doc(db, "rings", ring.id), ring);
+    configBatch.set(doc(db, "rings", ring.id), ring);
+    hasConfigWrites = true;
     result = { ...result, rings: result.rings + 1 };
   }
 
@@ -187,17 +210,20 @@ export async function seedRadarCollections(
       continue;
     }
 
-    batch.set(doc(db, "tags", tag.id), tag);
+    configBatch.set(doc(db, "tags", tag.id), tag);
+    hasConfigWrites = true;
     result = { ...result, tags: result.tags + 1 };
   }
 
-  for (const item of getSeedRadarItems(now)) {
-    if (existingRadarItems.has(item.id)) {
-      continue;
-    }
+  if (hasConfigWrites) {
+    await configBatch.commit();
+  }
 
-    const normalizedItem: RadarItem = {
-      ...item,
+  for (const item of getSeedRadarItems(now)) {
+    const existingItem = existingRadarItems.get(item.id);
+    const { history, ...seedItem } = item;
+    const normalizedItem: Omit<RadarItem, "history"> = {
+      ...seedItem,
       ownerId: userProfile.uid,
       ownerName: userProfile.displayName,
       createdBy: userProfile.uid,
@@ -208,12 +234,44 @@ export async function seedRadarCollections(
       reviewedAt: item.reviewedAt || now,
       lastReviewedAt: item.lastReviewedAt || now,
     };
+    const shouldFinalize = canFinalizeSeedItem(existingItem, userProfile.uid);
 
-    batch.set(doc(db, "radarItems", item.id), normalizedItem);
-    result = { ...result, items: result.items + 1 };
+    if (!existingItem) {
+      const { reviewedAt, reviewedBy, reviewComment, ...pendingBase } =
+        normalizedItem;
+      const pendingItem: Omit<RadarItem, "history"> = {
+        ...pendingBase,
+        status: "Pending",
+        lastReviewedAt: normalizedItem.createdAt,
+      };
 
-    for (const historyEntry of item.history || []) {
-      batch.set(
+      await setDoc(doc(db, "radarItems", item.id), pendingItem);
+      existingRadarItems.set(item.id, pendingItem);
+      result = { ...result, items: result.items + 1 };
+    }
+
+    if (!shouldFinalize) {
+      continue;
+    }
+
+    const finalizeBatch = writeBatch(db);
+    finalizeBatch.update(doc(db, "radarItems", item.id), normalizedItem);
+
+    let existingHistoryEntries = new Set<string>();
+
+    if (history?.length) {
+      const historyDocs = await getDocs(
+        collection(db, "radarItems", item.id, "itemHistory"),
+      );
+      existingHistoryEntries = new Set(historyDocs.docs.map((entry) => entry.id));
+    }
+
+    for (const historyEntry of history || []) {
+      if (existingHistoryEntries.has(historyEntry.id)) {
+        continue;
+      }
+
+      finalizeBatch.set(
         doc(db, "radarItems", item.id, "itemHistory", historyEntry.id),
         {
           ...historyEntry,
@@ -225,16 +283,8 @@ export async function seedRadarCollections(
         historyEntries: result.historyEntries + 1,
       };
     }
-  }
 
-  if (
-    result.quadrants ||
-    result.rings ||
-    result.tags ||
-    result.items ||
-    result.historyEntries
-  ) {
-    await batch.commit();
+    await finalizeBatch.commit();
   }
 
   return result;

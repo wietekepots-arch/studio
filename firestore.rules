@@ -104,11 +104,22 @@ service cloud.firestore {
     match /radarItems/{radarItemId} {
       allow get, list: if canReadRadarItem(resource.data);
       allow create: if hasProfile()
-        && request.resource.data.createdBy == request.auth.uid
-        && request.resource.data.updatedBy == request.auth.uid
-        && request.resource.data.ownerId == request.auth.uid
-        && request.resource.data.submittedBy == request.auth.uid
-        && request.resource.data.status == 'Pending';
+        && (
+          (
+            request.resource.data.createdBy == request.auth.uid
+            && request.resource.data.updatedBy == request.auth.uid
+            && request.resource.data.ownerId == request.auth.uid
+            && request.resource.data.submittedBy == request.auth.uid
+            && request.resource.data.status == 'Pending'
+          )
+          || (
+            isPowerUser()
+            && request.resource.data.createdBy == request.auth.uid
+            && request.resource.data.updatedBy == request.auth.uid
+            && request.resource.data.ownerId == request.auth.uid
+            && request.resource.data.submittedBy == request.auth.uid
+          )
+        );
       allow update: if hasProfile() && (isPowerUser() || isOwnerEditingOwnBlip());
       allow delete: if isAdmin();
 

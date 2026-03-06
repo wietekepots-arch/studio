@@ -236,7 +236,7 @@ export default function DashboardPage(): React.ReactElement {
       const result = await seedRadarCollections(db, profile);
       toast({
         title: "Radar seeded",
-        description: `Added ${result.items} blips, ${result.tags} tags, and ${result.historyEntries} history entries.`,
+        description: `Added ${result.items} blips, ${result.providers} providers, ${result.families} families, ${result.tags} tags, and ${result.historyEntries} history entries.`,
       });
     } catch (error) {
       console.error("Failed to seed starter radar", error);

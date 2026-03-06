@@ -228,23 +228,35 @@ export function resolveRadarItem(
   const family = item.familyId ? familyMap.get(item.familyId) : undefined;
   const providerId = item.providerId || family?.providerId;
   const provider = providerId ? providerMap.get(providerId) : undefined;
-  const sharedProfile = resolveRadarSharedProfile(provider, family, item.origin);
 
   return {
     ...item,
     ...(providerId ? { providerId } : {}),
-    ...(provider?.name || item.providerName
-      ? { providerName: item.providerName || provider?.name }
+    ...(provider?.name || family?.providerName || item.providerName
+      ? {
+          providerName: provider?.name || family?.providerName || item.providerName,
+        }
       : {}),
     ...(family?.id || item.familyId ? { familyId: item.familyId || family?.id } : {}),
     ...(family?.name || item.familyName
-      ? { familyName: item.familyName || family?.name }
+      ? { familyName: family?.name || item.familyName }
       : {}),
-    origin: item.originOverride ?? sharedProfile.origin ?? item.origin,
+    origin: item.originOverride ?? family?.origin ?? provider?.origin ?? item.origin,
     sustainabilityNotes:
-      item.sustainabilityNotesOverride ?? sharedProfile.sustainabilityNotes,
-    securityNotes: item.securityNotesOverride ?? sharedProfile.securityNotes,
-    ethicsNotes: item.ethicsNotesOverride ?? sharedProfile.ethicsNotes,
+      item.sustainabilityNotesOverride ??
+      family?.sustainabilityNotes ??
+      provider?.sustainabilityNotes ??
+      item.sustainabilityNotes,
+    securityNotes:
+      item.securityNotesOverride ??
+      family?.securityNotes ??
+      provider?.securityNotes ??
+      item.securityNotes,
+    ethicsNotes:
+      item.ethicsNotesOverride ??
+      family?.ethicsNotes ??
+      provider?.ethicsNotes ??
+      item.ethicsNotes,
   };
 }
 

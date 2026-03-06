@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Origin,
   RadarConfigOption,
   RadarFamily,
   RadarItem,
@@ -175,7 +174,7 @@ function buildSeedRadarItem(input: SeedRadarItemInput): RadarItem {
     securityNotes,
     ethicsNotes,
     ...(providerId && input.origin !== undefined && input.origin !== inheritedOrigin
-      ? { originOverride: input.origin as Origin }
+      ? { originOverride: input.origin }
       : {}),
     ...(providerId &&
     input.sustainabilityNotes !== undefined &&

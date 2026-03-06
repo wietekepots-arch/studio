@@ -277,11 +277,16 @@ export function RadarItemForm({
         )
           ? currentState.familyId
           : "";
+      const shouldDefaultToInheritance =
+        !currentState.providerId &&
+        !currentState.familyId &&
+        currentState.origin === "European";
 
       return {
         ...currentState,
         providerId: value,
         familyId: nextFamilyId,
+        origin: shouldDefaultToInheritance ? "" : currentState.origin,
       };
     });
   }
@@ -301,6 +306,12 @@ export function RadarItemForm({
       ...currentState,
       familyId: value,
       providerId: family?.providerId || currentState.providerId,
+      origin:
+        !currentState.providerId &&
+        !currentState.familyId &&
+        currentState.origin === "European"
+          ? ""
+          : currentState.origin,
     }));
   }
 
@@ -308,7 +319,9 @@ export function RadarItemForm({
     setFormData((currentState) => ({
       ...currentState,
       origin:
-        value === INHERIT_SELECT_VALUE ? "" : (value as RadarItem["origin"]),
+        value === "European" || value === "American" || value === "Other"
+          ? value
+          : "",
     }));
   }
 
@@ -424,6 +437,29 @@ export function RadarItemForm({
       role,
     );
     const nextRingId = Number(formData.ringId);
+    const providerId = selectedFamily?.providerId || formData.providerId;
+    const providerName = selectedProvider?.name || selectedFamily?.providerName;
+    const familyId = selectedFamily?.id;
+    const familyName = selectedFamily?.name;
+    const effectiveOrigin = formData.origin || sharedDefaults.origin;
+    const effectiveSustainability =
+      formData.sustainabilityNotes || sharedDefaults.sustainabilityNotes;
+    const effectiveSecurity = formData.securityNotes || sharedDefaults.securityNotes;
+    const effectiveEthics = formData.ethicsNotes || sharedDefaults.ethicsNotes;
+    const originOverride = hasSharedProfile && formData.origin
+      ? formData.origin
+      : undefined;
+    const sustainabilityOverride =
+      hasSharedProfile && formData.sustainabilityNotes
+        ? formData.sustainabilityNotes
+        : undefined;
+    const securityOverride =
+      hasSharedProfile && formData.securityNotes
+        ? formData.securityNotes
+        : undefined;
+    const ethicsOverride = hasSharedProfile && formData.ethicsNotes
+      ? formData.ethicsNotes
+      : undefined;
     const basePayload: WithFieldValue<DocumentData> = {
       name: formData.name,
       shortDesc: formData.shortDesc,
@@ -444,10 +480,10 @@ export function RadarItemForm({
         risk: 2,
       },
       costRange: formData.costRange,
-      origin: formData.origin,
-      sustainabilityNotes: formData.sustainabilityNotes,
-      securityNotes: formData.securityNotes,
-      ethicsNotes: formData.ethicsNotes,
+      origin: effectiveOrigin,
+      sustainabilityNotes: effectiveSustainability,
+      securityNotes: effectiveSecurity,
+      ethicsNotes: effectiveEthics,
       links: formData.primaryLink ? [formData.primaryLink] : [],
       status: nextStatus,
       submittedAt:
@@ -465,6 +501,16 @@ export function RadarItemForm({
       updatedBy: authUser.uid,
       pricingTiers: initialItem?.pricingTiers || [],
       history: initialItem?.history || [],
+      ...(providerId ? { providerId } : {}),
+      ...(providerName ? { providerName } : {}),
+      ...(familyId ? { familyId } : {}),
+      ...(familyName ? { familyName } : {}),
+      ...(originOverride ? { originOverride } : {}),
+      ...(sustainabilityOverride
+        ? { sustainabilityNotesOverride: sustainabilityOverride }
+        : {}),
+      ...(securityOverride ? { securityNotesOverride: securityOverride } : {}),
+      ...(ethicsOverride ? { ethicsNotesOverride: ethicsOverride } : {}),
     };
 
     try {
@@ -476,6 +522,55 @@ export function RadarItemForm({
         } else if (typeof initialItem.previousRingId === "number") {
           payload.previousRingId = initialItem.previousRingId;
         }
+
+        setOptionalUpdateField(
+          payload,
+          "providerId",
+          providerId || undefined,
+          initialItem.providerId,
+        );
+        setOptionalUpdateField(
+          payload,
+          "providerName",
+          providerName,
+          initialItem.providerName,
+        );
+        setOptionalUpdateField(
+          payload,
+          "familyId",
+          familyId,
+          initialItem.familyId,
+        );
+        setOptionalUpdateField(
+          payload,
+          "familyName",
+          familyName,
+          initialItem.familyName,
+        );
+        setOptionalUpdateField(
+          payload,
+          "originOverride",
+          originOverride,
+          initialItem.originOverride,
+        );
+        setOptionalUpdateField(
+          payload,
+          "sustainabilityNotesOverride",
+          sustainabilityOverride,
+          initialItem.sustainabilityNotesOverride,
+        );
+        setOptionalUpdateField(
+          payload,
+          "securityNotesOverride",
+          securityOverride,
+          initialItem.securityNotesOverride,
+        );
+        setOptionalUpdateField(
+          payload,
+          "ethicsNotesOverride",
+          ethicsOverride,
+          initialItem.ethicsNotesOverride,
+        );
 
         if (isResubmittingForReview) {
           payload.reviewComment = "";
@@ -683,6 +778,19 @@ export function RadarItemForm({
               </div>
             </CardHeader>
             <CardContent className="space-y-8 p-10">
+              {hasSharedProfile ? (
+                <div className="rounded-[2rem] border border-primary/10 bg-white/70 p-5 text-sm font-medium text-muted-foreground">
+                  Shared profile:{" "}
+                  <span className="font-black text-foreground">
+                    {sharedProfileLabel}
+                  </span>
+                  . Leave a note blank, or set origin to{" "}
+                  <span className="font-black text-foreground">
+                    Match Shared Profile
+                  </span>{" "}
+                  to inherit the shared default.
+                </div>
+              ) : null}
               <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
                 <div className="space-y-3">
                   <Label className="flex items-center gap-2 font-bold text-sm text-foreground/70">
@@ -691,6 +799,12 @@ export function RadarItemForm({
                   </Label>
                   <Textarea
                     value={formData.sustainabilityNotes}
+                    placeholder={
+                      hasSharedProfile
+                        ? sharedDefaults.sustainabilityNotes ||
+                          "No shared sustainability default."
+                        : ""
+                    }
                     className="h-32 rounded-2xl border-2 border-border bg-white/50"
                     onChange={(event) =>
                       setFormData((currentState) => ({
@@ -707,6 +821,12 @@ export function RadarItemForm({
                   </Label>
                   <Textarea
                     value={formData.securityNotes}
+                    placeholder={
+                      hasSharedProfile
+                        ? sharedDefaults.securityNotes ||
+                          "No shared security default."
+                        : ""
+                    }
                     className="h-32 rounded-2xl border-2 border-border bg-white/50"
                     onChange={(event) =>
                       setFormData((currentState) => ({
@@ -724,6 +844,11 @@ export function RadarItemForm({
                 </Label>
                 <Textarea
                   value={formData.ethicsNotes}
+                  placeholder={
+                    hasSharedProfile
+                      ? sharedDefaults.ethicsNotes || "No shared ethics default."
+                      : ""
+                  }
                   className="h-32 rounded-2xl border-2 border-border bg-white/50"
                   onChange={(event) =>
                     setFormData((currentState) => ({
@@ -819,18 +944,23 @@ export function RadarItemForm({
                   Origin
                 </Label>
                 <Select
-                  value={formData.origin}
-                  onValueChange={(value: RadarItem["origin"]) =>
-                    setFormData((currentState) => ({
-                      ...currentState,
-                      origin: value,
-                    }))
+                  value={
+                    formData.origin || (hasSharedProfile ? INHERIT_SELECT_VALUE : "European")
                   }
+                  onValueChange={handleOriginChange}
                 >
                   <SelectTrigger className="h-14 rounded-xl border-2 border-transparent bg-secondary/30 font-bold">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl">
+                    {hasSharedProfile ? (
+                      <SelectItem
+                        value={INHERIT_SELECT_VALUE}
+                        className="p-3 font-bold"
+                      >
+                        Match Shared Profile ({sharedDefaults.origin})
+                      </SelectItem>
+                    ) : null}
                     <SelectItem value="European" className="p-3 font-bold">
                       European
                     </SelectItem>
@@ -853,6 +983,76 @@ export function RadarItemForm({
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-8">
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest opacity-50">
+                  <Layers3 className="h-4 w-4" />
+                  Provider
+                </Label>
+                <Select
+                  value={formData.providerId || NONE_SELECT_VALUE}
+                  onValueChange={handleProviderChange}
+                >
+                  <SelectTrigger className="h-14 rounded-xl border-2 border-transparent bg-secondary/30 font-bold">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl">
+                    <SelectItem value={NONE_SELECT_VALUE} className="p-3 font-bold">
+                      No Shared Provider
+                    </SelectItem>
+                    {providers.map((provider) => (
+                      <SelectItem
+                        key={provider.id}
+                        value={provider.id}
+                        className="p-3"
+                      >
+                        <span className="flex flex-col">
+                          <span className="font-bold">{provider.name}</span>
+                          {provider.description ? (
+                            <span className="text-xs font-medium text-muted-foreground">
+                              {provider.description}
+                            </span>
+                          ) : null}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs font-bold uppercase tracking-widest opacity-50">
+                  Model Family
+                </Label>
+                <Select
+                  value={formData.familyId || NONE_SELECT_VALUE}
+                  onValueChange={handleFamilyChange}
+                >
+                  <SelectTrigger className="h-14 rounded-xl border-2 border-transparent bg-secondary/30 font-bold">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl">
+                    <SelectItem value={NONE_SELECT_VALUE} className="p-3 font-bold">
+                      No Family
+                    </SelectItem>
+                    {filteredFamilies.map((family) => (
+                      <SelectItem key={family.id} value={family.id} className="p-3">
+                        <span className="flex flex-col">
+                          <span className="font-bold">{family.name}</span>
+                          {family.description ? (
+                            <span className="text-xs font-medium text-muted-foreground">
+                              {family.description}
+                            </span>
+                          ) : null}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {hasSharedProfile ? (
+                  <p className="text-xs font-medium text-muted-foreground">
+                    Shared governance defaults resolve from {sharedProfileLabel}.
+                  </p>
+                ) : null}
+              </div>
               <div className="space-y-2">
                 <Label className="text-xs font-bold uppercase tracking-widest opacity-50">
                   Team

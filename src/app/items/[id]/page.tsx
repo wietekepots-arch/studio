@@ -20,13 +20,28 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { RadarConfigOption, RadarItem, Experience, HistoryEntry } from "@/app/lib/radar-types";
+import {
+  Experience,
+  HistoryEntry,
+  RadarConfigOption,
+  RadarFamily,
+  RadarItem,
+  RadarProvider,
+} from "@/app/lib/radar-types";
 import {
   canEditRadarItem,
   getStatusBadgeVariant,
   mergeConfigOptions,
+  mergeRadarFamilies,
+  mergeRadarProviders,
+  resolveRadarItem,
 } from "@/lib/radar-firestore";
-import { seedQuadrants, seedRings } from "@/lib/radar-seed";
+import {
+  seedFamilies,
+  seedProviders,
+  seedQuadrants,
+  seedRings,
+} from "@/lib/radar-seed";
 
 interface ItemDetailPageProps {
   params: Promise<{ id: string }>;
@@ -78,6 +93,20 @@ export default function ItemDetailPage({
 
     return collection(db, "rings");
   }, [db, hasCompanyAccess]);
+  const providersQuery = useMemoFirebase(() => {
+    if (!hasCompanyAccess) {
+      return null;
+    }
+
+    return collection(db, "radarProviders");
+  }, [db, hasCompanyAccess]);
+  const familiesQuery = useMemoFirebase(() => {
+    if (!hasCompanyAccess) {
+      return null;
+    }
+
+    return collection(db, "radarFamilies");
+  }, [db, hasCompanyAccess]);
   const itemHistoryQuery = useMemoFirebase(() => {
     if (!authUser || !hasCompanyAccess) {
       return null;
@@ -97,13 +126,28 @@ export default function ItemDetailPage({
     );
   }, [authUser, db, hasCompanyAccess, id]);
 
-  const { data: item, isLoading: isItemLoading } = useDoc<RadarItem>(itemRef);
+  const { data: rawItem, isLoading: isItemLoading } = useDoc<RadarItem>(itemRef);
   const { data: quadrants } = useCollection<RadarConfigOption>(quadrantsQuery);
   const { data: rings } = useCollection<RadarConfigOption>(ringsQuery);
+  const { data: providerDocs } = useCollection<RadarProvider>(providersQuery);
+  const { data: familyDocs } = useCollection<RadarFamily>(familiesQuery);
   const { data: historyEntries } = useCollection<HistoryEntry>(itemHistoryQuery);
   const { data: relatedExperiences } = useCollection<Experience>(
     relatedExperiencesQuery,
   );
+  const providers = useMemo(() => {
+    return mergeRadarProviders(providerDocs, seedProviders);
+  }, [providerDocs]);
+  const families = useMemo(() => {
+    return mergeRadarFamilies(familyDocs, seedFamilies);
+  }, [familyDocs]);
+  const item = useMemo(() => {
+    if (!rawItem) {
+      return null;
+    }
+
+    return resolveRadarItem(rawItem, families, providers);
+  }, [families, providers, rawItem]);
 
   const quadrantMap = useMemo(() => {
     return new Map(
@@ -176,7 +220,8 @@ export default function ItemDetailPage({
     );
   }
 
-  const canEdit = canEditRadarItem(item, authUser.uid, role);
+  const editableItem = rawItem || item;
+  const canEdit = canEditRadarItem(editableItem, authUser.uid, role);
 
   return (
     <div className="min-h-screen bg-background">
@@ -223,6 +268,16 @@ export default function ItemDetailPage({
                 <Badge variant="outline" className="rounded-full px-6 py-2">
                   {ringMap.get(item.ringId) || "Unassigned"}
                 </Badge>
+                {item.providerName ? (
+                  <Badge variant="outline" className="rounded-full px-6 py-2">
+                    {item.providerName}
+                  </Badge>
+                ) : null}
+                {item.familyName ? (
+                  <Badge variant="outline" className="rounded-full px-6 py-2">
+                    {item.familyName}
+                  </Badge>
+                ) : null}
               </div>
               <h1 className="text-7xl font-black leading-[0.85] tracking-tighter">
                 {item.name}
@@ -407,6 +462,22 @@ export default function ItemDetailPage({
                   </div>
                   <div className="text-xl font-bold">{item.ownerName}</div>
                 </div>
+                {item.providerName ? (
+                  <div className="space-y-1">
+                    <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                      Provider
+                    </div>
+                    <div className="text-xl font-bold">{item.providerName}</div>
+                  </div>
+                ) : null}
+                {item.familyName ? (
+                  <div className="space-y-1">
+                    <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                      Family
+                    </div>
+                    <div className="text-xl font-bold">{item.familyName}</div>
+                  </div>
+                ) : null}
                 <div className="space-y-1">
                   <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
                     Created

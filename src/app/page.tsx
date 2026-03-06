@@ -22,146 +22,51 @@ import {
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-
-const MOCK_ITEMS: RadarItem[] = [
-  {
-    id: 'claude-3-5',
-    name: 'Claude 3.5 Sonnet',
-    shortDesc: 'High-performance reasoning model.',
-    notes: 'Legacy support for existing workflows. Superseded by newer models for primary production.',
-    quadrantId: 0,
-    ringId: 3, // HOLD
-    previousRingId: 0,
-    tags: ['LLM', 'Anthropic', 'Legacy'],
-    team: 'Creative Tech',
-    ownerId: 'admin-1',
-    ownerName: 'Greenberry Admin',
-    scores: { maturity: 5, impact: 3, effort: 1, risk: 2 },
-    costRange: 'Medium',
-    origin: 'American',
-    sustainabilityNotes: 'Standard inference footprint.',
-    securityNotes: 'Enterprise safety verified.',
-    links: ['https://anthropic.com'],
-    status: 'Approved',
-    lastReviewedAt: 1740960000000,
-    createdAt: 1730960000000,
-    updatedAt: 1740960000000,
-    updatedBy: 'Admin',
-    history: [
-      { id: 'h1', itemId: 'claude-3-5', action: 'Moved to Hold', note: 'Outdated model', createdAt: 1740960000000, createdBy: 'Admin' }
-    ],
-    pricingTiers: [
-      { name: 'Individual', cost: 'Free', features: ['Basic usage', 'Standard support'] },
-      { name: 'Pro', cost: '$20', billing: 'per user/month', features: ['High limits', 'Priority access', 'Latest features'] }
-    ]
-  },
-  {
-    id: 'claude-4-6',
-    name: 'Claude 4.6 Sonnet',
-    shortDesc: 'Latest intelligence flagship.',
-    notes: 'Primary recommendation for reasoning and complex coding tasks.',
-    quadrantId: 1,
-    ringId: 0, // ADOPT
-    tags: ['LLM', 'Anthropic', 'Flagship'],
-    team: 'Creative Tech',
-    ownerId: 'admin-1',
-    ownerName: 'Greenberry Admin',
-    scores: { maturity: 5, impact: 5, effort: 1, risk: 2 },
-    costRange: 'Medium',
-    origin: 'American',
-    sustainabilityNotes: 'Optimized efficiency metrics.',
-    securityNotes: 'Full privacy compliance.',
-    links: ['https://anthropic.com'],
-    status: 'Approved',
-    lastReviewedAt: 1740960000000,
-    createdAt: 1740960000000,
-    updatedAt: 1740960000000,
-    updatedBy: 'Admin',
-    pricingTiers: [
-      { name: 'Developer', cost: 'Usage-based', billing: 'per million tokens', features: ['API Access', 'Enterprise Support'] },
-      { name: 'Pro', cost: '$20', billing: 'per month', features: ['Unlimited Web Access', 'Team workspace'] }
-    ]
-  },
-  {
-    id: 'transcriptor',
-    name: 'Transcriptor',
-    shortDesc: 'Meeting intelligence for studios.',
-    notes: 'Excellent support for Dutch language and studio-wide integration.',
-    quadrantId: 2,
-    ringId: 0,
-    tags: ['Audio', 'Productivity', 'EU'],
-    team: 'Operations',
-    ownerId: 'admin-1',
-    ownerName: 'Admin',
-    scores: { maturity: 4, impact: 4, effort: 2, risk: 1 },
-    costRange: 'Low',
-    origin: 'European',
-    sustainabilityNotes: 'Low energy overhead.',
-    securityNotes: 'EU-hosted, GDPR compliant.',
-    links: [],
-    status: 'Approved',
-    lastReviewedAt: 1740960000000,
-    createdAt: 1740960000000,
-    updatedAt: 1740960000000,
-    updatedBy: 'Admin',
-    pricingTiers: [
-      { name: 'Starter', cost: 'Free', features: ['10h per month', 'Basic export'] },
-      { name: 'Business', cost: '€12', billing: 'per seat/month', features: ['Unlimited hours', 'Team sharing', 'AI Summaries'] }
-    ]
-  },
-  {
-    id: 'firebase-studio',
-    name: 'Firebase Studio',
-    shortDesc: 'Rapid prototyping environment.',
-    notes: 'Our core platform for building internal tools and MVPs.',
-    quadrantId: 0,
-    ringId: 0,
-    tags: ['Prototyping', 'Cloud'],
-    team: 'Engineering',
-    ownerId: 'admin-1',
-    ownerName: 'Admin',
-    scores: { maturity: 5, impact: 5, effort: 1, risk: 1 },
-    costRange: 'Medium',
-    origin: 'American',
-    sustainabilityNotes: 'Google Cloud managed.',
-    securityNotes: 'Enterprise Auth & Rules.',
-    links: [],
-    status: 'Approved',
-    lastReviewedAt: 1740960000000,
-    createdAt: 1740960000000,
-    updatedAt: 1740960000000,
-    updatedBy: 'Admin'
-  }
-];
+import { useCollection, useMemoFirebase, useUser, useFirestore } from '@/firebase';
+import { collection, query, where, orderBy } from 'firebase/firestore';
 
 export default function Home() {
   const [search, setSearch] = useState('');
   const [activeQuadrant, setActiveQuadrant] = useState<number | undefined>();
   const [activeRing, setActiveRing] = useState<number | undefined>();
   const [mounted, setMounted] = useState(false);
+  const db = useFirestore();
+  const { user } = useUser();
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  const radarQuery = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return query(
+      collection(db, 'radarItems'),
+      where('status', '==', 'Approved')
+    );
+  }, [db, user]);
+
+  const { data: itemsFromDb, isLoading } = useCollection<RadarItem>(radarQuery);
+
+  const radarItems = itemsFromDb || [];
+
   const filteredItems = useMemo(() => {
-    return MOCK_ITEMS.filter(item => {
+    return radarItems.filter(item => {
       const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase()) || 
                           item.shortDesc.toLowerCase().includes(search.toLowerCase());
       const matchesQuadrant = activeQuadrant === undefined || item.quadrantId === activeQuadrant;
       const matchesRing = activeRing === undefined || item.ringId === activeRing;
       return matchesSearch && matchesQuadrant && matchesRing;
     });
-  }, [search, activeQuadrant, activeRing]);
+  }, [radarItems, search, activeQuadrant, activeRing]);
 
   const quadrantItems = useMemo(() => {
     if (activeQuadrant === undefined) return [];
-    return MOCK_ITEMS.filter(item => item.quadrantId === activeQuadrant);
-  }, [activeQuadrant]);
+    return radarItems.filter(item => item.quadrantId === activeQuadrant);
+  }, [radarItems, activeQuadrant]);
 
   const recentItems = useMemo(() => {
-    return [...MOCK_ITEMS].sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 5);
-  }, []);
+    return [...radarItems].sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 5);
+  }, [radarItems]);
 
   const isItemNew = (item: RadarItem) => {
     if (!mounted) return false;
@@ -222,20 +127,29 @@ export default function Home() {
               ))}
             </div>
 
-            <div className="bg-white rounded-[3rem] p-12 shadow-2xl shadow-primary/5 border-2 border-secondary/20 relative overflow-hidden">
-              <div className="absolute top-8 right-12 flex gap-4 z-10">
-                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full border">
-                  <Sparkles className="w-3 h-3 text-primary" /> New
+            <div className="bg-white rounded-[3rem] p-12 shadow-2xl shadow-primary/5 border-2 border-secondary/20 relative overflow-hidden min-h-[500px] flex items-center justify-center">
+              {isLoading ? (
+                <div className="animate-pulse flex flex-col items-center gap-4">
+                  <div className="w-64 h-64 rounded-full border-8 border-secondary" />
+                  <div className="text-muted-foreground font-black uppercase tracking-widest text-xs">Syncing Radar...</div>
                 </div>
-                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full border">
-                  <ArrowUpRight className="w-3 h-3 text-blue-500" /> Changed
-                </div>
-              </div>
-              <RadarChart 
-                items={filteredItems} 
-                config={DEFAULT_CONFIG} 
-                activeFilters={{ quadrant: activeQuadrant, ring: activeRing }} 
-              />
+              ) : (
+                <>
+                  <div className="absolute top-8 right-12 flex gap-4 z-10">
+                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full border">
+                      <Sparkles className="w-3 h-3 text-primary" /> New
+                    </div>
+                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full border">
+                      <ArrowUpRight className="w-3 h-3 text-blue-500" /> Changed
+                    </div>
+                  </div>
+                  <RadarChart 
+                    items={filteredItems} 
+                    config={DEFAULT_CONFIG} 
+                    activeFilters={{ quadrant: activeQuadrant, ring: activeRing }} 
+                  />
+                </>
+              )}
             </div>
 
             {activeQuadrant !== undefined && (
@@ -292,7 +206,7 @@ export default function Home() {
             </CardHeader>
             <CardContent className="p-0">
               <div className="divide-y divide-border/50">
-                {recentItems.map((item) => (
+                {recentItems.length > 0 ? recentItems.map((item) => (
                   <Link 
                     key={item.id} 
                     href={`/items/${item.id}`}
@@ -312,7 +226,11 @@ export default function Home() {
                     </div>
                     <ChevronRight className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-all group-hover:translate-x-1" />
                   </Link>
-                ))}
+                )) : (
+                  <div className="p-12 text-center text-sm text-muted-foreground font-medium italic">
+                    Waiting for first strategic pulse...
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

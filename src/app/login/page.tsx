@@ -46,7 +46,7 @@ export default function LoginPage() {
         // Short delay to ensure rule evaluation can pick up the identity change if needed
         setTimeout(() => {
           router.push('/');
-        }, 300);
+        }, 500);
       } else {
         toast({
           title: "Access Restricted",
@@ -62,6 +62,7 @@ export default function LoginPage() {
 
   const handleAuthError = (error: any) => {
     setLoading(false);
+    console.error("Auth Error:", error);
     if (error.code === 'auth/operation-not-allowed') {
       setSetupError(true);
       toast({

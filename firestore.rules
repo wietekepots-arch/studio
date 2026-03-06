@@ -10,7 +10,7 @@ service cloud.firestore {
     // Anonymous users are allowed as 'Guests'.
     function isGreenberryUser() {
       return isSignedIn() && (
-        (request.auth.token.email != null && request.auth.token.email.matches('^.*@greenberry[.]nl$')) || 
+        (request.auth.token.email != null && request.auth.token.email.matches('.*@greenberry\\.nl$')) || 
         request.auth.token.firebase.sign_in_provider == 'anonymous'
       );
     }
@@ -29,7 +29,7 @@ service cloud.firestore {
     }
 
     match /userProfiles/{userId} {
-      allow get: if isGreenberryUser();
+      allow read: if isGreenberryUser();
       allow list: if isGreenberryUser();
       allow create: if isOwner(userId);
       allow update: if isOwner(userId) || isAdmin();

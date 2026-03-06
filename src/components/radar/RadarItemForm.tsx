@@ -258,6 +258,60 @@ export function RadarItemForm({
     setFormData(getFormState(initialItem));
   }, [initialItem]);
 
+  function handleProviderChange(value: string): void {
+    if (value === NONE_SELECT_VALUE) {
+      setFormData((currentState) => ({
+        ...currentState,
+        providerId: "",
+        familyId: "",
+      }));
+      return;
+    }
+
+    setFormData((currentState) => {
+      const nextFamilyId =
+        currentState.familyId &&
+        families.some(
+          (item) =>
+            item.id === currentState.familyId && item.providerId === value,
+        )
+          ? currentState.familyId
+          : "";
+
+      return {
+        ...currentState,
+        providerId: value,
+        familyId: nextFamilyId,
+      };
+    });
+  }
+
+  function handleFamilyChange(value: string): void {
+    if (value === NONE_SELECT_VALUE) {
+      setFormData((currentState) => ({
+        ...currentState,
+        familyId: "",
+      }));
+      return;
+    }
+
+    const family = families.find((item) => item.id === value);
+
+    setFormData((currentState) => ({
+      ...currentState,
+      familyId: value,
+      providerId: family?.providerId || currentState.providerId,
+    }));
+  }
+
+  function handleOriginChange(value: string): void {
+    setFormData((currentState) => ({
+      ...currentState,
+      origin:
+        value === INHERIT_SELECT_VALUE ? "" : (value as RadarItem["origin"]),
+    }));
+  }
+
   async function handleAiCategorize(): Promise<void> {
     if (!formData.name || !formData.notes) {
       toast({

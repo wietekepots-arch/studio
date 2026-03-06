@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { collection, query, where } from "firebase/firestore";
 import {
@@ -32,6 +32,11 @@ export default function HomePage(): React.ReactElement {
   const { authUser, hasCompanyAccess, isLoading } = useAppUser();
   const [search, setSearch] = useState("");
   const [activeQuadrant, setActiveQuadrant] = useState<number | undefined>();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const quadrantsQuery = useMemoFirebase(() => {
     if (!hasCompanyAccess) {
@@ -85,6 +90,22 @@ export default function HomePage(): React.ReactElement {
 
     return filteredItems.filter((item) => item.quadrantId === activeQuadrant);
   }, [activeQuadrant, filteredItems]);
+
+  function formatDate(timestamp: number): string {
+    if (!mounted) {
+      return "";
+    }
+
+    return new Date(timestamp).toLocaleDateString();
+  }
+
+  function isItemNew(item: RadarItem): boolean {
+    if (!mounted) {
+      return false;
+    }
+
+    return item.createdAt > Date.now() - 1_209_600_000;
+  }
 
   if (isLoading || isItemsLoading) {
     return (
@@ -207,7 +228,10 @@ export default function HomePage(): React.ReactElement {
                         {config.quadrants[activeQuadrant]}
                       </span>
                     </h3>
-                    <Badge variant="secondary" className="rounded-full px-4 py-1.5 font-bold">
+                    <Badge
+                      variant="secondary"
+                      className="rounded-full px-4 py-1.5 font-bold"
+                    >
                       {focusItems.length} blips
                     </Badge>
                   </div>
@@ -223,7 +247,7 @@ export default function HomePage(): React.ReactElement {
                             <span className="text-2xl font-black tracking-tight transition-colors group-hover:text-primary">
                               {item.name}
                             </span>
-                            {item.createdAt > Date.now() - 1_209_600_000 ? (
+                            {isItemNew(item) ? (
                               <Sparkles className="h-4 w-4 text-primary" />
                             ) : null}
                           </div>
@@ -256,24 +280,39 @@ export default function HomePage(): React.ReactElement {
             </CardHeader>
             <CardContent className="p-0">
               <div className="divide-y divide-border/50">
-                {recentItems.map((item) => (
-                  <Link
-                    key={item.id}
-                    href={`/items/${item.id}`}
-                    className="group flex items-center justify-between p-8 transition-all hover:bg-white/50"
-                  >
-                    <div className="space-y-2">
-                      <span className="text-xl font-bold tracking-tight transition-colors group-hover:text-primary">
-                        {item.name}
-                      </span>
-                      <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                        <Clock className="h-3 w-3" />
-                        {new Date(item.updatedAt).toLocaleDateString()}
+                {recentItems.length ? (
+                  recentItems.map((item) => (
+                    <Link
+                      key={item.id}
+                      href={`/items/${item.id}`}
+                      className="group flex items-center justify-between p-8 transition-all hover:bg-white/50"
+                    >
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl font-bold tracking-tight transition-colors group-hover:text-primary">
+                            {item.name}
+                          </span>
+                          {isItemNew(item) ? (
+                            <Badge className="h-4 border-none bg-primary/20 text-[9px] font-black text-primary">
+                              NEW
+                            </Badge>
+                          ) : null}
+                        </div>
+                        <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                          <Clock className="h-3 w-3" />
+                          {formatDate(item.updatedAt)}
+                          <div className="h-1 w-1 rounded-full bg-border" />
+                          {config.rings[item.ringId]}
+                        </div>
                       </div>
-                    </div>
-                    <ChevronRight className="h-6 w-6 text-muted-foreground transition-all group-hover:translate-x-1 group-hover:text-primary" />
-                  </Link>
-                ))}
+                      <ChevronRight className="h-6 w-6 text-muted-foreground transition-all group-hover:translate-x-1 group-hover:text-primary" />
+                    </Link>
+                  ))
+                ) : (
+                  <div className="p-12 text-center text-sm font-medium italic text-muted-foreground">
+                    Waiting for first strategic pulse...
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -290,7 +329,11 @@ export default function HomePage(): React.ReactElement {
                 Only approved blips appear on the radar. Suggestions and review
                 queues live in the dashboard.
               </p>
-              <Button asChild variant="secondary" className="h-16 w-full gap-2 rounded-full text-lg font-bold">
+              <Button
+                asChild
+                variant="secondary"
+                className="h-16 w-full gap-2 rounded-full text-lg font-bold"
+              >
                 <Link href="/dashboard">
                   Open Dashboard
                   <ArrowRight className="h-5 w-5" />

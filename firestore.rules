@@ -121,8 +121,8 @@ service cloud.firestore {
 
       match /itemHistory/{historyId} {
         allow read: if hasProfile();
-        allow create: if hasProfile()
-          && (isPowerUser() || request.resource.data.createdBy == request.auth.uid);
+      allow create: if hasProfile()
+        && (isPowerUser() || request.resource.data.createdBy == request.auth.uid);
         allow update, delete: if isAdmin();
       }
     }

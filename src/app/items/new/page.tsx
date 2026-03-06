@@ -25,7 +25,8 @@ import {
   Wand2,
   Leaf,
   Shield,
-  Globe
+  Globe,
+  Scale
 } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -51,6 +52,7 @@ export default function NewItemPage() {
     origin: 'European' as Origin,
     sustainabilityNotes: '',
     securityNotes: '',
+    ethicsNotes: '',
     links: [''],
     tags: '',
   });
@@ -247,6 +249,17 @@ export default function NewItemPage() {
                         onChange={e => setFormData({...formData, securityNotes: e.target.value})}
                       />
                     </div>
+                  </div>
+                  <div className="space-y-3">
+                    <Label className="flex items-center gap-2 font-bold text-sm tracking-tight text-foreground/70">
+                      <Scale className="w-4 h-4 text-primary" /> Ethics
+                    </Label>
+                    <Textarea 
+                      placeholder="Ethical considerations, bias risks, and societal impact." 
+                      className="border-2 border-border focus:border-primary rounded-2xl font-medium h-32 bg-white/50"
+                      value={formData.ethicsNotes}
+                      onChange={e => setFormData({...formData, ethicsNotes: e.target.value})}
+                    />
                   </div>
                 </CardContent>
               </Card>

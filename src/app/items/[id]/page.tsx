@@ -21,7 +21,8 @@ import {
   CreditCard,
   CheckCircle2,
   ChevronRight,
-  Lock
+  Lock,
+  Scale
 } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
@@ -178,7 +179,7 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               <Card className="border-none rounded-[3rem] bg-secondary/20 p-4 shadow-none">
                 <CardHeader className="pb-4">
                   <div className="flex items-center gap-3 text-primary font-black uppercase text-[10px] tracking-[0.2em]">
@@ -197,6 +198,16 @@ export default function ItemDetailPage({ params }: { params: Promise<{ id: strin
                 </CardHeader>
                 <CardContent className="text-lg font-bold text-foreground/80">
                   {item.securityNotes || 'Review Required'}
+                </CardContent>
+              </Card>
+              <Card className="border-none rounded-[3rem] bg-secondary/20 p-4 shadow-none">
+                <CardHeader className="pb-4">
+                  <div className="flex items-center gap-3 text-primary font-black uppercase text-[10px] tracking-[0.2em]">
+                    <Scale className="w-5 h-5" /> Ethics
+                  </div>
+                </CardHeader>
+                <CardContent className="text-lg font-bold text-foreground/80">
+                  {item.ethicsNotes || 'Assessment Pending'}
                 </CardContent>
               </Card>
               <Card className="border-none rounded-[3rem] bg-secondary/20 p-4 shadow-none">

@@ -8,7 +8,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, runTransaction } from "firebase/firestore";
 import { signOut, User } from "firebase/auth";
 import { useAuth, useDoc, useFirestore, useMemoFirebase, useUser } from "@/firebase";
 import { Role, UserProfile } from "@/app/lib/radar-types";
@@ -55,6 +55,7 @@ export function AppUserProvider({
   const {
     data: profileDocument,
     isLoading: isProfileLoading,
+    error: profileError,
   } = useDoc<UserProfile>(profileRef);
 
   useEffect(() => {
@@ -73,21 +74,31 @@ export function AppUserProvider({
       !user ||
       !isCompanyUser ||
       isProfileLoading ||
+      profileError ||
       profileDocument ||
-      isEnsuringProfile
+      isEnsuringProfile ||
+      !profileRef
     ) {
       return;
     }
 
     setIsEnsuringProfile(true);
-    void setDoc(doc(db, "userProfiles", user.uid), {
-      uid: user.uid,
-      displayName: user.displayName || user.email?.split("@")[0] || "Member",
-      email: user.email || "",
-      role: "Member",
-      team: "",
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
+    void runTransaction(db, async (transaction) => {
+      const currentProfile = await transaction.get(profileRef);
+
+      if (currentProfile.exists()) {
+        return;
+      }
+
+      transaction.set(profileRef, {
+        uid: user.uid,
+        displayName: user.displayName || user.email?.split("@")[0] || "Member",
+        email: user.email || "",
+        role: "Member",
+        team: "",
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      });
     }).finally(() => {
       setIsEnsuringProfile(false);
     });
@@ -96,7 +107,9 @@ export function AppUserProvider({
     isCompanyUser,
     isEnsuringProfile,
     isProfileLoading,
+    profileError,
     profileDocument,
+    profileRef,
     user,
   ]);
 

@@ -159,7 +159,10 @@ export default function DashboardPage(): React.ReactElement {
     isOwnItemsLoading ||
     isAllItemsLoading ||
     isPendingItemsLoading;
-  const needsSeed = !quadrants.length || !rings.length || !mainItems.length;
+  const needsSeed =
+    !quadrants.length ||
+    !rings.length ||
+    !(approvedItems && approvedItems.length);
 
   async function handleApprove(item: RadarItem): Promise<void> {
     if (!profile) {

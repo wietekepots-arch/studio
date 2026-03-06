@@ -21,7 +21,8 @@
         },
         "role": {
           "type": "string",
-          "description": "The assigned role of the user (e.g., Admin, Editor, Viewer), dictating their permissions."
+          "description": "The assigned role of the user (e.g., Admin, Editor, Viewer), dictating their permissions.",
+          "enum": ["Admin", "Editor", "Viewer"]
         },
         "team": {
           "type": "string",

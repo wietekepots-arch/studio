@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Button } from '@/components/ui/button';
 import { 
@@ -27,6 +27,11 @@ export default function ExperienceDetailPage({ params }: { params: Promise<{ id:
   const { id } = React.use(params);
   const db = useFirestore();
   const { user, isUserLoading: isAuthLoading } = useUser();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   
   const expRef = useMemoFirebase(() => (db && user ? doc(db, 'experiences', id) : null), [db, user, id]);
   const { data: experience, isLoading: isExpLoading } = useDoc<Experience>(expRef);
@@ -37,6 +42,11 @@ export default function ExperienceDetailPage({ params }: { params: Promise<{ id:
   }, [db, user, experience?.toolLinks]);
 
   const { data: linkedTools, isLoading: isToolsLoading } = useCollection<RadarItem>(toolsQuery);
+
+  const formatDate = (timestamp: number) => {
+    if (!mounted) return "";
+    return new Date(timestamp).toLocaleDateString();
+  };
 
   if (isAuthLoading || isExpLoading) {
     return (
@@ -196,7 +206,7 @@ export default function ExperienceDetailPage({ params }: { params: Promise<{ id:
                   </div>
                   <div className="space-y-2">
                     <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Date Logged</div>
-                    <div className="text-lg font-black tracking-tight">{new Date(experience.createdAt).toLocaleDateString()}</div>
+                    <div className="text-lg font-black tracking-tight">{formatDate(experience.createdAt)}</div>
                   </div>
                 </div>
 

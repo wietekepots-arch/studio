@@ -1,99 +1,115 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from 'react';
-import { Navbar } from '@/components/layout/Navbar';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { 
-  Search, 
-  Plus, 
-  ChevronRight, 
-  Star, 
-  Clock, 
-  User as UserIcon,
+import React, { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { collection, orderBy, query, where } from "firebase/firestore";
+import {
+  ChevronRight,
+  Clock,
+  Lock,
+  Plus,
+  Search,
   Sparkles,
-  Lock
-} from 'lucide-react';
-import Link from 'next/link';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useCollection, useMemoFirebase, useUser, useFirestore } from '@/firebase';
-import { collection, query, where, orderBy } from 'firebase/firestore';
-import { Experience } from '@/app/lib/radar-types';
+  Star,
+  User as UserIcon,
+} from "lucide-react";
+import { Navbar } from "@/components/layout/Navbar";
+import { useAppUser } from "@/components/app/AppUserProvider";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Experience } from "@/app/lib/radar-types";
 
-export default function ExperiencesPage() {
-  const [search, setSearch] = useState('');
+export default function ExperiencesPage(): React.ReactElement {
+  const [search, setSearch] = useState("");
   const [activeTeam, setActiveTeam] = useState<string | undefined>();
-  const db = useFirestore();
-  const { user, isUserLoading } = useUser();
   const [mounted, setMounted] = useState(false);
+  const db = useFirestore();
+  const { authUser, hasCompanyAccess, isLoading: isUserLoading } = useAppUser();
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   const experiencesQuery = useMemoFirebase(() => {
-    if (!db || !user) return null;
-    
-    const email = user.email || '';
-    const isGreenberry = email.toLowerCase().endsWith('@greenberry.nl');
-    const isAnonymous = user.isAnonymous;
-    
-    if (!isGreenberry && !isAnonymous) return null;
+    if (!db || !authUser || !hasCompanyAccess) {
+      return null;
+    }
 
     return query(
-      collection(db, 'experiences'),
-      where('status', '==', 'Published'),
-      orderBy('createdAt', 'desc')
+      collection(db, "experiences"),
+      where("status", "==", "Published"),
+      orderBy("createdAt", "desc"),
     );
-  }, [db, user]);
+  }, [authUser, db, hasCompanyAccess]);
 
   const { data: experiences, isLoading } = useCollection<Experience>(experiencesQuery);
 
   const filteredExperiences = useMemo(() => {
-    if (!experiences) return [];
-    return experiences.filter(exp => {
-      const matchesSearch = exp.title.toLowerCase().includes(search.toLowerCase()) || 
-                          exp.summary.toLowerCase().includes(search.toLowerCase());
-      const matchesTeam = !activeTeam || exp.team === activeTeam;
+    if (!experiences) {
+      return [];
+    }
+
+    return experiences.filter((experience) => {
+      const matchesSearch =
+        experience.title.toLowerCase().includes(search.toLowerCase()) ||
+        experience.summary.toLowerCase().includes(search.toLowerCase());
+      const matchesTeam = !activeTeam || experience.team === activeTeam;
+
       return matchesSearch && matchesTeam;
     });
-  }, [experiences, search, activeTeam]);
+  }, [activeTeam, experiences, search]);
 
   const teams = useMemo(() => {
-    if (!experiences) return [];
-    return Array.from(new Set(experiences.map(e => e.team)));
+    if (!experiences) {
+      return [];
+    }
+
+    return Array.from(new Set(experiences.map((experience) => experience.team)));
   }, [experiences]);
 
-  const formatDate = (timestamp: number) => {
-    if (!mounted) return "";
+  function formatDate(timestamp: number): string {
+    if (!mounted) {
+      return "";
+    }
+
     return new Date(timestamp).toLocaleDateString();
-  };
+  }
 
   if (isUserLoading) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
+      <div className="flex min-h-screen flex-col bg-background">
         <Navbar />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <div className="flex flex-1 items-center justify-center">
+          <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary" />
         </div>
       </div>
     );
   }
 
-  if (!user) {
+  if (!hasCompanyAccess) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
+      <div className="flex min-h-screen flex-col bg-background">
         <Navbar />
-        <div className="flex-1 flex flex-col items-center justify-center space-y-8 text-center px-6">
-          <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-            <Lock className="w-10 h-10" />
+        <div className="flex flex-1 flex-col items-center justify-center space-y-8 px-6 text-center">
+          <div className="flex h-24 w-24 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <Lock className="h-10 w-10" />
           </div>
-          <div className="space-y-4 max-w-md">
-            <h1 className="text-5xl font-black tracking-tighter">Locked Experiences</h1>
-            <p className="text-xl text-muted-foreground font-medium">Real-world AI insights are reserved for authenticated Greenberry members.</p>
+          <div className="max-w-md space-y-4">
+            <h1 className="text-5xl font-black tracking-tighter">
+              Locked Experiences
+            </h1>
+            <p className="text-xl font-medium text-muted-foreground">
+              Real-world AI insights are reserved for authenticated Greenberry
+              members.
+            </p>
           </div>
-          <Button asChild className="rounded-full px-10 h-14 font-black text-lg uppercase tracking-widest shadow-xl shadow-primary/20">
+          <Button
+            asChild
+            className="h-14 rounded-full px-10 text-lg font-black uppercase tracking-widest shadow-xl shadow-primary/20"
+          >
             <Link href="/login">Sign In to View Feed</Link>
           </Button>
         </div>
@@ -104,52 +120,64 @@ export default function ExperiencesPage() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      
-      <main className="container mx-auto px-6 py-12 max-w-7xl">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 mb-16">
+
+      <main className="container mx-auto max-w-7xl px-6 py-12">
+        <div className="mb-16 flex flex-col items-start justify-between gap-8 md:flex-row md:items-end">
           <div className="space-y-4">
-            <h1 className="text-7xl font-black text-foreground tracking-tighter uppercase leading-none">The <span className="text-primary">Collective</span> <br/>Experience</h1>
-            <p className="text-2xl text-muted-foreground font-medium max-w-2xl">Real-world pulses from our studios. See how we're pushing boundaries with AI.</p>
+            <h1 className="text-7xl font-black uppercase leading-none tracking-tighter text-foreground">
+              The <span className="text-primary">Collective</span> <br />
+              Experience
+            </h1>
+            <p className="max-w-2xl text-2xl font-medium text-muted-foreground">
+              Real-world pulses from our studios. See how we&apos;re pushing
+              boundaries with AI.
+            </p>
           </div>
-          <Button asChild className="rounded-full px-10 h-16 font-bold text-lg shadow-xl hover:shadow-primary/20 transition-all gap-3">
+          <Button
+            asChild
+            className="h-16 gap-3 rounded-full px-10 text-lg font-bold shadow-xl transition-all hover:shadow-primary/20"
+          >
             <Link href="/experiences/new">
-              <Plus className="w-6 h-6" />
+              <Plus className="h-6 w-6" />
               Log an Experience
             </Link>
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-          {/* Sidebar / Filters */}
-          <div className="lg:col-span-3 space-y-10">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
+          <div className="space-y-10 lg:col-span-3">
             <div className="space-y-4">
-              <div className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Search Pulses</div>
+              <div className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">
+                Search Pulses
+              </div>
               <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input 
-                  placeholder="Keywords..." 
-                  className="pl-12 border-2 border-border focus:border-primary rounded-2xl h-14 bg-secondary/20"
+                <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Keywords..."
+                  className="h-14 rounded-2xl border-2 border-border bg-secondary/20 pl-12 focus:border-primary"
                   value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  onChange={(event) => setSearch(event.target.value)}
                 />
               </div>
             </div>
 
             <div className="space-y-6">
-              <div className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Filter by Studio</div>
+              <div className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">
+                Filter by Studio
+              </div>
               <div className="flex flex-col gap-2">
-                <Button 
-                  variant={!activeTeam ? "secondary" : "ghost"} 
-                  className="justify-start font-bold rounded-xl h-12 px-4"
+                <Button
+                  variant={!activeTeam ? "secondary" : "ghost"}
+                  className="h-12 justify-start rounded-xl px-4 font-bold"
                   onClick={() => setActiveTeam(undefined)}
                 >
                   All Studios
                 </Button>
-                {teams.map(team => (
-                  <Button 
+                {teams.map((team) => (
+                  <Button
                     key={team}
-                    variant={activeTeam === team ? "secondary" : "ghost"} 
-                    className="justify-start font-bold rounded-xl h-12 px-4"
+                    variant={activeTeam === team ? "secondary" : "ghost"}
+                    className="h-12 justify-start rounded-xl px-4 font-bold"
                     onClick={() => setActiveTeam(team)}
                   >
                     {team}
@@ -159,53 +187,75 @@ export default function ExperiencesPage() {
             </div>
           </div>
 
-          {/* Main List */}
           <div className="lg:col-span-9">
             {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {[1, 2, 3, 4].map(i => (
-                  <div key={i} className="h-64 rounded-[2.5rem] bg-secondary/20 animate-pulse" />
+              <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+                {[1, 2, 3, 4].map((index) => (
+                  <div
+                    key={index}
+                    className="h-64 animate-pulse rounded-[2.5rem] bg-secondary/20"
+                  />
                 ))}
               </div>
             ) : filteredExperiences.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {filteredExperiences.map((exp) => (
-                  <Link key={exp.id} href={`/experiences/${exp.id}`}>
-                    <Card className="group h-full rounded-[3rem] border-none bg-white shadow-xl shadow-primary/5 hover:shadow-primary/10 transition-all overflow-hidden flex flex-col">
+              <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+                {filteredExperiences.map((experience) => (
+                  <Link key={experience.id} href={`/experiences/${experience.id}`}>
+                    <Card className="group flex h-full flex-col overflow-hidden rounded-[3rem] border-none bg-white shadow-xl shadow-primary/5 transition-all hover:shadow-primary/10">
                       <CardHeader className="p-8 pb-4">
-                        <div className="flex justify-between items-start mb-4">
-                          <Badge variant="outline" className="font-black uppercase text-[10px] tracking-widest px-4 py-1.5 rounded-full bg-primary/5 text-primary border-none">
-                            {exp.team}
+                        <div className="mb-4 flex items-start justify-between">
+                          <Badge
+                            variant="outline"
+                            className="rounded-full border-none bg-primary/5 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-primary"
+                          >
+                            {experience.team}
                           </Badge>
-                          {exp.outcomeRating && (
-                            <div className="flex items-center gap-1 text-yellow-500 font-black">
-                              <Star className="w-4 h-4 fill-current" />
-                              <span className="text-sm">{exp.outcomeRating}/5</span>
+                          {experience.outcomeRating ? (
+                            <div className="flex items-center gap-1 font-black text-yellow-500">
+                              <Star className="h-4 w-4 fill-current" />
+                              <span className="text-sm">
+                                {experience.outcomeRating}/5
+                              </span>
                             </div>
-                          )}
+                          ) : null}
                         </div>
-                        <CardTitle className="text-3xl font-black tracking-tighter leading-tight group-hover:text-primary transition-colors">
-                          {exp.title}
+                        <CardTitle className="text-3xl font-black leading-tight tracking-tighter transition-colors group-hover:text-primary">
+                          {experience.title}
                         </CardTitle>
                       </CardHeader>
-                      <CardContent className="p-8 pt-0 flex-1 flex flex-col justify-between space-y-6">
-                        <p className="text-muted-foreground font-medium line-clamp-3">
-                          {exp.summary}
+                      <CardContent className="flex flex-1 flex-col justify-between space-y-6 p-8 pt-0">
+                        <p className="line-clamp-3 font-medium text-muted-foreground">
+                          {experience.summary}
                         </p>
-                        <div className="space-y-4 pt-6 border-t border-secondary">
+                        <div className="space-y-4 border-t border-secondary pt-6">
                           <div className="flex flex-wrap gap-2">
-                            {exp.toolLinks.slice(0, 2).map((_, idx) => (
-                              <Badge key={idx} variant="secondary" className="bg-secondary/40 text-[10px] font-bold uppercase py-1 px-3 rounded-full">
+                            {experience.toolLinks.slice(0, 2).map((_, index) => (
+                              <Badge
+                                key={`${experience.id}-tool-${index}`}
+                                variant="secondary"
+                                className="rounded-full bg-secondary/40 px-3 py-1 text-[10px] font-bold uppercase"
+                              >
                                 Tool Pulled
                               </Badge>
                             ))}
-                            {exp.toolLinks.length > 2 && (
-                              <Badge variant="ghost" className="text-[10px] font-bold opacity-50">+{exp.toolLinks.length - 2} more</Badge>
-                            )}
+                            {experience.toolLinks.length > 2 ? (
+                              <Badge
+                                variant="outline"
+                                className="text-[10px] font-bold opacity-50"
+                              >
+                                +{experience.toolLinks.length - 2} more
+                              </Badge>
+                            ) : null}
                           </div>
                           <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
-                            <span className="flex items-center gap-2"><UserIcon className="w-3.5 h-3.5" /> {exp.creatorName || 'Member'}</span>
-                            <span className="flex items-center gap-2"><Clock className="w-3.5 h-3.5" /> {formatDate(exp.createdAt)}</span>
+                            <span className="flex items-center gap-2">
+                              <UserIcon className="h-3.5 w-3.5" />
+                              {experience.creatorName || "Member"}
+                            </span>
+                            <span className="flex items-center gap-2">
+                              <Clock className="h-3.5 w-3.5" />
+                              {formatDate(experience.createdAt)}
+                            </span>
                           </div>
                         </div>
                       </CardContent>
@@ -214,13 +264,18 @@ export default function ExperiencesPage() {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-32 space-y-6">
-                <div className="w-20 h-20 bg-secondary/20 rounded-full flex items-center justify-center mx-auto text-muted-foreground">
-                  <Sparkles className="w-10 h-10" />
+              <div className="space-y-6 py-32 text-center">
+                <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-secondary/20 text-muted-foreground">
+                  <Sparkles className="h-10 w-10" />
                 </div>
-                <h3 className="text-3xl font-black tracking-tight">No experiences found</h3>
-                <p className="text-muted-foreground max-sm mx-auto">Be the first to log a strategic pulse with your favorite AI tools.</p>
-                <Button asChild variant="outline" className="rounded-full px-8 border-2">
+                <h3 className="text-3xl font-black tracking-tight">
+                  No experiences found
+                </h3>
+                <p className="mx-auto max-w-sm text-muted-foreground">
+                  Be the first to log a strategic pulse with your favorite AI
+                  tools.
+                </p>
+                <Button asChild variant="outline" className="rounded-full border-2 px-8">
                   <Link href="/experiences/new">Start Logging</Link>
                 </Button>
               </div>

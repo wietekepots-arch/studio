@@ -1,4 +1,4 @@
-export type Role = 'Admin' | 'Editor' | 'Viewer';
+export type Role = "Member" | "PowerUser" | "Admin";
 
 export interface UserProfile {
   uid: string;
@@ -6,6 +6,8 @@ export interface UserProfile {
   email: string;
   role: Role;
   team?: string;
+  createdAt?: number;
+  updatedAt?: number;
 }
 
 export interface RadarConfig {
@@ -13,10 +15,17 @@ export interface RadarConfig {
   rings: string[];
 }
 
-export type ItemStatus = 'Draft' | 'In Review' | 'Approved' | 'Archived';
-export type CostRange = 'Free' | 'Low' | 'Medium' | 'High';
-export type Origin = 'European' | 'American' | 'Other';
-export type DataSensitivity = 'Public' | 'Internal' | 'Client Confidential';
+export interface RadarConfigOption {
+  id: string;
+  name: string;
+  order: number;
+  description?: string;
+}
+
+export type ItemStatus = "Draft" | "Pending" | "Approved" | "Archived";
+export type CostRange = "Free" | "Low" | "Medium" | "High";
+export type Origin = "European" | "American" | "Other";
+export type DataSensitivity = "Public" | "Internal" | "Client Confidential";
 
 export interface PricingTier {
   name: string;
@@ -30,8 +39,8 @@ export interface HistoryEntry {
   itemId: string;
   action: string;
   note?: string;
-  before?: any;
-  after?: any;
+  before?: unknown;
+  after?: unknown;
   createdAt: number;
   createdBy: string;
 }
@@ -62,6 +71,11 @@ export interface RadarItem {
   pricingTiers?: PricingTier[];
   links: string[];
   status: ItemStatus;
+  submittedAt?: number;
+  submittedBy?: string;
+  reviewedAt?: number;
+  reviewedBy?: string;
+  reviewComment?: string;
   lastReviewedAt: number;
   createdAt: number;
   createdBy: string;
@@ -88,7 +102,7 @@ export interface Experience {
   timeSavedHours?: number;
   tags?: string[];
   links?: string[];
-  status: 'Published' | 'Hidden';
+  status: "Published" | "Hidden";
   createdAt: number;
   createdBy: string;
   creatorName?: string;

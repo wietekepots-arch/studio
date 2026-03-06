@@ -8,6 +8,7 @@ import {
   signInWithPopup,
   UserCredential,
 } from 'firebase/auth';
+import { COMPANY_EMAIL_DOMAIN } from "@/lib/company-auth";
 
 /** Initiate anonymous sign-in (returns promise for error handling). */
 export function initiateAnonymousSignIn(authInstance: Auth): Promise<UserCredential> {
@@ -30,6 +31,7 @@ export function initiateGoogleSignIn(authInstance: Auth): Promise<UserCredential
   // We specify the prompt as 'select_account' to ensure users can choose their greenberry account
   provider.setCustomParameters({
     prompt: 'select_account',
+    hd: COMPANY_EMAIL_DOMAIN.replace("@", ""),
   });
   return signInWithPopup(authInstance, provider);
 }

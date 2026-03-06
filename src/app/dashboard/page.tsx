@@ -35,11 +35,12 @@ import {
 import {
   canEditRadarItem,
   getStatusBadgeVariant,
+  mergeConfigOptions,
   reviewRadarItem,
   seedRadarCollections,
-  sortConfigOptions,
   sortRadarItems,
 } from "@/lib/radar-firestore";
+import { seedQuadrants, seedRings } from "@/lib/radar-seed";
 
 function getErrorMessage(error: unknown, fallback: string): string {
   if (error instanceof Error && error.message.trim()) {
@@ -120,8 +121,8 @@ export default function DashboardPage(): React.ReactElement {
   const { data: pendingItems, isLoading: isPendingItemsLoading } =
     useCollection<RadarItem>(pendingItemsQuery);
 
-  const quadrants = sortConfigOptions(quadrantDocs);
-  const rings = sortConfigOptions(ringDocs);
+  const quadrants = mergeConfigOptions(quadrantDocs, seedQuadrants, true);
+  const rings = mergeConfigOptions(ringDocs, seedRings);
   const quadrantMap = useMemo(() => {
     return new Map(quadrants.map((item) => [item.order, item.name]));
   }, [quadrants]);

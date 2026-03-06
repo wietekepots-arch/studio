@@ -32,7 +32,11 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { buildRadarConfig, canEditRadarItem, sortConfigOptions } from "@/lib/radar-firestore";
+import {
+  buildRadarConfig,
+  canEditRadarItem,
+  mergeConfigOptions,
+} from "@/lib/radar-firestore";
 import { getSeedTags, seedQuadrants, seedRings } from "@/lib/radar-seed";
 
 interface RadarItemFormProps {
@@ -113,12 +117,10 @@ export function RadarItemForm({
   const { data: tagDocs } = useCollection(tagsQuery);
 
   const quadrants = useMemo(() => {
-    const items = sortConfigOptions(quadrantDocs);
-    return items.length ? items : seedQuadrants;
+    return mergeConfigOptions(quadrantDocs, seedQuadrants, true);
   }, [quadrantDocs]);
   const rings = useMemo(() => {
-    const items = sortConfigOptions(ringDocs);
-    return items.length ? items : seedRings;
+    return mergeConfigOptions(ringDocs, seedRings);
   }, [ringDocs]);
   const availableTags = useMemo(() => {
     if (tagDocs?.length) {

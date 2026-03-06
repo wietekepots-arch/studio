@@ -75,6 +75,33 @@ export function sortConfigOptions(
   return [...options].sort((left, right) => left.order - right.order);
 }
 
+export function mergeConfigOptions(
+  options: RadarConfigOption[] | null | undefined,
+  fallback: RadarConfigOption[],
+  preferFallback = false,
+): RadarConfigOption[] {
+  const sortedOptions = sortConfigOptions(options);
+
+  if (!sortedOptions.length) {
+    return fallback;
+  }
+
+  const optionsById = new Map(sortedOptions.map((item) => [item.id, item]));
+  const merged = fallback.map((fallbackItem) => {
+    const option = optionsById.get(fallbackItem.id);
+
+    if (!option) {
+      return fallbackItem;
+    }
+
+    return preferFallback
+      ? { ...option, ...fallbackItem }
+      : { ...fallbackItem, ...option };
+  });
+
+  return sortConfigOptions(merged);
+}
+
 export function buildRadarConfig(
   quadrants: RadarConfigOption[] | null | undefined,
   rings: RadarConfigOption[] | null | undefined,

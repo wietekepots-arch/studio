@@ -24,8 +24,9 @@ import { RadarConfigOption, RadarItem, Experience, HistoryEntry } from "@/app/li
 import {
   canEditRadarItem,
   getStatusBadgeVariant,
-  sortConfigOptions,
+  mergeConfigOptions,
 } from "@/lib/radar-firestore";
+import { seedQuadrants, seedRings } from "@/lib/radar-seed";
 
 interface ItemDetailPageProps {
   params: Promise<{ id: string }>;
@@ -106,12 +107,18 @@ export default function ItemDetailPage({
 
   const quadrantMap = useMemo(() => {
     return new Map(
-      sortConfigOptions(quadrants).map((option) => [option.order, option.name]),
+      mergeConfigOptions(quadrants, seedQuadrants, true).map((option) => [
+        option.order,
+        option.name,
+      ]),
     );
   }, [quadrants]);
   const ringMap = useMemo(() => {
     return new Map(
-      sortConfigOptions(rings).map((option) => [option.order, option.name]),
+      mergeConfigOptions(rings, seedRings).map((option) => [
+        option.order,
+        option.name,
+      ]),
     );
   }, [rings]);
   const sortedHistory = useMemo(() => {

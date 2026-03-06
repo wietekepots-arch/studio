@@ -23,9 +23,10 @@ import { Input } from "@/components/ui/input";
 import { RadarConfigOption, RadarItem } from "@/app/lib/radar-types";
 import {
   buildRadarConfig,
-  sortConfigOptions,
+  mergeConfigOptions,
   sortRadarItems,
 } from "@/lib/radar-firestore";
+import { seedQuadrants, seedRings } from "@/lib/radar-seed";
 
 export default function HomePage(): React.ReactElement {
   const db = useFirestore();
@@ -65,8 +66,8 @@ export default function HomePage(): React.ReactElement {
   const { data: approvedItems, isLoading: isItemsLoading } =
     useCollection<RadarItem>(approvedItemsQuery);
 
-  const quadrants = sortConfigOptions(quadrantDocs);
-  const rings = sortConfigOptions(ringDocs);
+  const quadrants = mergeConfigOptions(quadrantDocs, seedQuadrants, true);
+  const rings = mergeConfigOptions(ringDocs, seedRings);
   const config = buildRadarConfig(quadrants, rings);
   const sortedItems = sortRadarItems(approvedItems);
   const recentItems = sortedItems.slice(0, 5);

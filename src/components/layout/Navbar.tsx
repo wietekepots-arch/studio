@@ -9,6 +9,7 @@ import {
   LogOut,
   PlusCircle,
   Radar,
+  ShieldCheck,
   Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,7 +19,14 @@ import { useAppUser } from "@/components/app/AppUserProvider";
 export function Navbar(): React.ReactElement {
   const pathname = usePathname();
   const auth = useAuth();
-  const { authUser, hasCompanyAccess, isLoading, profile, role } = useAppUser();
+  const {
+    authUser,
+    canReview,
+    hasCompanyAccess,
+    isLoading,
+    profile,
+    role,
+  } = useAppUser();
 
   const navItems = [
     { label: "Radar", href: "/", icon: Radar, requiresAuth: false },
@@ -40,10 +48,25 @@ export function Navbar(): React.ReactElement {
       icon: PlusCircle,
       requiresAuth: true,
     },
+    {
+      label: "Admin",
+      href: "/admin",
+      icon: ShieldCheck,
+      requiresAuth: true,
+      requiresReview: true,
+    },
   ];
 
   const visibleNavItems = navItems.filter((item) => {
-    return !item.requiresAuth || hasCompanyAccess;
+    if (item.requiresAuth && !hasCompanyAccess) {
+      return false;
+    }
+
+    if ("requiresReview" in item && item.requiresReview && !canReview) {
+      return false;
+    }
+
+    return true;
   });
 
   return (

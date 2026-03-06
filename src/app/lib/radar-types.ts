@@ -58,6 +58,7 @@ export interface RadarItem {
   origin: Origin;
   sustainabilityNotes: string;
   securityNotes: string;
+  ethicsNotes: string;
   pricingTiers?: PricingTier[];
   links: string[];
   status: ItemStatus;

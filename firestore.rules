@@ -6,65 +6,76 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    // Strictly enforce that Google users must have a greenberry.nl email.
+    // Anonymous users are allowed as 'Guests'.
+    function isGreenberryUser() {
+      return isSignedIn() && (
+        (request.auth.token.email != null && request.auth.token.email.matches('^.*@greenberry\\.nl$')) ||
+        request.auth.token.firebase.sign_in_provider == 'anonymous'
+      );
+    }
+
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
     function getUserRole() {
-      return get(/databases/$(database)/documents/userProfiles/$(request.auth.uid)).data.role;
+      let profilePath = /databases/$(database)/documents/userProfiles/$(request.auth.uid);
+      return exists(profilePath) ? get(profilePath).data.role : 'Viewer';
     }
 
     function isAdmin() {
-      return isSignedIn() && getUserRole() == 'Admin';
+      return isGreenberryUser() && getUserRole() == 'Admin';
     }
 
     match /userProfiles/{userId} {
-      allow get, list: if isSignedIn();
+      allow read: if isGreenberryUser();
+      allow list: if isGreenberryUser();
       allow create: if isOwner(userId);
-      allow update: if isOwner(userId);
+      allow update: if isOwner(userId) || isAdmin();
       allow delete: if isAdmin();
     }
 
     match /quadrants/{quadrantId} {
-      allow read: if isSignedIn();
+      allow read: if isGreenberryUser();
       allow write: if isAdmin();
     }
 
     match /rings/{ringId} {
-      allow read: if isSignedIn();
+      allow read: if isGreenberryUser();
       allow write: if isAdmin();
     }
 
     match /tags/{tagId} {
-      allow read: if isSignedIn();
+      allow read: if isGreenberryUser();
       allow write: if isAdmin();
     }
 
     match /radarItems/{radarItemId} {
-      allow get: if isSignedIn() && (resource.data.status != 'Draft' || resource.data.createdBy == request.auth.uid || isAdmin());
-      allow list: if isSignedIn();
-      allow create: if isSignedIn() && request.resource.data.createdBy == request.auth.uid;
-      allow update: if isSignedIn() && (resource.data.createdBy == request.auth.uid || isAdmin());
+      allow get: if isGreenberryUser() && (resource.data.status != 'Draft' || resource.data.createdBy == request.auth.uid || isAdmin());
+      allow list: if isGreenberryUser();
+      allow create: if isGreenberryUser() && request.resource.data.createdBy == request.auth.uid;
+      allow update: if isGreenberryUser() && (resource.data.createdBy == request.auth.uid || isAdmin());
       allow delete: if isAdmin();
 
       match /itemComments/{commentId} {
-        allow read: if isSignedIn();
-        allow create: if isSignedIn();
+        allow read: if isGreenberryUser();
+        allow create: if isGreenberryUser();
         allow update, delete: if isOwner(resource.data.createdBy) || isAdmin();
       }
 
       match /itemHistory/{historyId} {
-        allow read: if isSignedIn();
-        allow create: if isSignedIn();
+        allow read: if isGreenberryUser();
+        allow create: if isGreenberryUser();
         allow update, delete: if isAdmin();
       }
     }
 
     match /experiences/{experienceId} {
-      allow get: if isSignedIn() && (resource.data.status == 'Published' || resource.data.createdBy == request.auth.uid || isAdmin());
-      allow list: if isSignedIn();
-      allow create: if isSignedIn() && request.resource.data.createdBy == request.auth.uid;
-      allow update: if isSignedIn() && (resource.data.createdBy == request.auth.uid || isAdmin());
+      allow get: if isGreenberryUser() && (resource.data.status == 'Published' || resource.data.createdBy == request.auth.uid || isAdmin());
+      allow list: if isGreenberryUser();
+      allow create: if isGreenberryUser() && request.resource.data.createdBy == request.auth.uid;
+      allow update: if isGreenberryUser() && (resource.data.createdBy == request.auth.uid || isAdmin());
       allow delete: if isOwner(resource.data.createdBy) || isAdmin();
     }
   }

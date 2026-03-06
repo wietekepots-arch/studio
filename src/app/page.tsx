@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { RadarChart } from '@/components/radar/RadarChart';
 import { Input } from '@/components/ui/input';
@@ -22,568 +22,66 @@ import {
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-
-const MOCK_ITEMS: RadarItem[] = [
-  {
-    id: 'claude-3-5',
-    name: 'Claude 3.5 Sonnet',
-    shortDesc: 'High-performance reasoning model.',
-    notes: 'Legacy support for existing workflows. Superseded by newer models for primary production.',
-    quadrantId: 0,
-    ringId: 3, // HOLD
-    previousRingId: 0,
-    tags: ['LLM', 'Anthropic', 'Legacy'],
-    team: 'Creative Tech',
-    ownerId: 'admin-1',
-    ownerName: 'Greenberry Admin',
-    scores: { maturity: 5, impact: 3, effort: 1, risk: 2 },
-    costRange: 'Medium',
-    origin: 'American',
-    sustainabilityNotes: 'Standard inference footprint.',
-    securityNotes: 'Enterprise safety verified.',
-    ethicsNotes: '',
-    links: ['https://anthropic.com'],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 30000000,
-    updatedAt: Date.now(),
-    createdBy: 'Admin',
-    updatedBy: 'Admin',
-    history: [
-      { id: 'h1', itemId: 'claude-3-5', action: 'Moved to Hold', note: 'Outdated model', createdAt: Date.now(), createdBy: 'Admin' }
-    ],
-    pricingTiers: [
-      { name: 'Individual', cost: 'Free', features: ['Basic usage', 'Standard support'] },
-      { name: 'Pro', cost: '$20', billing: 'per user/month', features: ['High limits', 'Priority access', 'Latest features'] }
-    ]
-  },
-  {
-    id: 'claude-4-6',
-    name: 'Claude 4.6 Sonnet',
-    shortDesc: 'Latest intelligence flagship.',
-    notes: 'Primary recommendation for reasoning and complex coding tasks.',
-    quadrantId: 1,
-    ringId: 0, // ADOPT
-    tags: ['LLM', 'Anthropic', 'Flagship'],
-    team: 'Creative Tech',
-    ownerId: 'admin-1',
-    ownerName: 'Greenberry Admin',
-    scores: { maturity: 5, impact: 5, effort: 1, risk: 2 },
-    costRange: 'Medium',
-    origin: 'American',
-    sustainabilityNotes: 'Optimized efficiency metrics.',
-    securityNotes: 'Full privacy compliance.',
-    ethicsNotes: '',
-    links: ['https://anthropic.com'],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-    createdBy: 'Admin',
-    updatedBy: 'Admin',
-    pricingTiers: [
-      { name: 'Developer', cost: 'Usage-based', billing: 'per million tokens', features: ['API Access', 'Enterprise Support'] },
-      { name: 'Pro', cost: '$20', billing: 'per month', features: ['Unlimited Web Access', 'Team workspace'] }
-    ]
-  },
-  {
-    id: 'transcriptor',
-    name: 'Transcriptor',
-    shortDesc: 'Meeting intelligence for studios.',
-    notes: 'Excellent support for Dutch language and studio-wide integration.',
-    quadrantId: 2,
-    ringId: 0,
-    tags: ['Audio', 'Productivity', 'EU'],
-    team: 'Operations',
-    ownerId: 'admin-1',
-    ownerName: 'Admin',
-    scores: { maturity: 4, impact: 4, effort: 2, risk: 1 },
-    costRange: 'Low',
-    origin: 'European',
-    sustainabilityNotes: 'Low energy overhead.',
-    securityNotes: 'EU-hosted, GDPR compliant.',
-    ethicsNotes: '',
-    links: [],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 1000000,
-    updatedAt: Date.now(),
-    createdBy: 'Admin',
-    updatedBy: 'Admin',
-    pricingTiers: [
-      { name: 'Starter', cost: 'Free', features: ['10h per month', 'Basic export'] },
-      { name: 'Business', cost: '€12', billing: 'per seat/month', features: ['Unlimited hours', 'Team sharing', 'AI Summaries'] }
-    ]
-  },
-  {
-    id: 'firebase-studio',
-    name: 'Firebase Studio',
-    shortDesc: 'Rapid prototyping environment.',
-    notes: 'Our core platform for building internal tools and MVPs.',
-    quadrantId: 0,
-    ringId: 0,
-    tags: ['Prototyping', 'Cloud'],
-    team: 'Engineering',
-    ownerId: 'admin-1',
-    ownerName: 'Admin',
-    scores: { maturity: 5, impact: 5, effort: 1, risk: 1 },
-    costRange: 'Medium',
-    origin: 'American',
-    sustainabilityNotes: 'Google Cloud managed.',
-    securityNotes: 'Enterprise Auth & Rules.',
-    ethicsNotes: '',
-    links: [],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 5000000,
-    updatedAt: Date.now(),
-    createdBy: 'Admin',
-    updatedBy: 'Admin'
-  },
-  {
-    id: 'gpt-5-4',
-    name: 'GPT-5.4',
-    shortDesc: 'OpenAI flagship reasoning model.',
-    notes: 'Top-tier general intelligence from OpenAI. Strong for complex strategy and analysis tasks.',
-    quadrantId: 1,
-    ringId: 0,
-    tags: ['LLM', 'OpenAI', 'Flagship'],
-    team: 'Creative Tech',
-    ownerId: 'admin-1',
-    ownerName: 'Greenberry Admin',
-    scores: { maturity: 5, impact: 5, effort: 1, risk: 2 },
-    costRange: 'Medium',
-    origin: 'American',
-    sustainabilityNotes: 'Standard inference footprint.',
-    securityNotes: 'Enterprise privacy controls available.',
-    ethicsNotes: '',
-    links: [],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-    createdBy: 'Admin',
-    updatedBy: 'Admin',
-    pricingTiers: [
-      { name: 'Plus', cost: '$20', billing: 'per month', features: ['High limits', 'Latest models'] },
-      { name: 'API', cost: 'Usage-based', billing: 'per million tokens', features: ['Full API access'] }
-    ]
-  },
-  {
-    id: 'gpt-5-3',
-    name: 'GPT-5.3',
-    shortDesc: 'Previous OpenAI flagship.',
-    notes: 'Strong general model, largely superseded by GPT-5.4 for primary tasks.',
-    quadrantId: 1,
-    ringId: 1,
-    tags: ['LLM', 'OpenAI'],
-    team: 'Creative Tech',
-    ownerId: 'admin-1',
-    ownerName: 'Greenberry Admin',
-    scores: { maturity: 5, impact: 4, effort: 1, risk: 2 },
-    costRange: 'Medium',
-    origin: 'American',
-    sustainabilityNotes: 'Standard inference footprint.',
-    securityNotes: 'Enterprise privacy controls available.',
-    ethicsNotes: '',
-    links: [],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 8000000,
-    updatedAt: Date.now(),
-    createdBy: 'Admin',
-    updatedBy: 'Admin'
-  },
-  {
-    id: 'gpt-5-3-codex',
-    name: 'GPT-5.3 Codex',
-    shortDesc: 'OpenAI code-optimised model.',
-    notes: 'Specialised for code generation and refactoring. Evaluate against Claude Code and Cursor for daily dev workflows.',
-    quadrantId: 0,
-    ringId: 1,
-    tags: ['LLM', 'OpenAI', 'Coding'],
-    team: 'Engineering',
-    ownerId: 'admin-1',
-    ownerName: 'Greenberry Admin',
-    scores: { maturity: 4, impact: 4, effort: 1, risk: 2 },
-    costRange: 'Medium',
-    origin: 'American',
-    sustainabilityNotes: 'Standard inference footprint.',
-    securityNotes: 'Enterprise privacy controls available.',
-    ethicsNotes: '',
-    links: [],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 2000000,
-    updatedAt: Date.now(),
-    createdBy: 'Admin',
-    updatedBy: 'Admin'
-  },
-  {
-    id: 'gpt-5-1-codex-mini',
-    name: 'GPT-5.1 Codex mini',
-    shortDesc: 'Lightweight coding model from OpenAI.',
-    notes: 'Fast, low-cost code completions. Assess for high-volume or embedded coding use cases.',
-    quadrantId: 0,
-    ringId: 2,
-    tags: ['LLM', 'OpenAI', 'Coding', 'Lightweight'],
-    team: 'Engineering',
-    ownerId: 'admin-1',
-    ownerName: 'Greenberry Admin',
-    scores: { maturity: 3, impact: 3, effort: 1, risk: 2 },
-    costRange: 'Low',
-    origin: 'American',
-    sustainabilityNotes: 'Smaller model, lower energy footprint.',
-    securityNotes: 'Enterprise privacy controls available.',
-    ethicsNotes: '',
-    links: [],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 1000000,
-    updatedAt: Date.now(),
-    createdBy: 'Admin',
-    updatedBy: 'Admin'
-  },
-  {
-    id: 'gemini-3-flash',
-    name: 'Gemini 3 Flash',
-    shortDesc: 'Google\'s fast multimodal model.',
-    notes: 'Excellent speed-to-intelligence ratio. Useful for high-throughput or real-time creative workflows.',
-    quadrantId: 1,
-    ringId: 1,
-    tags: ['LLM', 'Google', 'Multimodal', 'Fast'],
-    team: 'Creative Tech',
-    ownerId: 'admin-1',
-    ownerName: 'Greenberry Admin',
-    scores: { maturity: 4, impact: 4, effort: 1, risk: 2 },
-    costRange: 'Low',
-    origin: 'American',
-    sustainabilityNotes: 'Google infrastructure, carbon-neutral goals.',
-    securityNotes: 'Google Workspace integration, standard compliance.',
-    ethicsNotes: '',
-    links: [],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 1500000,
-    updatedAt: Date.now(),
-    createdBy: 'Admin',
-    updatedBy: 'Admin'
-  },
-  {
-    id: 'antigravity',
-    name: 'Antigravity',
-    shortDesc: 'Emerging AI creative tool.',
-    notes: 'Under assessment for fit in creative workflows. Monitor for production readiness.',
-    quadrantId: 0,
-    ringId: 2,
-    tags: ['Creative', 'Emerging'],
-    team: 'Creative Tech',
-    ownerId: 'admin-1',
-    ownerName: 'Greenberry Admin',
-    scores: { maturity: 2, impact: 3, effort: 2, risk: 3 },
-    costRange: 'Low',
-    origin: 'Other',
-    sustainabilityNotes: 'Under review.',
-    securityNotes: 'Under review.',
-    ethicsNotes: '',
-    links: [],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-    createdBy: 'Admin',
-    updatedBy: 'Admin'
-  },
-  {
-    id: 'cursor',
-    name: 'Cursor',
-    shortDesc: 'AI-first code editor.',
-    notes: 'Strong adoption across engineering. Deep codebase awareness and multi-file editing make it a preferred daily driver.',
-    quadrantId: 2,
-    ringId: 0,
-    tags: ['IDE', 'Coding', 'AI Editor'],
-    team: 'Engineering',
-    ownerId: 'admin-1',
-    ownerName: 'Greenberry Admin',
-    scores: { maturity: 5, impact: 5, effort: 1, risk: 1 },
-    costRange: 'Low',
-    origin: 'American',
-    sustainabilityNotes: 'Lightweight desktop app.',
-    securityNotes: 'Privacy mode available, SOC 2 compliant.',
-    ethicsNotes: '',
-    links: [],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 10000000,
-    updatedAt: Date.now(),
-    createdBy: 'Admin',
-    updatedBy: 'Admin',
-    pricingTiers: [
-      { name: 'Hobby', cost: 'Free', features: ['2000 completions/month', 'Basic AI'] },
-      { name: 'Pro', cost: '$20', billing: 'per month', features: ['Unlimited completions', 'Advanced models', 'Privacy mode'] }
-    ]
-  },
-  {
-    id: 'copilot',
-    name: 'GitHub Copilot',
-    shortDesc: 'AI pair programmer by GitHub.',
-    notes: 'Deeply integrated into VS Code. Trial alongside Cursor to compare daily developer experience.',
-    quadrantId: 2,
-    ringId: 1,
-    tags: ['IDE', 'Coding', 'Microsoft', 'GitHub'],
-    team: 'Engineering',
-    ownerId: 'admin-1',
-    ownerName: 'Greenberry Admin',
-    scores: { maturity: 5, impact: 4, effort: 1, risk: 2 },
-    costRange: 'Low',
-    origin: 'American',
-    sustainabilityNotes: 'Microsoft Azure infrastructure.',
-    securityNotes: 'Enterprise plan with IP indemnification available.',
-    ethicsNotes: '',
-    links: [],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 7000000,
-    updatedAt: Date.now(),
-    createdBy: 'Admin',
-    updatedBy: 'Admin',
-    pricingTiers: [
-      { name: 'Individual', cost: '$10', billing: 'per month', features: ['Unlimited completions', 'Chat'] },
-      { name: 'Business', cost: '$19', billing: 'per seat/month', features: ['Policy management', 'Audit logs'] }
-    ]
-  },
-  {
-    id: 'claude-code',
-    name: 'Claude Code',
-    shortDesc: 'Anthropic\'s agentic CLI for development.',
-    notes: 'Terminal-native AI coding agent. Excellent for complex multi-step engineering tasks and codebase-wide changes.',
-    quadrantId: 2,
-    ringId: 0,
-    tags: ['CLI', 'Coding', 'Anthropic', 'Agentic'],
-    team: 'Engineering',
-    ownerId: 'admin-1',
-    ownerName: 'Greenberry Admin',
-    scores: { maturity: 4, impact: 5, effort: 1, risk: 2 },
-    costRange: 'Medium',
-    origin: 'American',
-    sustainabilityNotes: 'Optimised inference efficiency.',
-    securityNotes: 'Full privacy compliance, no training on prompts.',
-    ethicsNotes: '',
-    links: [],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-    createdBy: 'Admin',
-    updatedBy: 'Admin',
-    pricingTiers: [
-      { name: 'Pro', cost: '$20', billing: 'per month', features: ['Unlimited Claude Code usage', 'Latest models'] },
-      { name: 'API', cost: 'Usage-based', billing: 'per million tokens', features: ['Direct API access'] }
-    ]
-  },
-  {
-    id: 'warp',
-    name: 'Warp',
-    shortDesc: 'AI-powered terminal.',
-    notes: 'Modern terminal with built-in AI assistance for commands and workflows. Trial for engineering teams.',
-    quadrantId: 2,
-    ringId: 1,
-    tags: ['Terminal', 'CLI', 'Productivity'],
-    team: 'Engineering',
-    ownerId: 'admin-1',
-    ownerName: 'Greenberry Admin',
-    scores: { maturity: 4, impact: 3, effort: 1, risk: 1 },
-    costRange: 'Low',
-    origin: 'American',
-    sustainabilityNotes: 'Lightweight native app.',
-    securityNotes: 'Optional local mode, no cloud logging.',
-    ethicsNotes: '',
-    links: [],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 3000000,
-    updatedAt: Date.now(),
-    createdBy: 'Admin',
-    updatedBy: 'Admin',
-    pricingTiers: [
-      { name: 'Free', cost: 'Free', features: ['Core terminal', 'AI commands'] },
-      { name: 'Team', cost: '$15', billing: 'per seat/month', features: ['Shared workflows', 'Team settings'] }
-    ]
-  },
-  {
-    id: 'windsurf',
-    name: 'Windsurf',
-    shortDesc: 'Agentic AI IDE by Codeium.',
-    notes: 'Cursor alternative with strong agentic "flows". Assess for teams exploring alternatives to Cursor.',
-    quadrantId: 2,
-    ringId: 2,
-    tags: ['IDE', 'Coding', 'Agentic'],
-    team: 'Engineering',
-    ownerId: 'admin-1',
-    ownerName: 'Greenberry Admin',
-    scores: { maturity: 3, impact: 4, effort: 1, risk: 2 },
-    costRange: 'Low',
-    origin: 'American',
-    sustainabilityNotes: 'Lightweight desktop app.',
-    securityNotes: 'SOC 2 compliant, privacy mode available.',
-    ethicsNotes: '',
-    links: [],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 500000,
-    updatedAt: Date.now(),
-    createdBy: 'Admin',
-    updatedBy: 'Admin'
-  },
-  {
-    id: 'v0',
-    name: 'v0 by Vercel',
-    shortDesc: 'Prompt-to-UI component generator.',
-    notes: 'Rapidly generates React/Tailwind UI from natural language. Strong fit for prototyping and design handoff acceleration.',
-    quadrantId: 0,
-    ringId: 1,
-    tags: ['UI', 'Prototyping', 'Vercel', 'React'],
-    team: 'Creative Tech',
-    ownerId: 'admin-1',
-    ownerName: 'Greenberry Admin',
-    scores: { maturity: 3, impact: 4, effort: 1, risk: 2 },
-    costRange: 'Low',
-    origin: 'American',
-    sustainabilityNotes: 'Vercel edge infrastructure.',
-    securityNotes: 'Standard web security, no sensitive data required.',
-    ethicsNotes: '',
-    links: [],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 2500000,
-    updatedAt: Date.now(),
-    createdBy: 'Admin',
-    updatedBy: 'Admin',
-    pricingTiers: [
-      { name: 'Free', cost: 'Free', features: ['200 tokens/day', 'Basic generation'] },
-      { name: 'Premium', cost: '$20', billing: 'per month', features: ['Unlimited tokens', 'Private projects'] }
-    ]
-  },
-  {
-    id: 'perplexity',
-    name: 'Perplexity',
-    shortDesc: 'AI-powered research and search.',
-    notes: 'Fast, cited answers for research tasks. Good for competitive intelligence and brief discovery.',
-    quadrantId: 1,
-    ringId: 1,
-    tags: ['Research', 'Search', 'Productivity'],
-    team: 'Creative Tech',
-    ownerId: 'admin-1',
-    ownerName: 'Greenberry Admin',
-    scores: { maturity: 4, impact: 3, effort: 1, risk: 2 },
-    costRange: 'Low',
-    origin: 'American',
-    sustainabilityNotes: 'Standard cloud footprint.',
-    securityNotes: 'No enterprise privacy guarantee on free tier.',
-    ethicsNotes: '',
-    links: [],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 4000000,
-    updatedAt: Date.now(),
-    createdBy: 'Admin',
-    updatedBy: 'Admin',
-    pricingTiers: [
-      { name: 'Free', cost: 'Free', features: ['Unlimited searches', 'Basic Pro queries'] },
-      { name: 'Pro', cost: '$20', billing: 'per month', features: ['600 Pro queries/day', 'File upload', 'API access'] }
-    ]
-  },
-  {
-    id: 'mistral-le-chat',
-    name: 'Mistral Le Chat',
-    shortDesc: 'European LLM with strong privacy story.',
-    notes: 'EU-hosted, GDPR-native. Strong candidate for workflows requiring data residency or client privacy commitments.',
-    quadrantId: 3,
-    ringId: 2,
-    tags: ['LLM', 'European', 'Privacy-First', 'GDPR'],
-    team: 'Creative Tech',
-    ownerId: 'admin-1',
-    ownerName: 'Greenberry Admin',
-    scores: { maturity: 3, impact: 3, effort: 2, risk: 1 },
-    costRange: 'Low',
-    origin: 'European',
-    sustainabilityNotes: 'European data centres, EU Green Deal aligned.',
-    securityNotes: 'GDPR compliant, EU data residency guaranteed.',
-    ethicsNotes: '',
-    links: [],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 1200000,
-    updatedAt: Date.now(),
-    createdBy: 'Admin',
-    updatedBy: 'Admin',
-    pricingTiers: [
-      { name: 'Free', cost: 'Free', features: ['Generous limits', 'Web access'] },
-      { name: 'Pro', cost: '€14.99', billing: 'per month', features: ['Unlimited messages', 'All models', 'Priority access'] }
-    ]
-  },
-  {
-    id: 'lovable',
-    name: 'Lovable',
-    shortDesc: 'AI app builder from prompt to production.',
-    notes: 'Generates full-stack apps from natural language. Assess for rapid client prototyping and MVP delivery.',
-    quadrantId: 2,
-    ringId: 2,
-    tags: ['App Builder', 'Prototyping', 'Full-stack'],
-    team: 'Engineering',
-    ownerId: 'admin-1',
-    ownerName: 'Greenberry Admin',
-    scores: { maturity: 3, impact: 4, effort: 1, risk: 3 },
-    costRange: 'Low',
-    origin: 'European',
-    sustainabilityNotes: 'European-founded, standard cloud infra.',
-    securityNotes: 'Review generated code before production deployment.',
-    ethicsNotes: '',
-    links: [],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 800000,
-    updatedAt: Date.now(),
-    createdBy: 'Admin',
-    updatedBy: 'Admin',
-    pricingTiers: [
-      { name: 'Free', cost: 'Free', features: ['5 projects', 'Basic generation'] },
-      { name: 'Starter', cost: '$20', billing: 'per month', features: ['Unlimited projects', 'Custom domains'] }
-    ]
-  }
-];
+import { useCollection, useMemoFirebase, useUser, useFirestore } from '@/firebase';
+import { collection, query, where, orderBy } from 'firebase/firestore';
 
 export default function Home() {
   const [search, setSearch] = useState('');
   const [activeQuadrant, setActiveQuadrant] = useState<number | undefined>();
   const [activeRing, setActiveRing] = useState<number | undefined>();
+  const [mounted, setMounted] = useState(false);
+  const db = useFirestore();
+  const { user } = useUser();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const radarQuery = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return query(
+      collection(db, 'radarItems'),
+      where('status', '==', 'Approved'),
+      orderBy('updatedAt', 'desc')
+    );
+  }, [db, user]);
+
+  const { data: itemsFromDb, isLoading } = useCollection<RadarItem>(radarQuery);
+
+  const radarItems = itemsFromDb || [];
 
   const filteredItems = useMemo(() => {
-    return MOCK_ITEMS.filter(item => {
+    return radarItems.filter(item => {
       const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase()) || 
                           item.shortDesc.toLowerCase().includes(search.toLowerCase());
       const matchesQuadrant = activeQuadrant === undefined || item.quadrantId === activeQuadrant;
       const matchesRing = activeRing === undefined || item.ringId === activeRing;
       return matchesSearch && matchesQuadrant && matchesRing;
     });
-  }, [search, activeQuadrant, activeRing]);
+  }, [radarItems, search, activeQuadrant, activeRing]);
 
   const quadrantItems = useMemo(() => {
     if (activeQuadrant === undefined) return [];
-    return MOCK_ITEMS.filter(item => item.quadrantId === activeQuadrant);
-  }, [activeQuadrant]);
+    return radarItems.filter(item => item.quadrantId === activeQuadrant);
+  }, [radarItems, activeQuadrant]);
 
   const recentItems = useMemo(() => {
-    return [...MOCK_ITEMS].sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 5);
-  }, []);
+    return [...radarItems].sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 5);
+  }, [radarItems]);
 
   const isItemNew = (item: RadarItem) => {
+    if (!mounted) return false;
     const twoWeeksAgo = Date.now() - 1000 * 60 * 60 * 24 * 14;
     return item.createdAt > twoWeeksAgo;
   };
 
   const hasItemMoved = (item: RadarItem) => {
     return item.previousRingId !== undefined && item.previousRingId !== item.ringId;
+  };
+
+  const formatDate = (timestamp: number) => {
+    if (!mounted) return "";
+    return new Date(timestamp).toLocaleDateString();
   };
 
   return (
@@ -630,20 +128,29 @@ export default function Home() {
               ))}
             </div>
 
-            <div className="bg-white rounded-[3rem] p-12 shadow-2xl shadow-primary/5 border-2 border-secondary/20 relative overflow-hidden">
-              <div className="absolute top-8 right-12 flex gap-4 z-10">
-                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full border">
-                  <Sparkles className="w-3 h-3 text-primary" /> New
+            <div className="bg-white rounded-[3rem] p-12 shadow-2xl shadow-primary/5 border-2 border-secondary/20 relative overflow-hidden min-h-[500px] flex items-center justify-center">
+              {isLoading ? (
+                <div className="animate-pulse flex flex-col items-center gap-4">
+                  <div className="w-64 h-64 rounded-full border-8 border-secondary" />
+                  <div className="text-muted-foreground font-black uppercase tracking-widest text-xs">Syncing Radar...</div>
                 </div>
-                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full border">
-                  <ArrowUpRight className="w-3 h-3 text-blue-500" /> Changed
-                </div>
-              </div>
-              <RadarChart 
-                items={filteredItems} 
-                config={DEFAULT_CONFIG} 
-                activeFilters={{ quadrant: activeQuadrant, ring: activeRing }} 
-              />
+              ) : (
+                <>
+                  <div className="absolute top-8 right-12 flex gap-4 z-10">
+                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full border">
+                      <Sparkles className="w-3 h-3 text-primary" /> New
+                    </div>
+                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full border">
+                      <ArrowUpRight className="w-3 h-3 text-blue-500" /> Changed
+                    </div>
+                  </div>
+                  <RadarChart 
+                    items={filteredItems} 
+                    config={DEFAULT_CONFIG} 
+                    activeFilters={{ quadrant: activeQuadrant, ring: activeRing }} 
+                  />
+                </>
+              )}
             </div>
 
             {activeQuadrant !== undefined && (
@@ -700,7 +207,7 @@ export default function Home() {
             </CardHeader>
             <CardContent className="p-0">
               <div className="divide-y divide-border/50">
-                {recentItems.map((item) => (
+                {recentItems.length > 0 ? recentItems.map((item) => (
                   <Link 
                     key={item.id} 
                     href={`/items/${item.id}`}
@@ -713,14 +220,18 @@ export default function Home() {
                       </div>
                       <div className="flex items-center gap-3 text-[10px] text-muted-foreground font-black uppercase tracking-widest">
                         <Clock className="w-3 h-3" />
-                        {new Date(item.updatedAt).toLocaleDateString()}
+                        {formatDate(item.updatedAt)}
                         <div className="w-1 h-1 rounded-full bg-border" />
                         {DEFAULT_CONFIG.rings[item.ringId]}
                       </div>
                     </div>
                     <ChevronRight className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-all group-hover:translate-x-1" />
                   </Link>
-                ))}
+                )) : (
+                  <div className="p-12 text-center text-sm text-muted-foreground font-medium italic">
+                    Waiting for first strategic pulse...
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

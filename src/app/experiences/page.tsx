@@ -17,24 +17,25 @@ import {
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useCollection, useMemoFirebase, useUser, useFirestore } from '@/firebase';
+import { useCollection, useMemoFirebase, useFirestore } from '@/firebase';
 import { collection, query, where, orderBy } from 'firebase/firestore';
 import { Experience } from '@/app/lib/radar-types';
+import { useAppUser } from '@/components/app/AppUserProvider';
 
 export default function ExperiencesPage() {
   const [search, setSearch] = useState('');
   const [activeTeam, setActiveTeam] = useState<string | undefined>();
   const db = useFirestore();
-  const { user, isUserLoading } = useUser();
+  const { authUser, hasCompanyAccess, isLoading: isUserLoading } = useAppUser();
 
   const experiencesQuery = useMemoFirebase(() => {
-    if (!db || !user) return null;
+    if (!db || !authUser || !hasCompanyAccess) return null;
     return query(
       collection(db, 'experiences'),
       where('status', '==', 'Published'),
       orderBy('createdAt', 'desc')
     );
-  }, [db, user]);
+  }, [db, authUser, hasCompanyAccess]);
 
   const { data: experiences, isLoading } = useCollection<Experience>(experiencesQuery);
 
@@ -64,7 +65,7 @@ export default function ExperiencesPage() {
     );
   }
 
-  if (!user) {
+  if (!hasCompanyAccess) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Navbar />
@@ -183,7 +184,7 @@ export default function ExperiencesPage() {
                               </Badge>
                             ))}
                             {exp.toolLinks.length > 2 && (
-                              <Badge variant="ghost" className="text-[10px] font-bold opacity-50">+{exp.toolLinks.length - 2} more</Badge>
+                              <Badge variant="outline" className="text-[10px] font-bold opacity-50">+{exp.toolLinks.length - 2} more</Badge>
                             )}
                           </div>
                           <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">

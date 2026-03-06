@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { Suspense, useState, useEffect } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,7 +22,6 @@ import {
   Sparkles, 
   ArrowLeft, 
   Save, 
-  Tool,
   Award,
   Clock,
   ShieldAlert,
@@ -32,27 +31,29 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useCollection, useUser, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, where, serverTimestamp } from 'firebase/firestore';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query, where } from 'firebase/firestore';
 import { addDocumentNonBlocking } from '@/firebase';
+import { useAppUser } from '@/components/app/AppUserProvider';
 
-export default function NewExperiencePage() {
+function NewExperiencePageContent() {
   const { toast } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
   const prefillToolId = searchParams.get('toolId');
-  const { user } = useUser();
   const db = useFirestore();
+  const { authUser, hasCompanyAccess, isLoading, profile } = useAppUser();
 
   const [loading, setLoading] = useState(false);
   const [toolSearch, setToolSearch] = useState('');
   
   const toolsQuery = useMemoFirebase(() => {
-    if (!db || !user) return null;
+    if (!db || !authUser || !hasCompanyAccess) return null;
     return query(collection(db, 'radarItems'), where('status', '==', 'Approved'));
-  }, [db, user]);
+  }, [db, authUser, hasCompanyAccess]);
 
   const { data: allTools } = useCollection<RadarItem>(toolsQuery);
 
@@ -72,6 +73,34 @@ export default function NewExperiencePage() {
     timeSavedHours: 0,
     tags: '',
   });
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!hasCompanyAccess) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <main className="container mx-auto max-w-4xl px-6 py-24 text-center">
+          <h1 className="text-4xl font-black">Company sign-in required</h1>
+          <p className="mt-4 text-muted-foreground">
+            Use your Greenberry Google account before logging an experience.
+          </p>
+          <Button asChild className="mt-8 rounded-full px-8">
+            <Link href="/login">Go to Sign In</Link>
+          </Button>
+        </main>
+      </div>
+    );
+  }
 
   const filteredTools = allTools?.filter(t => 
     t.name.toLowerCase().includes(toolSearch.toLowerCase()) && 
@@ -95,7 +124,7 @@ export default function NewExperiencePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !db) return;
+    if (!authUser || !db || !hasCompanyAccess) return;
 
     if (formData.toolLinks.length === 0) {
       toast({ title: "Validation Error", description: "Please link at least one tool.", variant: "destructive" });
@@ -109,10 +138,10 @@ export default function NewExperiencePage() {
       tags: formData.tags.split(',').map(t => t.trim()).filter(t => !!t),
       status: 'Published',
       createdAt: Date.now(),
-      createdBy: user.uid,
-      creatorName: user.displayName || 'Greenberry Member',
+      createdBy: authUser.uid,
+      creatorName: profile?.displayName || authUser.displayName || 'Greenberry Member',
       updatedAt: Date.now(),
-      updatedBy: user.uid,
+      updatedBy: authUser.uid,
       viewsCount: 0,
       likesCount: 0,
     };
@@ -364,5 +393,22 @@ export default function NewExperiencePage() {
         </form>
       </main>
     </div>
+  );
+}
+
+export default function NewExperiencePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-background">
+          <Navbar />
+          <div className="flex min-h-[60vh] items-center justify-center">
+            <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary" />
+          </div>
+        </div>
+      }
+    >
+      <NewExperiencePageContent />
+    </Suspense>
   );
 }

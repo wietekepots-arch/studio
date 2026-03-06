@@ -19,22 +19,29 @@ import {
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useDoc, useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
+import { useDoc, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { Experience, RadarItem } from '@/app/lib/radar-types';
 import { collection, query, where, documentId, doc } from 'firebase/firestore';
+import { useAppUser } from '@/components/app/AppUserProvider';
 
 export default function ExperienceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params);
   const db = useFirestore();
-  const { user, isUserLoading: isAuthLoading } = useUser();
+  const {
+    authUser,
+    hasCompanyAccess,
+    isLoading: isAuthLoading,
+  } = useAppUser();
   
-  const expRef = useMemoFirebase(() => (db && user ? doc(db, 'experiences', id) : null), [db, user, id]);
+  const expRef = useMemoFirebase(() => (
+    db && authUser && hasCompanyAccess ? doc(db, 'experiences', id) : null
+  ), [db, authUser, hasCompanyAccess, id]);
   const { data: experience, isLoading: isExpLoading } = useDoc<Experience>(expRef);
 
   const toolsQuery = useMemoFirebase(() => {
-    if (!db || !user || !experience?.toolLinks?.length) return null;
+    if (!db || !authUser || !hasCompanyAccess || !experience?.toolLinks?.length) return null;
     return query(collection(db, 'radarItems'), where(documentId(), 'in', experience.toolLinks));
-  }, [db, user, experience?.toolLinks]);
+  }, [db, authUser, hasCompanyAccess, experience?.toolLinks]);
 
   const { data: linkedTools, isLoading: isToolsLoading } = useCollection<RadarItem>(toolsQuery);
 
@@ -49,7 +56,7 @@ export default function ExperienceDetailPage({ params }: { params: Promise<{ id:
     );
   }
 
-  if (!user) {
+  if (!hasCompanyAccess) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Navbar />

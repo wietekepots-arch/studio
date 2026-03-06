@@ -1,761 +1,303 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
-import { Navbar } from '@/components/layout/Navbar';
-import { RadarChart } from '@/components/radar/RadarChart';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { 
-  Search, 
-  History, 
-  Clock, 
-  ChevronRight,
+import React, { useMemo, useState } from "react";
+import Link from "next/link";
+import { collection, query, where } from "firebase/firestore";
+import {
   ArrowRight,
+  ChevronRight,
+  Clock,
+  History,
+  Search,
   ShieldCheck,
-  ArrowUpRight,
-  Sparkles
-} from 'lucide-react';
-import { 
-  RadarItem, 
-  DEFAULT_CONFIG 
-} from '@/app/lib/radar-types';
-import Link from 'next/link';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+  Sparkles,
+} from "lucide-react";
+import { Navbar } from "@/components/layout/Navbar";
+import { useAppUser } from "@/components/app/AppUserProvider";
+import { RadarChart } from "@/components/radar/RadarChart";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { RadarConfigOption, RadarItem } from "@/app/lib/radar-types";
+import {
+  buildRadarConfig,
+  sortConfigOptions,
+  sortRadarItems,
+} from "@/lib/radar-firestore";
 
-const MOCK_ITEMS: RadarItem[] = [
-  {
-    id: 'claude-3-5',
-    name: 'Claude 3.5 Sonnet',
-    shortDesc: 'High-performance reasoning model.',
-    notes: 'Legacy support for existing workflows. Superseded by newer models for primary production.',
-    quadrantId: 0,
-    ringId: 3, // HOLD
-    previousRingId: 0,
-    tags: ['LLM', 'Anthropic', 'Legacy'],
-    team: 'Creative Tech',
-    ownerId: 'admin-1',
-    ownerName: 'Greenberry Admin',
-    scores: { maturity: 5, impact: 3, effort: 1, risk: 2 },
-    costRange: 'Medium',
-    origin: 'American',
-    sustainabilityNotes: 'Standard inference footprint.',
-    securityNotes: 'Enterprise safety verified.',
-    ethicsNotes: '',
-    links: ['https://anthropic.com'],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 30000000,
-    updatedAt: Date.now(),
-    createdBy: 'Admin',
-    updatedBy: 'Admin',
-    history: [
-      { id: 'h1', itemId: 'claude-3-5', action: 'Moved to Hold', note: 'Outdated model', createdAt: Date.now(), createdBy: 'Admin' }
-    ],
-    pricingTiers: [
-      { name: 'Individual', cost: 'Free', features: ['Basic usage', 'Standard support'] },
-      { name: 'Pro', cost: '$20', billing: 'per user/month', features: ['High limits', 'Priority access', 'Latest features'] }
-    ]
-  },
-  {
-    id: 'claude-4-6',
-    name: 'Claude 4.6 Sonnet',
-    shortDesc: 'Latest intelligence flagship.',
-    notes: 'Primary recommendation for reasoning and complex coding tasks.',
-    quadrantId: 1,
-    ringId: 0, // ADOPT
-    tags: ['LLM', 'Anthropic', 'Flagship'],
-    team: 'Creative Tech',
-    ownerId: 'admin-1',
-    ownerName: 'Greenberry Admin',
-    scores: { maturity: 5, impact: 5, effort: 1, risk: 2 },
-    costRange: 'Medium',
-    origin: 'American',
-    sustainabilityNotes: 'Optimized efficiency metrics.',
-    securityNotes: 'Full privacy compliance.',
-    ethicsNotes: '',
-    links: ['https://anthropic.com'],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-    createdBy: 'Admin',
-    updatedBy: 'Admin',
-    pricingTiers: [
-      { name: 'Developer', cost: 'Usage-based', billing: 'per million tokens', features: ['API Access', 'Enterprise Support'] },
-      { name: 'Pro', cost: '$20', billing: 'per month', features: ['Unlimited Web Access', 'Team workspace'] }
-    ]
-  },
-  {
-    id: 'transcriptor',
-    name: 'Transcriptor',
-    shortDesc: 'Meeting intelligence for studios.',
-    notes: 'Excellent support for Dutch language and studio-wide integration.',
-    quadrantId: 2,
-    ringId: 0,
-    tags: ['Audio', 'Productivity', 'EU'],
-    team: 'Operations',
-    ownerId: 'admin-1',
-    ownerName: 'Admin',
-    scores: { maturity: 4, impact: 4, effort: 2, risk: 1 },
-    costRange: 'Low',
-    origin: 'European',
-    sustainabilityNotes: 'Low energy overhead.',
-    securityNotes: 'EU-hosted, GDPR compliant.',
-    ethicsNotes: '',
-    links: [],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 1000000,
-    updatedAt: Date.now(),
-    createdBy: 'Admin',
-    updatedBy: 'Admin',
-    pricingTiers: [
-      { name: 'Starter', cost: 'Free', features: ['10h per month', 'Basic export'] },
-      { name: 'Business', cost: '€12', billing: 'per seat/month', features: ['Unlimited hours', 'Team sharing', 'AI Summaries'] }
-    ]
-  },
-  {
-    id: 'firebase-studio',
-    name: 'Firebase Studio',
-    shortDesc: 'Rapid prototyping environment.',
-    notes: 'Our core platform for building internal tools and MVPs.',
-    quadrantId: 0,
-    ringId: 0,
-    tags: ['Prototyping', 'Cloud'],
-    team: 'Engineering',
-    ownerId: 'admin-1',
-    ownerName: 'Admin',
-    scores: { maturity: 5, impact: 5, effort: 1, risk: 1 },
-    costRange: 'Medium',
-    origin: 'American',
-    sustainabilityNotes: 'Google Cloud managed.',
-    securityNotes: 'Enterprise Auth & Rules.',
-    ethicsNotes: '',
-    links: [],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 5000000,
-    updatedAt: Date.now(),
-    createdBy: 'Admin',
-    updatedBy: 'Admin'
-  },
-  {
-    id: 'gpt-5-4',
-    name: 'GPT-5.4',
-    shortDesc: 'OpenAI flagship reasoning model.',
-    notes: 'Top-tier general intelligence from OpenAI. Strong for complex strategy and analysis tasks.',
-    quadrantId: 1,
-    ringId: 0,
-    tags: ['LLM', 'OpenAI', 'Flagship'],
-    team: 'Creative Tech',
-    ownerId: 'admin-1',
-    ownerName: 'Greenberry Admin',
-    scores: { maturity: 5, impact: 5, effort: 1, risk: 2 },
-    costRange: 'Medium',
-    origin: 'American',
-    sustainabilityNotes: 'Standard inference footprint.',
-    securityNotes: 'Enterprise privacy controls available.',
-    ethicsNotes: '',
-    links: [],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-    createdBy: 'Admin',
-    updatedBy: 'Admin',
-    pricingTiers: [
-      { name: 'Plus', cost: '$20', billing: 'per month', features: ['High limits', 'Latest models'] },
-      { name: 'API', cost: 'Usage-based', billing: 'per million tokens', features: ['Full API access'] }
-    ]
-  },
-  {
-    id: 'gpt-5-3',
-    name: 'GPT-5.3',
-    shortDesc: 'Previous OpenAI flagship.',
-    notes: 'Strong general model, largely superseded by GPT-5.4 for primary tasks.',
-    quadrantId: 1,
-    ringId: 1,
-    tags: ['LLM', 'OpenAI'],
-    team: 'Creative Tech',
-    ownerId: 'admin-1',
-    ownerName: 'Greenberry Admin',
-    scores: { maturity: 5, impact: 4, effort: 1, risk: 2 },
-    costRange: 'Medium',
-    origin: 'American',
-    sustainabilityNotes: 'Standard inference footprint.',
-    securityNotes: 'Enterprise privacy controls available.',
-    ethicsNotes: '',
-    links: [],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 8000000,
-    updatedAt: Date.now(),
-    createdBy: 'Admin',
-    updatedBy: 'Admin'
-  },
-  {
-    id: 'gpt-5-3-codex',
-    name: 'GPT-5.3 Codex',
-    shortDesc: 'OpenAI code-optimised model.',
-    notes: 'Specialised for code generation and refactoring. Evaluate against Claude Code and Cursor for daily dev workflows.',
-    quadrantId: 0,
-    ringId: 1,
-    tags: ['LLM', 'OpenAI', 'Coding'],
-    team: 'Engineering',
-    ownerId: 'admin-1',
-    ownerName: 'Greenberry Admin',
-    scores: { maturity: 4, impact: 4, effort: 1, risk: 2 },
-    costRange: 'Medium',
-    origin: 'American',
-    sustainabilityNotes: 'Standard inference footprint.',
-    securityNotes: 'Enterprise privacy controls available.',
-    ethicsNotes: '',
-    links: [],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 2000000,
-    updatedAt: Date.now(),
-    createdBy: 'Admin',
-    updatedBy: 'Admin'
-  },
-  {
-    id: 'gpt-5-1-codex-mini',
-    name: 'GPT-5.1 Codex mini',
-    shortDesc: 'Lightweight coding model from OpenAI.',
-    notes: 'Fast, low-cost code completions. Assess for high-volume or embedded coding use cases.',
-    quadrantId: 0,
-    ringId: 2,
-    tags: ['LLM', 'OpenAI', 'Coding', 'Lightweight'],
-    team: 'Engineering',
-    ownerId: 'admin-1',
-    ownerName: 'Greenberry Admin',
-    scores: { maturity: 3, impact: 3, effort: 1, risk: 2 },
-    costRange: 'Low',
-    origin: 'American',
-    sustainabilityNotes: 'Smaller model, lower energy footprint.',
-    securityNotes: 'Enterprise privacy controls available.',
-    ethicsNotes: '',
-    links: [],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 1000000,
-    updatedAt: Date.now(),
-    createdBy: 'Admin',
-    updatedBy: 'Admin'
-  },
-  {
-    id: 'gemini-3-flash',
-    name: 'Gemini 3 Flash',
-    shortDesc: 'Google\'s fast multimodal model.',
-    notes: 'Excellent speed-to-intelligence ratio. Useful for high-throughput or real-time creative workflows.',
-    quadrantId: 1,
-    ringId: 1,
-    tags: ['LLM', 'Google', 'Multimodal', 'Fast'],
-    team: 'Creative Tech',
-    ownerId: 'admin-1',
-    ownerName: 'Greenberry Admin',
-    scores: { maturity: 4, impact: 4, effort: 1, risk: 2 },
-    costRange: 'Low',
-    origin: 'American',
-    sustainabilityNotes: 'Google infrastructure, carbon-neutral goals.',
-    securityNotes: 'Google Workspace integration, standard compliance.',
-    ethicsNotes: '',
-    links: [],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 1500000,
-    updatedAt: Date.now(),
-    createdBy: 'Admin',
-    updatedBy: 'Admin'
-  },
-  {
-    id: 'antigravity',
-    name: 'Antigravity',
-    shortDesc: 'Emerging AI creative tool.',
-    notes: 'Under assessment for fit in creative workflows. Monitor for production readiness.',
-    quadrantId: 0,
-    ringId: 2,
-    tags: ['Creative', 'Emerging'],
-    team: 'Creative Tech',
-    ownerId: 'admin-1',
-    ownerName: 'Greenberry Admin',
-    scores: { maturity: 2, impact: 3, effort: 2, risk: 3 },
-    costRange: 'Low',
-    origin: 'Other',
-    sustainabilityNotes: 'Under review.',
-    securityNotes: 'Under review.',
-    ethicsNotes: '',
-    links: [],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-    createdBy: 'Admin',
-    updatedBy: 'Admin'
-  },
-  {
-    id: 'cursor',
-    name: 'Cursor',
-    shortDesc: 'AI-first code editor.',
-    notes: 'Strong adoption across engineering. Deep codebase awareness and multi-file editing make it a preferred daily driver.',
-    quadrantId: 2,
-    ringId: 0,
-    tags: ['IDE', 'Coding', 'AI Editor'],
-    team: 'Engineering',
-    ownerId: 'admin-1',
-    ownerName: 'Greenberry Admin',
-    scores: { maturity: 5, impact: 5, effort: 1, risk: 1 },
-    costRange: 'Low',
-    origin: 'American',
-    sustainabilityNotes: 'Lightweight desktop app.',
-    securityNotes: 'Privacy mode available, SOC 2 compliant.',
-    ethicsNotes: '',
-    links: [],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 10000000,
-    updatedAt: Date.now(),
-    createdBy: 'Admin',
-    updatedBy: 'Admin',
-    pricingTiers: [
-      { name: 'Hobby', cost: 'Free', features: ['2000 completions/month', 'Basic AI'] },
-      { name: 'Pro', cost: '$20', billing: 'per month', features: ['Unlimited completions', 'Advanced models', 'Privacy mode'] }
-    ]
-  },
-  {
-    id: 'copilot',
-    name: 'GitHub Copilot',
-    shortDesc: 'AI pair programmer by GitHub.',
-    notes: 'Deeply integrated into VS Code. Trial alongside Cursor to compare daily developer experience.',
-    quadrantId: 2,
-    ringId: 1,
-    tags: ['IDE', 'Coding', 'Microsoft', 'GitHub'],
-    team: 'Engineering',
-    ownerId: 'admin-1',
-    ownerName: 'Greenberry Admin',
-    scores: { maturity: 5, impact: 4, effort: 1, risk: 2 },
-    costRange: 'Low',
-    origin: 'American',
-    sustainabilityNotes: 'Microsoft Azure infrastructure.',
-    securityNotes: 'Enterprise plan with IP indemnification available.',
-    ethicsNotes: '',
-    links: [],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 7000000,
-    updatedAt: Date.now(),
-    createdBy: 'Admin',
-    updatedBy: 'Admin',
-    pricingTiers: [
-      { name: 'Individual', cost: '$10', billing: 'per month', features: ['Unlimited completions', 'Chat'] },
-      { name: 'Business', cost: '$19', billing: 'per seat/month', features: ['Policy management', 'Audit logs'] }
-    ]
-  },
-  {
-    id: 'claude-code',
-    name: 'Claude Code',
-    shortDesc: 'Anthropic\'s agentic CLI for development.',
-    notes: 'Terminal-native AI coding agent. Excellent for complex multi-step engineering tasks and codebase-wide changes.',
-    quadrantId: 2,
-    ringId: 0,
-    tags: ['CLI', 'Coding', 'Anthropic', 'Agentic'],
-    team: 'Engineering',
-    ownerId: 'admin-1',
-    ownerName: 'Greenberry Admin',
-    scores: { maturity: 4, impact: 5, effort: 1, risk: 2 },
-    costRange: 'Medium',
-    origin: 'American',
-    sustainabilityNotes: 'Optimised inference efficiency.',
-    securityNotes: 'Full privacy compliance, no training on prompts.',
-    ethicsNotes: '',
-    links: [],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-    createdBy: 'Admin',
-    updatedBy: 'Admin',
-    pricingTiers: [
-      { name: 'Pro', cost: '$20', billing: 'per month', features: ['Unlimited Claude Code usage', 'Latest models'] },
-      { name: 'API', cost: 'Usage-based', billing: 'per million tokens', features: ['Direct API access'] }
-    ]
-  },
-  {
-    id: 'warp',
-    name: 'Warp',
-    shortDesc: 'AI-powered terminal.',
-    notes: 'Modern terminal with built-in AI assistance for commands and workflows. Trial for engineering teams.',
-    quadrantId: 2,
-    ringId: 1,
-    tags: ['Terminal', 'CLI', 'Productivity'],
-    team: 'Engineering',
-    ownerId: 'admin-1',
-    ownerName: 'Greenberry Admin',
-    scores: { maturity: 4, impact: 3, effort: 1, risk: 1 },
-    costRange: 'Low',
-    origin: 'American',
-    sustainabilityNotes: 'Lightweight native app.',
-    securityNotes: 'Optional local mode, no cloud logging.',
-    ethicsNotes: '',
-    links: [],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 3000000,
-    updatedAt: Date.now(),
-    createdBy: 'Admin',
-    updatedBy: 'Admin',
-    pricingTiers: [
-      { name: 'Free', cost: 'Free', features: ['Core terminal', 'AI commands'] },
-      { name: 'Team', cost: '$15', billing: 'per seat/month', features: ['Shared workflows', 'Team settings'] }
-    ]
-  },
-  {
-    id: 'windsurf',
-    name: 'Windsurf',
-    shortDesc: 'Agentic AI IDE by Codeium.',
-    notes: 'Cursor alternative with strong agentic "flows". Assess for teams exploring alternatives to Cursor.',
-    quadrantId: 2,
-    ringId: 2,
-    tags: ['IDE', 'Coding', 'Agentic'],
-    team: 'Engineering',
-    ownerId: 'admin-1',
-    ownerName: 'Greenberry Admin',
-    scores: { maturity: 3, impact: 4, effort: 1, risk: 2 },
-    costRange: 'Low',
-    origin: 'American',
-    sustainabilityNotes: 'Lightweight desktop app.',
-    securityNotes: 'SOC 2 compliant, privacy mode available.',
-    ethicsNotes: '',
-    links: [],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 500000,
-    updatedAt: Date.now(),
-    createdBy: 'Admin',
-    updatedBy: 'Admin'
-  },
-  {
-    id: 'v0',
-    name: 'v0 by Vercel',
-    shortDesc: 'Prompt-to-UI component generator.',
-    notes: 'Rapidly generates React/Tailwind UI from natural language. Strong fit for prototyping and design handoff acceleration.',
-    quadrantId: 0,
-    ringId: 1,
-    tags: ['UI', 'Prototyping', 'Vercel', 'React'],
-    team: 'Creative Tech',
-    ownerId: 'admin-1',
-    ownerName: 'Greenberry Admin',
-    scores: { maturity: 3, impact: 4, effort: 1, risk: 2 },
-    costRange: 'Low',
-    origin: 'American',
-    sustainabilityNotes: 'Vercel edge infrastructure.',
-    securityNotes: 'Standard web security, no sensitive data required.',
-    ethicsNotes: '',
-    links: [],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 2500000,
-    updatedAt: Date.now(),
-    createdBy: 'Admin',
-    updatedBy: 'Admin',
-    pricingTiers: [
-      { name: 'Free', cost: 'Free', features: ['200 tokens/day', 'Basic generation'] },
-      { name: 'Premium', cost: '$20', billing: 'per month', features: ['Unlimited tokens', 'Private projects'] }
-    ]
-  },
-  {
-    id: 'perplexity',
-    name: 'Perplexity',
-    shortDesc: 'AI-powered research and search.',
-    notes: 'Fast, cited answers for research tasks. Good for competitive intelligence and brief discovery.',
-    quadrantId: 1,
-    ringId: 1,
-    tags: ['Research', 'Search', 'Productivity'],
-    team: 'Creative Tech',
-    ownerId: 'admin-1',
-    ownerName: 'Greenberry Admin',
-    scores: { maturity: 4, impact: 3, effort: 1, risk: 2 },
-    costRange: 'Low',
-    origin: 'American',
-    sustainabilityNotes: 'Standard cloud footprint.',
-    securityNotes: 'No enterprise privacy guarantee on free tier.',
-    ethicsNotes: '',
-    links: [],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 4000000,
-    updatedAt: Date.now(),
-    createdBy: 'Admin',
-    updatedBy: 'Admin',
-    pricingTiers: [
-      { name: 'Free', cost: 'Free', features: ['Unlimited searches', 'Basic Pro queries'] },
-      { name: 'Pro', cost: '$20', billing: 'per month', features: ['600 Pro queries/day', 'File upload', 'API access'] }
-    ]
-  },
-  {
-    id: 'mistral-le-chat',
-    name: 'Mistral Le Chat',
-    shortDesc: 'European LLM with strong privacy story.',
-    notes: 'EU-hosted, GDPR-native. Strong candidate for workflows requiring data residency or client privacy commitments.',
-    quadrantId: 3,
-    ringId: 2,
-    tags: ['LLM', 'European', 'Privacy-First', 'GDPR'],
-    team: 'Creative Tech',
-    ownerId: 'admin-1',
-    ownerName: 'Greenberry Admin',
-    scores: { maturity: 3, impact: 3, effort: 2, risk: 1 },
-    costRange: 'Low',
-    origin: 'European',
-    sustainabilityNotes: 'European data centres, EU Green Deal aligned.',
-    securityNotes: 'GDPR compliant, EU data residency guaranteed.',
-    ethicsNotes: '',
-    links: [],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 1200000,
-    updatedAt: Date.now(),
-    createdBy: 'Admin',
-    updatedBy: 'Admin',
-    pricingTiers: [
-      { name: 'Free', cost: 'Free', features: ['Generous limits', 'Web access'] },
-      { name: 'Pro', cost: '€14.99', billing: 'per month', features: ['Unlimited messages', 'All models', 'Priority access'] }
-    ]
-  },
-  {
-    id: 'lovable',
-    name: 'Lovable',
-    shortDesc: 'AI app builder from prompt to production.',
-    notes: 'Generates full-stack apps from natural language. Assess for rapid client prototyping and MVP delivery.',
-    quadrantId: 2,
-    ringId: 2,
-    tags: ['App Builder', 'Prototyping', 'Full-stack'],
-    team: 'Engineering',
-    ownerId: 'admin-1',
-    ownerName: 'Greenberry Admin',
-    scores: { maturity: 3, impact: 4, effort: 1, risk: 3 },
-    costRange: 'Low',
-    origin: 'European',
-    sustainabilityNotes: 'European-founded, standard cloud infra.',
-    securityNotes: 'Review generated code before production deployment.',
-    ethicsNotes: '',
-    links: [],
-    status: 'Approved',
-    lastReviewedAt: Date.now(),
-    createdAt: Date.now() - 800000,
-    updatedAt: Date.now(),
-    createdBy: 'Admin',
-    updatedBy: 'Admin',
-    pricingTiers: [
-      { name: 'Free', cost: 'Free', features: ['5 projects', 'Basic generation'] },
-      { name: 'Starter', cost: '$20', billing: 'per month', features: ['Unlimited projects', 'Custom domains'] }
-    ]
-  }
-];
-
-export default function Home() {
-  const [search, setSearch] = useState('');
+export default function HomePage(): React.ReactElement {
+  const db = useFirestore();
+  const { authUser, hasCompanyAccess, isLoading } = useAppUser();
+  const [search, setSearch] = useState("");
   const [activeQuadrant, setActiveQuadrant] = useState<number | undefined>();
-  const [activeRing, setActiveRing] = useState<number | undefined>();
+
+  const quadrantsQuery = useMemoFirebase(() => {
+    if (!hasCompanyAccess) {
+      return null;
+    }
+
+    return collection(db, "quadrants");
+  }, [db, hasCompanyAccess]);
+  const ringsQuery = useMemoFirebase(() => {
+    if (!hasCompanyAccess) {
+      return null;
+    }
+
+    return collection(db, "rings");
+  }, [db, hasCompanyAccess]);
+  const approvedItemsQuery = useMemoFirebase(() => {
+    if (!authUser || !hasCompanyAccess) {
+      return null;
+    }
+
+    return query(collection(db, "radarItems"), where("status", "==", "Approved"));
+  }, [authUser, db, hasCompanyAccess]);
+
+  const { data: quadrantDocs } = useCollection<RadarConfigOption>(quadrantsQuery);
+  const { data: ringDocs } = useCollection<RadarConfigOption>(ringsQuery);
+  const { data: approvedItems, isLoading: isItemsLoading } =
+    useCollection<RadarItem>(approvedItemsQuery);
+
+  const quadrants = sortConfigOptions(quadrantDocs);
+  const rings = sortConfigOptions(ringDocs);
+  const config = buildRadarConfig(quadrants, rings);
+  const sortedItems = sortRadarItems(approvedItems);
+  const recentItems = sortedItems.slice(0, 5);
 
   const filteredItems = useMemo(() => {
-    return MOCK_ITEMS.filter(item => {
-      const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase()) || 
-                          item.shortDesc.toLowerCase().includes(search.toLowerCase());
-      const matchesQuadrant = activeQuadrant === undefined || item.quadrantId === activeQuadrant;
-      const matchesRing = activeRing === undefined || item.ringId === activeRing;
-      return matchesSearch && matchesQuadrant && matchesRing;
+    return sortedItems.filter((item) => {
+      const matchesSearch =
+        item.name.toLowerCase().includes(search.toLowerCase()) ||
+        item.shortDesc.toLowerCase().includes(search.toLowerCase());
+      const matchesQuadrant =
+        activeQuadrant === undefined || item.quadrantId === activeQuadrant;
+
+      return matchesSearch && matchesQuadrant;
     });
-  }, [search, activeQuadrant, activeRing]);
+  }, [activeQuadrant, search, sortedItems]);
 
-  const quadrantItems = useMemo(() => {
-    if (activeQuadrant === undefined) return [];
-    return MOCK_ITEMS.filter(item => item.quadrantId === activeQuadrant);
-  }, [activeQuadrant]);
+  const focusItems = useMemo(() => {
+    if (activeQuadrant === undefined) {
+      return [];
+    }
 
-  const recentItems = useMemo(() => {
-    return [...MOCK_ITEMS].sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 5);
-  }, []);
+    return filteredItems.filter((item) => item.quadrantId === activeQuadrant);
+  }, [activeQuadrant, filteredItems]);
 
-  const isItemNew = (item: RadarItem) => {
-    const twoWeeksAgo = Date.now() - 1000 * 60 * 60 * 24 * 14;
-    return item.createdAt > twoWeeksAgo;
-  };
+  if (isLoading || isItemsLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary" />
+        </div>
+      </div>
+    );
+  }
 
-  const hasItemMoved = (item: RadarItem) => {
-    return item.previousRingId !== undefined && item.previousRingId !== item.ringId;
-  };
+  if (!hasCompanyAccess || !authUser) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="container mx-auto flex min-h-[70vh] flex-col items-center justify-center gap-6 px-6 text-center">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <ShieldCheck className="h-10 w-10" />
+          </div>
+          <div className="space-y-3">
+            <h1 className="text-5xl font-black tracking-tighter">
+              Company sign-in required
+            </h1>
+            <p className="max-w-xl text-lg font-medium text-muted-foreground">
+              Sign in with your Greenberry account to view the live radar.
+            </p>
+          </div>
+          <Button asChild className="rounded-full px-8">
+            <Link href="/login">Go to Sign In</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background">
       <Navbar />
-      
-      <main className="flex-1 container mx-auto px-6 py-12 grid grid-cols-1 lg:grid-cols-12 gap-12">
-        
-        <div className="lg:col-span-8 space-y-12">
-          <div className="flex flex-col md:flex-row gap-6 items-end justify-between">
-            <div className="space-y-2">
-              <h1 className="text-6xl font-black text-foreground tracking-tighter leading-none uppercase">Design for <br/><span className="text-primary">Progress</span></h1>
-              <p className="text-xl text-muted-foreground font-medium max-w-lg">Tracking AI tools that amplify creative and ethical impact at Greenberry.</p>
+
+      <main className="container mx-auto grid max-w-7xl grid-cols-1 gap-12 px-6 py-12 lg:grid-cols-12">
+        <div className="space-y-12 lg:col-span-8">
+          <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+            <div className="space-y-3">
+              <div className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">
+                Live Firestore Radar
+              </div>
+              <h1 className="text-6xl font-black uppercase leading-none tracking-tighter">
+                Design for <br />
+                <span className="text-primary">Progress</span>
+              </h1>
+              <p className="max-w-lg text-xl font-medium text-muted-foreground">
+                Approved tool blips from the Greenberry workflow, visible the
+                moment a reviewer publishes them.
+              </p>
             </div>
+
             <div className="relative w-full md:w-80">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input 
-                placeholder="Search the network..." 
-                className="pl-12 border-2 border-border focus:border-primary rounded-full h-14 text-lg bg-secondary/30"
+              <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search the radar..."
+                className="h-14 rounded-full border-2 border-border bg-secondary/30 pl-12 text-lg"
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(event) => setSearch(event.target.value)}
               />
             </div>
           </div>
 
-          <div className="space-y-8">
-            <div className="flex flex-wrap gap-2">
-              <Badge 
-                variant={activeQuadrant === undefined ? "default" : "outline"} 
-                className="cursor-pointer px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.15em] transition-all"
-                onClick={() => setActiveQuadrant(undefined)}
-              >
-                Entire Network
-              </Badge>
-              {DEFAULT_CONFIG.quadrants.map((q, i) => (
-                <Badge 
-                  key={q}
-                  variant={activeQuadrant === i ? "default" : "outline"} 
-                  className="cursor-pointer px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.15em] transition-all"
-                  onClick={() => setActiveQuadrant(i)}
+          {!config.quadrants.length || !config.rings.length ? (
+            <Card className="rounded-[3rem] border-none bg-secondary/20 shadow-none">
+              <CardContent className="space-y-4 p-12 text-center">
+                <h2 className="text-3xl font-black tracking-tight">
+                  Radar not initialized
+                </h2>
+                <p className="font-medium text-muted-foreground">
+                  Seed the starter config and approved items from the dashboard
+                  to bring the radar online.
+                </p>
+                <Button asChild className="rounded-full px-8">
+                  <Link href="/dashboard">Open Dashboard</Link>
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <>
+              <div className="flex flex-wrap gap-2">
+                <Badge
+                  variant={activeQuadrant === undefined ? "default" : "outline"}
+                  className="cursor-pointer rounded-full px-6 py-2.5 text-[10px] font-black uppercase tracking-[0.15em]"
+                  onClick={() => setActiveQuadrant(undefined)}
                 >
-                  {q}
+                  Entire Network
                 </Badge>
-              ))}
-            </div>
-
-            <div className="bg-white rounded-[3rem] p-12 shadow-2xl shadow-primary/5 border-2 border-secondary/20 relative overflow-hidden">
-              <div className="absolute top-8 right-12 flex gap-4 z-10">
-                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full border">
-                  <Sparkles className="w-3 h-3 text-primary" /> New
-                </div>
-                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full border">
-                  <ArrowUpRight className="w-3 h-3 text-blue-500" /> Changed
-                </div>
-              </div>
-              <RadarChart 
-                items={filteredItems} 
-                config={DEFAULT_CONFIG} 
-                activeFilters={{ quadrant: activeQuadrant, ring: activeRing }} 
-              />
-            </div>
-
-            {activeQuadrant !== undefined && (
-              <div className="space-y-6 pt-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <div className="flex items-center justify-between border-b pb-6">
-                  <h3 className="text-4xl font-black uppercase tracking-tighter">
-                    Focus: <span className="text-primary">{DEFAULT_CONFIG.quadrants[activeQuadrant]}</span>
-                  </h3>
-                  <Badge variant="secondary" className="font-bold px-4 py-1.5 rounded-full">
-                    {quadrantItems.length} Pulses
+                {config.quadrants.map((quadrant, index) => (
+                  <Badge
+                    key={quadrant}
+                    variant={activeQuadrant === index ? "default" : "outline"}
+                    className="cursor-pointer rounded-full px-6 py-2.5 text-[10px] font-black uppercase tracking-[0.15em]"
+                    onClick={() => setActiveQuadrant(index)}
+                  >
+                    {quadrant}
                   </Badge>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {quadrantItems.map(item => (
-                    <Link 
-                      key={item.id} 
-                      href={`/items/${item.id}`}
-                      className="group p-8 bg-secondary/30 rounded-[2.5rem] border-2 border-transparent hover:border-primary/20 hover:bg-white transition-all flex justify-between items-center"
-                    >
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl font-black group-hover:text-primary transition-colors tracking-tight">{item.name}</span>
-                          {isItemNew(item) && (
-                            <Sparkles className="w-4 h-4 text-primary animate-pulse" />
-                          )}
-                          {hasItemMoved(item) && (
-                            <ArrowUpRight className="w-4 h-4 text-blue-500" />
-                          )}
-                        </div>
-                        <div className="text-sm text-muted-foreground font-medium line-clamp-1">{item.shortDesc}</div>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <Badge className="font-black uppercase text-[10px] tracking-widest h-8 px-4 rounded-full">
-                          {DEFAULT_CONFIG.rings[item.ringId]}
-                        </Badge>
-                        <ChevronRight className="w-6 h-6 text-muted-foreground group-hover:translate-x-1 transition-transform" />
-                      </div>
-                    </Link>
-                  ))}
-                </div>
+                ))}
               </div>
-            )}
-          </div>
+
+              <div className="rounded-[3rem] border-2 border-secondary/20 bg-white p-12 shadow-2xl shadow-primary/5">
+                <RadarChart
+                  items={filteredItems}
+                  config={config}
+                  activeFilters={{ quadrant: activeQuadrant }}
+                />
+              </div>
+
+              {activeQuadrant !== undefined ? (
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between border-b pb-6">
+                    <h3 className="text-4xl font-black uppercase tracking-tighter">
+                      Focus:{" "}
+                      <span className="text-primary">
+                        {config.quadrants[activeQuadrant]}
+                      </span>
+                    </h3>
+                    <Badge variant="secondary" className="rounded-full px-4 py-1.5 font-bold">
+                      {focusItems.length} blips
+                    </Badge>
+                  </div>
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    {focusItems.map((item) => (
+                      <Link
+                        key={item.id}
+                        href={`/items/${item.id}`}
+                        className="group flex items-center justify-between rounded-[2.5rem] border-2 border-transparent bg-secondary/30 p-8 transition-all hover:border-primary/20 hover:bg-white"
+                      >
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-3">
+                            <span className="text-2xl font-black tracking-tight transition-colors group-hover:text-primary">
+                              {item.name}
+                            </span>
+                            {item.createdAt > Date.now() - 1_209_600_000 ? (
+                              <Sparkles className="h-4 w-4 text-primary" />
+                            ) : null}
+                          </div>
+                          <div className="line-clamp-1 text-sm font-medium text-muted-foreground">
+                            {item.shortDesc}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <Badge className="rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-widest">
+                            {config.rings[item.ringId]}
+                          </Badge>
+                          <ChevronRight className="h-6 w-6 text-muted-foreground transition-transform group-hover:translate-x-1" />
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </>
+          )}
         </div>
 
-        <div className="lg:col-span-4 space-y-8">
-          <Card className="rounded-[2.5rem] border-none bg-secondary/30 overflow-hidden shadow-none">
+        <div className="space-y-8 lg:col-span-4">
+          <Card className="overflow-hidden rounded-[2.5rem] border-none bg-secondary/30 shadow-none">
             <CardHeader className="p-8 pb-4">
               <CardTitle className="flex items-center gap-3 text-2xl font-black uppercase tracking-tighter">
-                <History className="w-6 h-6 text-primary" />
+                <History className="h-6 w-6 text-primary" />
                 Latest Pulses
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
               <div className="divide-y divide-border/50">
                 {recentItems.map((item) => (
-                  <Link 
-                    key={item.id} 
+                  <Link
+                    key={item.id}
                     href={`/items/${item.id}`}
-                    className="flex items-center justify-between p-8 hover:bg-white/50 transition-all group"
+                    className="group flex items-center justify-between p-8 transition-all hover:bg-white/50"
                   >
                     <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-xl group-hover:text-primary transition-colors tracking-tight">{item.name}</span>
-                        {isItemNew(item) && <Badge className="text-[9px] h-4 font-black bg-primary/20 text-primary border-none">NEW</Badge>}
-                      </div>
-                      <div className="flex items-center gap-3 text-[10px] text-muted-foreground font-black uppercase tracking-widest">
-                        <Clock className="w-3 h-3" />
+                      <span className="text-xl font-bold tracking-tight transition-colors group-hover:text-primary">
+                        {item.name}
+                      </span>
+                      <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                        <Clock className="h-3 w-3" />
                         {new Date(item.updatedAt).toLocaleDateString()}
-                        <div className="w-1 h-1 rounded-full bg-border" />
-                        {DEFAULT_CONFIG.rings[item.ringId]}
                       </div>
                     </div>
-                    <ChevronRight className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-all group-hover:translate-x-1" />
+                    <ChevronRight className="h-6 w-6 text-muted-foreground transition-all group-hover:translate-x-1 group-hover:text-primary" />
                   </Link>
                 ))}
               </div>
             </CardContent>
           </Card>
 
-          <Card className="rounded-[2.5rem] border-none bg-primary text-primary-foreground shadow-2xl shadow-primary/20 p-4">
+          <Card className="rounded-[2.5rem] border-none bg-primary p-4 text-primary-foreground shadow-2xl shadow-primary/20">
             <CardHeader className="p-8 pb-4">
-              <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4" />
-                Agency Governance
+              <CardTitle className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] opacity-80">
+                <ShieldCheck className="h-4 w-4" />
+                Governance Workflow
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-8 pt-0 space-y-6">
-              <p className="text-xl leading-snug font-medium">
-                We prioritize tools that align with our <span className="opacity-80">Progress</span> goals. 
-                Always review sustainability for high-compute models.
+            <CardContent className="space-y-6 p-8 pt-0">
+              <p className="text-xl font-medium leading-snug">
+                Only approved blips appear on the radar. Suggestions and review
+                queues live in the dashboard.
               </p>
-              <Button asChild variant="secondary" className="w-full gap-2 rounded-full font-bold h-16 text-lg group">
-                <Link href="/items/new">
-                  Propose a Tool
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              <Button asChild variant="secondary" className="h-16 w-full gap-2 rounded-full text-lg font-bold">
+                <Link href="/dashboard">
+                  Open Dashboard
+                  <ArrowRight className="h-5 w-5" />
                 </Link>
               </Button>
             </CardContent>
           </Card>
-
-          <div className="px-8 space-y-6">
-            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Strategic Pulse</h4>
-            <div className="flex flex-wrap gap-2">
-              {['Sustainable', 'European', 'Privacy-First', 'GDPR', 'Open Source'].map(tag => (
-                <Badge key={tag} variant="outline" className="bg-white border-2 border-transparent hover:border-primary/30 cursor-pointer transition-all px-6 py-2.5 text-xs font-bold rounded-full uppercase tracking-widest">
-                  #{tag}
-                </Badge>
-              ))}
-            </div>
-          </div>
         </div>
       </main>
     </div>

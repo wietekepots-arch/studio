@@ -7,6 +7,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
 } from 'firebase/auth';
+import { COMPANY_EMAIL_DOMAIN } from "@/lib/company-auth";
 
 /** Initiate anonymous sign-in (non-blocking). */
 export function initiateAnonymousSignIn(authInstance: Auth): void {
@@ -29,6 +30,7 @@ export function initiateGoogleSignIn(authInstance: Auth): void {
   // We specify the prompt as 'select_account' to ensure users can choose their greenberry account
   provider.setCustomParameters({
     prompt: 'select_account',
+    hd: COMPANY_EMAIL_DOMAIN.replace("@", ""),
   });
   signInWithPopup(authInstance, provider);
 }

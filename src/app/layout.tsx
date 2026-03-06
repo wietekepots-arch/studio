@@ -2,6 +2,7 @@ import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { FirebaseClientProvider } from '@/firebase';
+import { AppUserProvider } from "@/components/app/AppUserProvider";
 
 export const metadata: Metadata = {
   title: 'AI Tooling Radar | Agency Knowledge',
@@ -22,8 +23,10 @@ export default function RootLayout({
       </head>
       <body className="font-body min-h-screen">
         <FirebaseClientProvider>
-          {children}
-          <Toaster />
+          <AppUserProvider>
+            {children}
+            <Toaster />
+          </AppUserProvider>
         </FirebaseClientProvider>
       </body>
     </html>

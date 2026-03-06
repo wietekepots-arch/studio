@@ -6,66 +6,135 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function isCompanyUser() {
+      return isSignedIn()
+        && request.auth.token.email != null
+        && request.auth.token.email.matches('.*@greenberry\\.nl$');
+    }
+
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
+    function hasProfile() {
+      return isCompanyUser()
+        && exists(/databases/$(database)/documents/userProfiles/$(request.auth.uid));
+    }
+
     function getUserRole() {
-      return get(/databases/$(database)/documents/userProfiles/$(request.auth.uid)).data.role;
+      return hasProfile()
+        ? get(/databases/$(database)/documents/userProfiles/$(request.auth.uid)).data.role
+        : null;
+    }
+
+    function isPowerUser() {
+      return getUserRole() == 'PowerUser' || getUserRole() == 'Admin';
     }
 
     function isAdmin() {
-      return isSignedIn() && getUserRole() == 'Admin';
+      return getUserRole() == 'Admin';
+    }
+
+    function canReadRadarItem(data) {
+      return hasProfile()
+        && (
+          isPowerUser()
+          || data.status == 'Approved'
+          || data.createdBy == request.auth.uid
+        );
+    }
+
+    function canReadExperience(data) {
+      return hasProfile()
+        && (
+          isPowerUser()
+          || data.status == 'Published'
+          || data.createdBy == request.auth.uid
+        );
+    }
+
+    function isOwnerEditingOwnBlip() {
+      return hasProfile()
+        && resource.data.createdBy == request.auth.uid
+        && (resource.data.status == 'Draft' || resource.data.status == 'Pending')
+        && request.resource.data.createdBy == resource.data.createdBy
+        && request.resource.data.ownerId == resource.data.ownerId
+        && (
+          request.resource.data.status == resource.data.status
+          || (resource.data.status == 'Draft' && request.resource.data.status == 'Pending')
+        );
     }
 
     match /userProfiles/{userId} {
-      allow get, list: if isSignedIn();
-      allow create: if isOwner(userId);
-      allow update: if isOwner(userId);
+      allow get: if isCompanyUser() && (isOwner(userId) || isPowerUser());
+      allow list: if isPowerUser();
+      allow create: if isCompanyUser()
+        && isOwner(userId)
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.role == 'Member';
+      allow update: if isCompanyUser()
+        && (
+          isAdmin()
+          || (
+            isOwner(userId)
+            && request.resource.data.uid == resource.data.uid
+            && request.resource.data.email == resource.data.email
+            && request.resource.data.role == resource.data.role
+          )
+        );
       allow delete: if isAdmin();
     }
 
     match /quadrants/{quadrantId} {
-      allow read: if isSignedIn();
-      allow write: if isAdmin();
+      allow read: if hasProfile();
+      allow write: if isPowerUser();
     }
 
     match /rings/{ringId} {
-      allow read: if isSignedIn();
-      allow write: if isAdmin();
+      allow read: if hasProfile();
+      allow write: if isPowerUser();
     }
 
     match /tags/{tagId} {
-      allow read: if isSignedIn();
-      allow write: if isAdmin();
+      allow read: if hasProfile();
+      allow write: if isPowerUser();
     }
 
     match /radarItems/{radarItemId} {
-      allow get: if isSignedIn() && (resource.data.status != 'Draft' || resource.data.createdBy == request.auth.uid || isAdmin());
-      allow list: if isSignedIn();
-      allow create: if isSignedIn() && request.resource.data.createdBy == request.auth.uid;
-      allow update: if isSignedIn() && (resource.data.createdBy == request.auth.uid || isAdmin());
+      allow get, list: if canReadRadarItem(resource.data);
+      allow create: if hasProfile()
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.updatedBy == request.auth.uid
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.submittedBy == request.auth.uid
+        && request.resource.data.status == 'Pending';
+      allow update: if hasProfile() && (isPowerUser() || isOwnerEditingOwnBlip());
       allow delete: if isAdmin();
 
       match /itemComments/{commentId} {
-        allow read: if isSignedIn();
-        allow create: if isSignedIn();
-        allow update, delete: if isOwner(resource.data.createdBy) || isAdmin();
+        allow read: if hasProfile();
+        allow create: if hasProfile() && request.resource.data.createdBy == request.auth.uid;
+        allow update, delete: if isAdmin()
+          || (hasProfile() && resource.data.createdBy == request.auth.uid);
       }
 
       match /itemHistory/{historyId} {
-        allow read: if isSignedIn();
-        allow create: if isSignedIn();
+        allow read: if hasProfile();
+        allow create: if hasProfile()
+          && (isPowerUser() || request.resource.data.createdBy == request.auth.uid);
         allow update, delete: if isAdmin();
       }
     }
 
     match /experiences/{experienceId} {
-      allow get: if isSignedIn() && (resource.data.status == 'Published' || resource.data.createdBy == request.auth.uid || isAdmin());
-      allow list: if isSignedIn();
-      allow create: if isSignedIn() && request.resource.data.createdBy == request.auth.uid;
-      allow update: if isSignedIn() && (resource.data.createdBy == request.auth.uid || isAdmin());
-      allow delete: if isOwner(resource.data.createdBy) || isAdmin();
+      allow get, list: if canReadExperience(resource.data);
+      allow create: if hasProfile()
+        && request.resource.data.createdBy == request.auth.uid;
+      allow update: if hasProfile()
+        && (isPowerUser() || resource.data.createdBy == request.auth.uid);
+      allow delete: if isAdmin()
+        || (hasProfile() && resource.data.createdBy == request.auth.uid);
     }
   }
 }

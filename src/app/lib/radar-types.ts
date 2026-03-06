@@ -114,10 +114,10 @@ export interface Experience {
 
 export const DEFAULT_CONFIG: RadarConfig = {
   quadrants: [
-    "Creation & Craft",
-    "Strategy & Intelligence",
-    "Process & Flow",
-    "Positive Impact"
+    "Build & Prototype",
+    "Models & Intelligence",
+    "Workflow & Agents",
+    "Trust & Governance"
   ],
   rings: [
     "Adopt",

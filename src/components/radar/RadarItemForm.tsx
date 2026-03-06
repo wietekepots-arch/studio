@@ -576,9 +576,17 @@ export function RadarItemForm({
                       <SelectItem
                         key={quadrant.id}
                         value={String(quadrant.order)}
-                        className="p-3 font-bold"
+                        textValue={quadrant.name}
+                        className="p-3"
                       >
-                        {quadrant.name}
+                        <span className="flex flex-col">
+                          <span className="font-bold">{quadrant.name}</span>
+                          {quadrant.description ? (
+                            <span className="text-xs font-medium text-muted-foreground">
+                              {quadrant.description}
+                            </span>
+                          ) : null}
+                        </span>
                       </SelectItem>
                     ))}
                   </SelectContent>

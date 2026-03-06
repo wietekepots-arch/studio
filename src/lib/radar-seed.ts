@@ -8,23 +8,31 @@ import {
 export const seedQuadrants: RadarConfigOption[] = [
   {
     id: "creation-craft",
-    name: "Creation & Craft",
+    name: "Build & Prototype",
     order: 0,
+    description:
+      "App builders, coding copilots, and rapid concepting tools used to make and ship faster.",
   },
   {
     id: "strategy-intelligence",
-    name: "Strategy & Intelligence",
+    name: "Models & Intelligence",
     order: 1,
+    description:
+      "Foundation models, chat systems, and research tools used for reasoning, search, and synthesis.",
   },
   {
     id: "process-flow",
-    name: "Process & Flow",
+    name: "Workflow & Agents",
     order: 2,
+    description:
+      "AI-native products that automate delivery, execution, and day-to-day team workflows.",
   },
   {
     id: "positive-impact",
-    name: "Positive Impact",
+    name: "Trust & Governance",
     order: 3,
+    description:
+      "Privacy-first, compliant, or policy-shaping tools that help reduce organisational risk.",
   },
 ];
 

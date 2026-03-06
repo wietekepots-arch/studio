@@ -33,6 +33,21 @@ export interface SeedResult {
   historyEntries: number;
 }
 
+function hasConfigOptionChanged(
+  existingOption: Partial<RadarConfigOption> | undefined,
+  nextOption: RadarConfigOption,
+): boolean {
+  if (!existingOption) {
+    return true;
+  }
+
+  return (
+    existingOption.name !== nextOption.name ||
+    existingOption.order !== nextOption.order ||
+    existingOption.description !== nextOption.description
+  );
+}
+
 function canFinalizeSeedItem(
   item: Partial<RadarItem> | undefined,
   userId: string,
@@ -168,7 +183,12 @@ export async function seedRadarCollections(
     getDocs(collection(db, "radarItems")),
   ]);
 
-  const existingQuadrants = new Set(quadrantDocs.docs.map((item) => item.id));
+  const existingQuadrants = new Map(
+    quadrantDocs.docs.map((item) => [
+      item.id,
+      item.data() as Partial<RadarConfigOption>,
+    ]),
+  );
   const existingRings = new Set(ringDocs.docs.map((item) => item.id));
   const existingTags = new Set(tagDocs.docs.map((item) => item.id));
   const existingRadarItems = new Map(
@@ -186,13 +206,18 @@ export async function seedRadarCollections(
   let hasConfigWrites = false;
 
   for (const quadrant of seedQuadrants) {
-    if (existingQuadrants.has(quadrant.id)) {
+    const existingQuadrant = existingQuadrants.get(quadrant.id);
+
+    if (!hasConfigOptionChanged(existingQuadrant, quadrant)) {
       continue;
     }
 
     configBatch.set(doc(db, "quadrants", quadrant.id), quadrant);
     hasConfigWrites = true;
-    result = { ...result, quadrants: result.quadrants + 1 };
+
+    if (!existingQuadrant) {
+      result = { ...result, quadrants: result.quadrants + 1 };
+    }
   }
 
   for (const ring of seedRings) {

@@ -10,7 +10,7 @@ service cloud.firestore {
     // Anonymous users are allowed as 'Guests'.
     function isGreenberryUser() {
       return isSignedIn() && (
-        (request.auth.token.email != null && request.auth.token.email.matches('.*@greenberry\\.nl')) || 
+        (request.auth.token.email != null && request.auth.token.email.matches('(?i).*@greenberry\\.nl$')) || 
         request.auth.token.firebase.sign_in_provider == 'anonymous'
       );
     }
@@ -29,7 +29,8 @@ service cloud.firestore {
     }
 
     match /userProfiles/{userId} {
-      allow get, list: if isGreenberryUser();
+      allow get: if isGreenberryUser();
+      allow list: if isGreenberryUser();
       allow create: if isOwner(userId);
       allow update: if isOwner(userId) || isAdmin();
       allow delete: if isAdmin();
@@ -51,7 +52,8 @@ service cloud.firestore {
     }
 
     match /radarItems/{radarItemId} {
-      allow read: if isGreenberryUser();
+      allow get: if isGreenberryUser();
+      allow list: if isGreenberryUser();
       allow create: if isGreenberryUser();
       allow update: if isGreenberryUser() && (resource.data.createdBy == request.auth.uid || isAdmin());
       allow delete: if isAdmin();
@@ -70,10 +72,11 @@ service cloud.firestore {
     }
 
     match /experiences/{experienceId} {
-      allow read: if isGreenberryUser();
+      allow get: if isGreenberryUser();
+      allow list: if isGreenberryUser();
       allow create: if isGreenberryUser();
       allow update: if isGreenberryUser() && (resource.data.createdBy == request.auth.uid || isAdmin());
-      allow delete: if isOwner(resource.data.createdBy) || isAdmin();
+      allow delete: if isGreenberryUser() && (resource.data.createdBy == request.auth.uid || isAdmin());
     }
   }
 }

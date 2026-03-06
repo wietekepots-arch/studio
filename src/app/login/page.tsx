@@ -11,7 +11,7 @@ import { ShieldCheck, Zap, Loader2, AlertCircle, CheckCircle2 } from 'lucide-rea
 import { useToast } from '@/hooks/use-toast';
 import { signOut } from 'firebase/auth';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { doc, getDoc } from 'firebase/firestore';
+import { doc } from 'firebase/firestore';
 import { setDocumentNonBlocking } from '@/firebase';
 
 export default function LoginPage() {
@@ -30,26 +30,23 @@ export default function LoginPage() {
       const isAnonymous = user.isAnonymous;
 
       if (isGreenberry || isAnonymous) {
+        // Provision the user profile document immediately
         const profileRef = doc(db, 'userProfiles', user.uid);
         
-        getDoc(profileRef).then((snapshot) => {
-          if (!snapshot.exists()) {
-            setDocumentNonBlocking(profileRef, {
-              id: user.uid,
-              displayName: user.displayName || email.split('@')[0] || 'Greenberry Member',
-              email: email,
-              role: isGreenberry ? 'Editor' : 'Viewer',
-              team: isGreenberry ? 'Agency' : 'Guest',
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString()
-            }, { merge: true });
-          }
+        setDocumentNonBlocking(profileRef, {
+          id: user.uid,
+          displayName: user.displayName || email.split('@')[0] || 'Greenberry Member',
+          email: email,
+          role: isGreenberry ? 'Editor' : 'Viewer',
+          team: isGreenberry ? 'Agency' : 'Guest',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
+
+        // Short delay to ensure rule evaluation can pick up the identity change if needed
+        setTimeout(() => {
           router.push('/');
-        }).catch(() => {
-          // If profile check fails due to rules, we still redirect to home
-          // where secondary guards will handle it.
-          router.push('/');
-        });
+        }, 300);
       } else {
         toast({
           title: "Access Restricted",

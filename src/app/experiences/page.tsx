@@ -33,7 +33,15 @@ export default function ExperiencesPage() {
   }, []);
 
   const experiencesQuery = useMemoFirebase(() => {
+    // Domain guard for strategic data
     if (!db || !user) return null;
+    
+    const email = user.email || '';
+    const isGreenberry = email.toLowerCase().endsWith('@greenberry.nl');
+    const isAnonymous = user.isAnonymous;
+    
+    if (!isGreenberry && !isAnonymous) return null;
+
     return query(
       collection(db, 'experiences'),
       where('status', '==', 'Published'),

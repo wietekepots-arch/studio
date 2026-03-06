@@ -17,6 +17,7 @@ import {
   ArrowLeft,
   Globe,
   Leaf,
+  Layers3,
   Save,
   Scale,
   Shield,
@@ -25,7 +26,7 @@ import {
 } from "lucide-react";
 import { aiItemCategorization } from "@/ai/flows/ai-item-categorization-flow";
 import { aiShortDescriptionDrafting } from "@/ai/flows/ai-short-description-drafting";
-import { RadarItem } from "@/app/lib/radar-types";
+import { RadarFamily, RadarItem, RadarProvider } from "@/app/lib/radar-types";
 import { useAppUser } from "@/components/app/AppUserProvider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -47,12 +48,24 @@ import {
   getNextRadarItemStatus,
   isRadarItemEditResubmission,
   mergeConfigOptions,
+  mergeRadarFamilies,
+  mergeRadarProviders,
+  resolveRadarSharedProfile,
 } from "@/lib/radar-firestore";
-import { getSeedTags, seedQuadrants, seedRings } from "@/lib/radar-seed";
+import {
+  getSeedTags,
+  seedFamilies,
+  seedProviders,
+  seedQuadrants,
+  seedRings,
+} from "@/lib/radar-seed";
 
 interface RadarItemFormProps {
   initialItem?: RadarItem | null;
 }
+
+const NONE_SELECT_VALUE = "__none__";
+const INHERIT_SELECT_VALUE = "__inherit__";
 
 interface RadarItemFormState {
   name: string;
@@ -60,9 +73,11 @@ interface RadarItemFormState {
   notes: string;
   quadrantId: string;
   ringId: string;
+  providerId: string;
+  familyId: string;
   team: string;
   costRange: RadarItem["costRange"];
-  origin: RadarItem["origin"];
+  origin: RadarItem["origin"] | "";
   sustainabilityNotes: string;
   securityNotes: string;
   ethicsNotes: string;
@@ -71,21 +86,48 @@ interface RadarItemFormState {
 }
 
 function getFormState(item?: RadarItem | null): RadarItemFormState {
+  const usesSharedProfile = Boolean(item?.providerId || item?.familyId);
+
   return {
     name: item?.name || "",
     shortDesc: item?.shortDesc || "",
     notes: item?.notes || "",
     quadrantId: String(item?.quadrantId ?? 0),
     ringId: String(item?.ringId ?? 2),
+    providerId: item?.providerId || "",
+    familyId: item?.familyId || "",
     team: item?.team || "",
     costRange: item?.costRange || "Low",
-    origin: item?.origin || "European",
-    sustainabilityNotes: item?.sustainabilityNotes || "",
-    securityNotes: item?.securityNotes || "",
-    ethicsNotes: item?.ethicsNotes || "",
+    origin:
+      item?.originOverride || (usesSharedProfile ? "" : item?.origin || "European"),
+    sustainabilityNotes:
+      item?.sustainabilityNotesOverride ||
+      (usesSharedProfile ? "" : item?.sustainabilityNotes || ""),
+    securityNotes:
+      item?.securityNotesOverride ||
+      (usesSharedProfile ? "" : item?.securityNotes || ""),
+    ethicsNotes:
+      item?.ethicsNotesOverride ||
+      (usesSharedProfile ? "" : item?.ethicsNotes || ""),
     tags: item?.tags?.join(", ") || "",
     primaryLink: item?.links?.[0] || "",
   };
+}
+
+function setOptionalUpdateField(
+  payload: UpdateData<DocumentData>,
+  field: string,
+  value: string | undefined,
+  existingValue: unknown,
+): void {
+  if (typeof value === "string") {
+    payload[field] = value;
+    return;
+  }
+
+  if (typeof existingValue !== "undefined") {
+    payload[field] = deleteField();
+  }
 }
 
 export function RadarItemForm({
@@ -122,10 +164,26 @@ export function RadarItemForm({
 
     return collection(db, "tags");
   }, [db, hasCompanyAccess]);
+  const providersQuery = useMemoFirebase(() => {
+    if (!hasCompanyAccess) {
+      return null;
+    }
+
+    return collection(db, "radarProviders");
+  }, [db, hasCompanyAccess]);
+  const familiesQuery = useMemoFirebase(() => {
+    if (!hasCompanyAccess) {
+      return null;
+    }
+
+    return collection(db, "radarFamilies");
+  }, [db, hasCompanyAccess]);
 
   const { data: quadrantDocs } = useCollection(quadrantsQuery);
   const { data: ringDocs } = useCollection(ringsQuery);
   const { data: tagDocs } = useCollection(tagsQuery);
+  const { data: providerDocs } = useCollection<RadarProvider>(providersQuery);
+  const { data: familyDocs } = useCollection<RadarFamily>(familiesQuery);
 
   const quadrants = useMemo(() => {
     return mergeConfigOptions(quadrantDocs, seedQuadrants, true);
@@ -140,6 +198,44 @@ export function RadarItemForm({
 
     return getSeedTags().map((item) => item.name);
   }, [tagDocs]);
+  const providers = useMemo(() => {
+    return mergeRadarProviders(providerDocs, seedProviders);
+  }, [providerDocs]);
+  const families = useMemo(() => {
+    return mergeRadarFamilies(familyDocs, seedFamilies);
+  }, [familyDocs]);
+  const selectedFamily = useMemo(() => {
+    if (!formData.familyId) {
+      return null;
+    }
+
+    return families.find((item) => item.id === formData.familyId) || null;
+  }, [families, formData.familyId]);
+  const selectedProvider = useMemo(() => {
+    const providerId = selectedFamily?.providerId || formData.providerId;
+
+    if (!providerId) {
+      return null;
+    }
+
+    return providers.find((item) => item.id === providerId) || null;
+  }, [formData.providerId, providers, selectedFamily]);
+  const filteredFamilies = useMemo(() => {
+    const providerId = formData.providerId || selectedFamily?.providerId;
+
+    if (!providerId) {
+      return families;
+    }
+
+    return families.filter((item) => item.providerId === providerId);
+  }, [families, formData.providerId, selectedFamily]);
+  const sharedDefaults = useMemo(() => {
+    return resolveRadarSharedProfile(selectedProvider, selectedFamily, "European");
+  }, [selectedFamily, selectedProvider]);
+  const hasSharedProfile = Boolean(selectedProvider || selectedFamily);
+  const sharedProfileLabel = selectedFamily
+    ? `${selectedProvider?.name || selectedFamily.providerName || "Provider"} / ${selectedFamily.name}`
+    : selectedProvider?.name || "";
   const config = buildRadarConfig(quadrants, rings);
   const isEditMode = Boolean(initialItem);
   const isResubmittingForReview = authUser

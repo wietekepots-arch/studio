@@ -1,0 +1,6 @@
+[
+  { "id": "creation-craft", "name": "Creation & Craft", "order": 0 },
+  { "id": "strategy-intelligence", "name": "Strategy & Intelligence", "order": 1 },
+  { "id": "process-flow", "name": "Process & Flow", "order": 2 },
+  { "id": "positive-impact", "name": "Positive Impact", "order": 3 }
+]

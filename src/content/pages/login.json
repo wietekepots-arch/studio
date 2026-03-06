@@ -1,0 +1,35 @@
+{
+  "heading": "Join the",
+  "headingHighlight": "Network",
+  "description": "Sign in with your Greenberry Google account to access the radar, suggest tools, and review the latest pulses.",
+  "features": {
+    "internalWorkflow": {
+      "label": "Internal workflow",
+      "description": "Company-only access with role-based review queues."
+    },
+    "googleOnly": {
+      "label": "Google only",
+      "description": "Access is limited to verified `@greenberry.nl` accounts."
+    }
+  },
+  "signInCard": {
+    "title": "Sign in",
+    "description": "Use your company Google account.",
+    "button": "Continue with Google"
+  },
+  "accessPolicy": {
+    "label": "Access policy",
+    "description": "Personal Gmail, guest access, and legacy password sign-in are disabled for this workflow."
+  },
+  "toasts": {
+    "accessDenied": {
+      "title": "Access denied",
+      "description": "Please sign in with your official @greenberry.nl account."
+    },
+    "signInFailed": {
+      "title": "Sign-in failed",
+      "operationNotAllowed": "Enable Google sign-in in Firebase Authentication before continuing.",
+      "fallback": "Google sign-in could not be started. Please try again."
+    }
+  }
+}

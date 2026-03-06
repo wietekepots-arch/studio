@@ -1,0 +1,25 @@
+{
+  "sectionLabel": "Live Firestore Radar",
+  "heading": "Design for",
+  "headingHighlight": "Progress",
+  "description": "Approved tool blips from the Greenberry workflow, visible the moment a reviewer publishes them.",
+  "searchPlaceholder": "Search the radar...",
+  "entireNetwork": "Entire Network",
+  "focus": "Focus:",
+  "radarNotInitialized": {
+    "heading": "Radar not initialized",
+    "description": "Seed the starter config and approved items from the dashboard to bring the radar online."
+  },
+  "latestPulses": {
+    "title": "Latest Pulses",
+    "emptyState": "Waiting for first strategic pulse..."
+  },
+  "governance": {
+    "title": "Governance Workflow",
+    "description": "Only approved blips appear on the radar. Suggestions and review queues live in the dashboard."
+  },
+  "authError": {
+    "heading": "Company sign-in required",
+    "description": "Sign in with your Greenberry account to view the live radar."
+  }
+}

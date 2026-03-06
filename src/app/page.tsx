@@ -12,6 +12,8 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
+import common from "@/content/common.json";
+import homeContent from "@/content/pages/home.json";
 import { Navbar } from "@/components/layout/Navbar";
 import { useAppUser } from "@/components/app/AppUserProvider";
 import { RadarChart } from "@/components/radar/RadarChart";
@@ -128,14 +130,14 @@ export default function HomePage(): React.ReactElement {
           </div>
           <div className="space-y-3">
             <h1 className="text-5xl font-black tracking-tighter">
-              Company sign-in required
+              {common.auth.companySignInRequired}
             </h1>
             <p className="max-w-xl text-lg font-medium text-muted-foreground">
-              Sign in with your Greenberry account to view the live radar.
+              {homeContent.authError.description}
             </p>
           </div>
           <Button asChild className="rounded-full px-8">
-            <Link href="/login">Go to Sign In</Link>
+            <Link href="/login">{common.auth.goToSignIn}</Link>
           </Button>
         </div>
       </div>
@@ -151,22 +153,21 @@ export default function HomePage(): React.ReactElement {
           <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <div className="space-y-3">
               <div className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">
-                Live Firestore Radar
+                {homeContent.sectionLabel}
               </div>
               <h1 className="text-6xl font-black uppercase leading-none tracking-tighter">
-                Design for <br />
-                <span className="text-primary">Progress</span>
+                {homeContent.heading} <br />
+                <span className="text-primary">{homeContent.headingHighlight}</span>
               </h1>
               <p className="max-w-lg text-xl font-medium text-muted-foreground">
-                Approved tool blips from the Greenberry workflow, visible the
-                moment a reviewer publishes them.
+                {homeContent.description}
               </p>
             </div>
 
             <div className="relative w-full md:w-80">
               <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Search the radar..."
+                placeholder={homeContent.searchPlaceholder}
                 className="h-14 rounded-full border-2 border-border bg-secondary/30 pl-12 text-lg"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
@@ -178,14 +179,13 @@ export default function HomePage(): React.ReactElement {
             <Card className="rounded-[3rem] border-none bg-secondary/20 shadow-none">
               <CardContent className="space-y-4 p-12 text-center">
                 <h2 className="text-3xl font-black tracking-tight">
-                  Radar not initialized
+                  {homeContent.radarNotInitialized.heading}
                 </h2>
                 <p className="font-medium text-muted-foreground">
-                  Seed the starter config and approved items from the dashboard
-                  to bring the radar online.
+                  {homeContent.radarNotInitialized.description}
                 </p>
                 <Button asChild className="rounded-full px-8">
-                  <Link href="/dashboard">Open Dashboard</Link>
+                  <Link href="/dashboard">{common.common.openDashboard}</Link>
                 </Button>
               </CardContent>
             </Card>
@@ -197,7 +197,7 @@ export default function HomePage(): React.ReactElement {
                   className="cursor-pointer rounded-full px-6 py-2.5 text-[10px] font-black uppercase tracking-[0.15em]"
                   onClick={() => setActiveQuadrant(undefined)}
                 >
-                  Entire Network
+                  {homeContent.entireNetwork}
                 </Badge>
                 {config.quadrants.map((quadrant, index) => (
                   <Badge
@@ -223,7 +223,7 @@ export default function HomePage(): React.ReactElement {
                 <div className="space-y-6">
                   <div className="flex items-center justify-between border-b pb-6">
                     <h3 className="text-4xl font-black uppercase tracking-tighter">
-                      Focus:{" "}
+                      {homeContent.focus}{" "}
                       <span className="text-primary">
                         {config.quadrants[activeQuadrant]}
                       </span>
@@ -232,7 +232,7 @@ export default function HomePage(): React.ReactElement {
                       variant="secondary"
                       className="rounded-full px-4 py-1.5 font-bold"
                     >
-                      {focusItems.length} blips
+                      {focusItems.length} {common.common.blips}
                     </Badge>
                   </div>
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -275,7 +275,7 @@ export default function HomePage(): React.ReactElement {
             <CardHeader className="p-8 pb-4">
               <CardTitle className="flex items-center gap-3 text-2xl font-black uppercase tracking-tighter">
                 <History className="h-6 w-6 text-primary" />
-                Latest Pulses
+                {homeContent.latestPulses.title}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
@@ -294,7 +294,7 @@ export default function HomePage(): React.ReactElement {
                           </span>
                           {isItemNew(item) ? (
                             <Badge className="h-4 border-none bg-primary/20 text-[9px] font-black text-primary">
-                              NEW
+                              {common.common.new}
                             </Badge>
                           ) : null}
                         </div>
@@ -310,7 +310,7 @@ export default function HomePage(): React.ReactElement {
                   ))
                 ) : (
                   <div className="p-12 text-center text-sm font-medium italic text-muted-foreground">
-                    Waiting for first strategic pulse...
+                    {homeContent.latestPulses.emptyState}
                   </div>
                 )}
               </div>
@@ -321,13 +321,12 @@ export default function HomePage(): React.ReactElement {
             <CardHeader className="p-8 pb-4">
               <CardTitle className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] opacity-80">
                 <ShieldCheck className="h-4 w-4" />
-                Governance Workflow
+                {homeContent.governance.title}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6 p-8 pt-0">
               <p className="text-xl font-medium leading-snug">
-                Only approved blips appear on the radar. Suggestions and review
-                queues live in the dashboard.
+                {homeContent.governance.description}
               </p>
               <Button
                 asChild
@@ -335,7 +334,7 @@ export default function HomePage(): React.ReactElement {
                 className="h-16 w-full gap-2 rounded-full text-lg font-bold"
               >
                 <Link href="/dashboard">
-                  Open Dashboard
+                  {common.common.openDashboard}
                   <ArrowRight className="h-5 w-5" />
                 </Link>
               </Button>

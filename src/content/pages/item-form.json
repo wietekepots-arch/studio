@@ -1,0 +1,104 @@
+{
+  "create": {
+    "heading": "Propose",
+    "description": "Submit a new tool suggestion for review.",
+    "submitButton": "Submit Suggestion"
+  },
+  "edit": {
+    "heading": "Edit",
+    "description": "Update the blip and keep the workflow moving.",
+    "submitButton": "Save Changes"
+  },
+  "headingHighlight": "Tool Blip",
+  "sections": {
+    "identityContext": "Identity & Context",
+    "responsibilityReview": "Responsibility Review",
+    "pulsePlacement": "Pulse Placement",
+    "metadata": "Metadata"
+  },
+  "fields": {
+    "toolName": "Tool Name",
+    "strategicContext": "Strategic Context",
+    "conciseSummary": "Concise Summary",
+    "strategicFocus": "Strategic Focus",
+    "maturityTrial": "Maturity Trial",
+    "team": "Team",
+    "costRange": "Cost Range",
+    "tags": "Tags",
+    "primaryLink": "Primary Link"
+  },
+  "ai": {
+    "pulse": "AI Pulse",
+    "draft": "AI Draft"
+  },
+  "origin": {
+    "label": "Origin",
+    "european": "European",
+    "american": "American",
+    "other": "Other"
+  },
+  "costOptions": {
+    "free": "Free",
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High"
+  },
+  "toasts": {
+    "missingContextCategorize": {
+      "title": "Missing context",
+      "description": "Name and strategic context are required for AI help."
+    },
+    "aiCategorized": {
+      "title": "AI updated the suggestion",
+      "description": "Quadrant and tags were refreshed."
+    },
+    "aiCategorizeFailed": {
+      "title": "AI categorization failed",
+      "description": "The tool could not be categorized right now."
+    },
+    "missingContextSummarize": {
+      "title": "Missing context",
+      "description": "Add strategic context first so the summary can be drafted."
+    },
+    "aiSummaryReady": {
+      "title": "AI summary ready",
+      "description": "The concise summary was drafted."
+    },
+    "aiSummaryFailed": {
+      "title": "AI summary failed",
+      "description": "The summary could not be generated."
+    },
+    "editingNotAllowed": {
+      "title": "Editing not allowed",
+      "description": "You do not have access to change this blip."
+    },
+    "changesSaved": {
+      "title": "Changes saved",
+      "description": "The blip details were updated."
+    },
+    "blipResubmitted": {
+      "title": "Blip resubmitted",
+      "description": "The updated blip is back in the review queue."
+    },
+    "suggestionSubmitted": {
+      "title": "Suggestion submitted",
+      "description": "Your blip is now pending review."
+    },
+    "saveFailed": {
+      "title": "Save failed",
+      "description": "The blip could not be saved to Firestore."
+    }
+  },
+  "history": {
+    "resubmitted": "resubmitted",
+    "updated": "updated",
+    "submitted": "submitted",
+    "resubmittedNote": "Reworked and sent back for review.",
+    "updatedNote": "Details updated.",
+    "submittedNote": "Submitted for power user review."
+  },
+  "authError": {
+    "heading": "Company sign-in required",
+    "description": "You need your Greenberry Google account before you can submit a tool suggestion."
+  }
+}

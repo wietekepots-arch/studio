@@ -1,0 +1,18 @@
+{
+  "returnToDashboard": "Return to Dashboard",
+  "backToDashboard": "Back to Dashboard",
+  "blipNotFound": "Blip not found",
+  "latestReviewNote": "Latest review note",
+  "scores": {
+    "toolMaturity": "Tool Maturity",
+    "potentialImpact": "Potential Impact",
+    "effortToBuild": "Effort to Build",
+    "riskProfile": "Risk Profile"
+  },
+  "noExperiences": "No published experiences are linked to this blip yet.",
+  "noHistory": "No workflow history has been recorded yet.",
+  "authError": {
+    "heading": "Company sign-in required",
+    "description": "Sign in with your Greenberry Google account to view radar items."
+  }
+}

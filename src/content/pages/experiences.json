@@ -1,0 +1,29 @@
+{
+  "heading": "The",
+  "headingHighlight": "Collective",
+  "headingEnd": "Experience",
+  "description": "Real-world pulses from our studios. See how we're pushing boundaries with AI.",
+  "logExperience": "Log an Experience",
+  "search": {
+    "label": "Search Pulses",
+    "placeholder": "Keywords..."
+  },
+  "filter": {
+    "label": "Filter by Studio",
+    "allStudios": "All Studios"
+  },
+  "card": {
+    "toolPulled": "Tool Pulled",
+    "more": "+{count} more"
+  },
+  "emptyState": {
+    "heading": "No experiences found",
+    "description": "Be the first to log a strategic pulse with your favorite AI tools.",
+    "button": "Start Logging"
+  },
+  "locked": {
+    "heading": "Locked Experiences",
+    "description": "Real-world AI insights are reserved for authenticated Greenberry members.",
+    "button": "Sign In to View Feed"
+  }
+}

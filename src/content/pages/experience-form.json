@@ -1,0 +1,89 @@
+{
+  "heading": "Share",
+  "headingHighlight": "Your Pulse",
+  "description": "How are you using AI to drive progress?",
+  "returnToExperiences": "Return to Experiences",
+  "discard": "Discard",
+  "submitButton": "Log Experience",
+  "submittingButton": "Logging...",
+  "sections": {
+    "strategicContext": "Strategic Context",
+    "theProcess": "The Process",
+    "pulseMetadata": "Pulse Metadata",
+    "governanceImpact": "Governance & Impact"
+  },
+  "fields": {
+    "experienceTitle": {
+      "label": "Experience Title",
+      "placeholder": "e.g. Accelerating Creative Ideation with Claude"
+    },
+    "conciseSummary": {
+      "label": "Concise Summary",
+      "placeholder": "The essence in one powerful sentence..."
+    },
+    "linkedTools": {
+      "label": "Linked Tools",
+      "emptyState": "No tools linked yet. Search below.",
+      "searchPlaceholder": "Search Approved tools..."
+    },
+    "workflowSteps": {
+      "label": "Workflow & Steps",
+      "placeholder": "Describe the steps you took. Be as detailed as needed."
+    },
+    "promptsTemplates": {
+      "label": "Prompts or Templates (Optional)",
+      "placeholder": "Paste your prompts here for others to reuse."
+    },
+    "keyFindings": {
+      "label": "Key Findings & Outcomes",
+      "placeholder": "What worked? What didn't? What were the surprises?"
+    },
+    "yourRole": {
+      "label": "Your Role",
+      "placeholder": "e.g. Lead Designer"
+    },
+    "studioTeam": {
+      "label": "Studio / Team",
+      "placeholder": "e.g. Amsterdam Studio"
+    },
+    "outcomeRating": {
+      "label": "Outcome Rating",
+      "gameChanger": "(Game Changer)",
+      "caution": "(Caution)",
+      "starSingular": "Star",
+      "starPlural": "Stars"
+    },
+    "dataSensitivity": {
+      "label": "Data Sensitivity",
+      "public": "Public",
+      "internal": "Internal Use Only",
+      "clientConfidential": "Client Confidential"
+    },
+    "timeSaved": {
+      "label": "Time Saved (Hours)",
+      "placeholder": "e.g. 4"
+    },
+    "tags": {
+      "label": "Tags",
+      "placeholder": "Comma separated tags..."
+    }
+  },
+  "toasts": {
+    "validationError": {
+      "title": "Validation Error",
+      "description": "Please link at least one tool."
+    },
+    "experienceLogged": {
+      "title": "Experience Logged",
+      "description": "Your strategic pulse has been added to the collective memory."
+    },
+    "saveFailed": {
+      "title": "Error",
+      "description": "Failed to save experience. Please try again."
+    }
+  },
+  "authError": {
+    "heading": "Company sign-in required",
+    "description": "Use your Greenberry Google account before logging an experience."
+  }
+}

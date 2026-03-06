@@ -34,6 +34,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { buildRadarConfig, canEditRadarItem, sortConfigOptions } from "@/lib/radar-firestore";
 import { getSeedTags, seedQuadrants, seedRings } from "@/lib/radar-seed";
+import common from "@/content/common.json";
+import formContent from "@/content/pages/item-form.json";
 
 interface RadarItemFormProps {
   initialItem?: RadarItem | null;
@@ -137,8 +139,8 @@ export function RadarItemForm({
   async function handleAiCategorize(): Promise<void> {
     if (!formData.name || !formData.notes) {
       toast({
-        title: "Missing context",
-        description: "Name and strategic context are required for AI help.",
+        title: formContent.toasts.missingContextCategorize.title,
+        description: formContent.toasts.missingContextCategorize.description,
         variant: "destructive",
       });
       return;
@@ -164,13 +166,13 @@ export function RadarItemForm({
         tags: result.suggestedTags.join(", "),
       }));
       toast({
-        title: "AI updated the suggestion",
-        description: "Quadrant and tags were refreshed.",
+        title: formContent.toasts.aiCategorized.title,
+        description: formContent.toasts.aiCategorized.description,
       });
     } catch (error) {
       toast({
-        title: "AI categorization failed",
-        description: "The tool could not be categorized right now.",
+        title: formContent.toasts.aiCategorizeFailed.title,
+        description: formContent.toasts.aiCategorizeFailed.description,
         variant: "destructive",
       });
     } finally {
@@ -181,8 +183,8 @@ export function RadarItemForm({
   async function handleAiSummarize(): Promise<void> {
     if (!formData.notes) {
       toast({
-        title: "Missing context",
-        description: "Add strategic context first so the summary can be drafted.",
+        title: formContent.toasts.missingContextSummarize.title,
+        description: formContent.toasts.missingContextSummarize.description,
         variant: "destructive",
       });
       return;
@@ -201,13 +203,13 @@ export function RadarItemForm({
         shortDesc: result,
       }));
       toast({
-        title: "AI summary ready",
-        description: "The concise summary was drafted.",
+        title: formContent.toasts.aiSummaryReady.title,
+        description: formContent.toasts.aiSummaryReady.description,
       });
     } catch (error) {
       toast({
-        title: "AI summary failed",
-        description: "The summary could not be generated.",
+        title: formContent.toasts.aiSummaryFailed.title,
+        description: formContent.toasts.aiSummaryFailed.description,
         variant: "destructive",
       });
     } finally {
@@ -220,8 +222,8 @@ export function RadarItemForm({
 
     if (!authUser || !profile || !hasCompanyAccess) {
       toast({
-        title: "Sign-in required",
-        description: "You must be signed in with a company account.",
+        title: common.auth.signInRequired,
+        description: common.auth.signInRequiredDescription,
         variant: "destructive",
       });
       return;
@@ -229,8 +231,8 @@ export function RadarItemForm({
 
     if (initialItem && !canEditRadarItem(initialItem, authUser.uid, role)) {
       toast({
-        title: "Editing not allowed",
-        description: "You do not have access to change this blip.",
+        title: formContent.toasts.editingNotAllowed.title,
+        description: formContent.toasts.editingNotAllowed.description,
         variant: "destructive",
       });
       return;
@@ -303,12 +305,12 @@ export function RadarItemForm({
           itemId: initialItem.id,
           action:
             initialItem.status === "Draft" && nextStatus === "Pending"
-              ? "resubmitted"
-              : "updated",
+              ? formContent.history.resubmitted
+              : formContent.history.updated,
           note:
             initialItem.status === "Draft" && nextStatus === "Pending"
-              ? "Reworked and sent back for review."
-              : "Details updated.",
+              ? formContent.history.resubmittedNote
+              : formContent.history.updatedNote,
           before: initialItem.status,
           after: nextStatus,
           createdAt: now,
@@ -317,12 +319,12 @@ export function RadarItemForm({
         toast({
           title:
             nextStatus === "Pending" && initialItem.status === "Draft"
-              ? "Blip resubmitted"
-              : "Changes saved",
+              ? formContent.toasts.blipResubmitted.title
+              : formContent.toasts.changesSaved.title,
           description:
             nextStatus === "Pending" && initialItem.status === "Draft"
-              ? "The updated blip is back in the review queue."
-              : "The blip details were updated.",
+              ? formContent.toasts.blipResubmitted.description
+              : formContent.toasts.changesSaved.description,
         });
         router.push(`/items/${initialItem.id}`);
       } else {
@@ -331,23 +333,23 @@ export function RadarItemForm({
           collection(db, "radarItems", documentReference.id, "itemHistory"),
           {
             itemId: documentReference.id,
-            action: "submitted",
-            note: "Submitted for power user review.",
+            action: formContent.history.submitted,
+            note: formContent.history.submittedNote,
             after: "Pending",
             createdAt: now,
             createdBy: authUser.uid,
           },
         );
         toast({
-          title: "Suggestion submitted",
-          description: "Your blip is now pending review.",
+          title: formContent.toasts.suggestionSubmitted.title,
+          description: formContent.toasts.suggestionSubmitted.description,
         });
         router.push("/dashboard");
       }
     } catch (error) {
       toast({
-        title: "Save failed",
-        description: "The blip could not be saved to Firestore.",
+        title: formContent.toasts.saveFailed.title,
+        description: formContent.toasts.saveFailed.description,
         variant: "destructive",
       });
     } finally {
@@ -365,7 +367,7 @@ export function RadarItemForm({
         >
           <Link href={initialItem ? `/items/${initialItem.id}` : "/dashboard"}>
             <ArrowLeft className="h-5 w-5" />
-            Return
+            {common.common.return}
           </Link>
         </Button>
       </div>
@@ -373,13 +375,13 @@ export function RadarItemForm({
       <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
         <div className="space-y-2">
           <h1 className="text-6xl font-black uppercase leading-none tracking-tighter text-foreground">
-            {isEditMode ? "Edit" : "Propose"} <br />
-            <span className="text-primary">Tool Blip</span>
+            {isEditMode ? formContent.edit.heading : formContent.create.heading} <br />
+            <span className="text-primary">{formContent.headingHighlight}</span>
           </h1>
           <p className="text-xl font-medium text-muted-foreground">
             {isEditMode
-              ? "Update the blip and keep the workflow moving."
-              : "Submit a new tool suggestion for review."}
+              ? formContent.edit.description
+              : formContent.create.description}
           </p>
         </div>
         <Button
@@ -388,7 +390,7 @@ export function RadarItemForm({
           disabled={isSubmitting}
         >
           <Save className="h-5 w-5" />
-          {isEditMode ? "Save Changes" : "Submit Suggestion"}
+          {isEditMode ? formContent.edit.submitButton : formContent.create.submitButton}
         </Button>
       </div>
 
@@ -397,13 +399,13 @@ export function RadarItemForm({
           <Card className="overflow-hidden rounded-[3rem] border-none bg-secondary/20 shadow-none">
             <CardHeader className="p-10 pb-2">
               <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
-                Identity & Context
+                {formContent.sections.identityContext}
               </div>
             </CardHeader>
             <CardContent className="space-y-8 p-10">
               <div className="space-y-3">
                 <Label htmlFor="name" className="font-bold text-sm text-foreground/70">
-                  Tool Name
+                  {formContent.fields.toolName}
                 </Label>
                 <Input
                   id="name"
@@ -422,7 +424,7 @@ export function RadarItemForm({
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="notes" className="font-bold text-sm text-foreground/70">
-                    Strategic Context
+                    {formContent.fields.strategicContext}
                   </Label>
                   <Button
                     type="button"
@@ -433,7 +435,7 @@ export function RadarItemForm({
                     disabled={isAiLoading}
                   >
                     <Sparkles className="h-4 w-4" />
-                    AI Pulse
+                    {formContent.ai.pulse}
                   </Button>
                 </div>
                 <Textarea
@@ -456,7 +458,7 @@ export function RadarItemForm({
                     htmlFor="shortDesc"
                     className="font-bold text-sm text-foreground/70"
                   >
-                    Concise Summary
+                    {formContent.fields.conciseSummary}
                   </Label>
                   <Button
                     type="button"
@@ -467,7 +469,7 @@ export function RadarItemForm({
                     disabled={isAiLoading}
                   >
                     <Wand2 className="h-4 w-4" />
-                    AI Draft
+                    {formContent.ai.draft}
                   </Button>
                 </div>
                 <Input
@@ -489,7 +491,7 @@ export function RadarItemForm({
           <Card className="overflow-hidden rounded-[3rem] border-none bg-secondary/20 shadow-none">
             <CardHeader className="p-10 pb-2">
               <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
-                Responsibility Review
+                {formContent.sections.responsibilityReview}
               </div>
             </CardHeader>
             <CardContent className="space-y-8 p-10">
@@ -497,7 +499,7 @@ export function RadarItemForm({
                 <div className="space-y-3">
                   <Label className="flex items-center gap-2 font-bold text-sm text-foreground/70">
                     <Leaf className="h-4 w-4 text-primary" />
-                    Sustainability
+                    {common.labels.sustainability}
                   </Label>
                   <Textarea
                     value={formData.sustainabilityNotes}
@@ -513,7 +515,7 @@ export function RadarItemForm({
                 <div className="space-y-3">
                   <Label className="flex items-center gap-2 font-bold text-sm text-foreground/70">
                     <Shield className="h-4 w-4 text-primary" />
-                    Security & GDPR
+                    {common.labels.securityGdpr}
                   </Label>
                   <Textarea
                     value={formData.securityNotes}
@@ -530,7 +532,7 @@ export function RadarItemForm({
               <div className="space-y-3">
                 <Label className="flex items-center gap-2 font-bold text-sm text-foreground/70">
                   <Scale className="h-4 w-4 text-primary" />
-                  Ethics
+                  {common.labels.ethics}
                 </Label>
                 <Textarea
                   value={formData.ethicsNotes}
@@ -551,13 +553,13 @@ export function RadarItemForm({
           <Card className="rounded-[3rem] border-none bg-white p-4 shadow-xl shadow-primary/5">
             <CardHeader>
               <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                Pulse Placement
+                {formContent.sections.pulsePlacement}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-8">
               <div className="space-y-2">
                 <Label className="text-xs font-bold uppercase tracking-widest opacity-50">
-                  Strategic Focus
+                  {formContent.fields.strategicFocus}
                 </Label>
                 <Select
                   value={formData.quadrantId}
@@ -587,7 +589,7 @@ export function RadarItemForm({
 
               <div className="space-y-2">
                 <Label className="text-xs font-bold uppercase tracking-widest opacity-50">
-                  Maturity Trial
+                  {formContent.fields.maturityTrial}
                 </Label>
                 <Select
                   value={formData.ringId}
@@ -618,7 +620,7 @@ export function RadarItemForm({
               <div className="space-y-2">
                 <Label className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest opacity-50">
                   <Globe className="h-4 w-4" />
-                  Origin
+                  {formContent.origin.label}
                 </Label>
                 <Select
                   value={formData.origin}
@@ -634,13 +636,13 @@ export function RadarItemForm({
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl">
                     <SelectItem value="European" className="p-3 font-bold">
-                      European
+                      {formContent.origin.european}
                     </SelectItem>
                     <SelectItem value="American" className="p-3 font-bold">
-                      American
+                      {formContent.origin.american}
                     </SelectItem>
                     <SelectItem value="Other" className="p-3 font-bold">
-                      Other
+                      {formContent.origin.other}
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -651,13 +653,13 @@ export function RadarItemForm({
           <Card className="rounded-[3rem] border-none bg-white p-4 shadow-xl shadow-primary/5">
             <CardHeader>
               <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                Metadata
+                {formContent.sections.metadata}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-8">
               <div className="space-y-2">
                 <Label className="text-xs font-bold uppercase tracking-widest opacity-50">
-                  Team
+                  {formContent.fields.team}
                 </Label>
                 <Input
                   value={formData.team}
@@ -672,7 +674,7 @@ export function RadarItemForm({
               </div>
               <div className="space-y-2">
                 <Label className="text-xs font-bold uppercase tracking-widest opacity-50">
-                  Cost Range
+                  {formContent.fields.costRange}
                 </Label>
                 <Select
                   value={formData.costRange}
@@ -688,23 +690,23 @@ export function RadarItemForm({
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl">
                     <SelectItem value="Free" className="p-3 font-bold">
-                      Free
+                      {formContent.costOptions.free}
                     </SelectItem>
                     <SelectItem value="Low" className="p-3 font-bold">
-                      Low
+                      {formContent.costOptions.low}
                     </SelectItem>
                     <SelectItem value="Medium" className="p-3 font-bold">
-                      Medium
+                      {formContent.costOptions.medium}
                     </SelectItem>
                     <SelectItem value="High" className="p-3 font-bold">
-                      High
+                      {formContent.costOptions.high}
                     </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
                 <Label className="text-xs font-bold uppercase tracking-widest opacity-50">
-                  Tags
+                  {formContent.fields.tags}
                 </Label>
                 <Input
                   value={formData.tags}
@@ -719,7 +721,7 @@ export function RadarItemForm({
               </div>
               <div className="space-y-2">
                 <Label className="text-xs font-bold uppercase tracking-widest opacity-50">
-                  Primary Link
+                  {formContent.fields.primaryLink}
                 </Label>
                 <Input
                   value={formData.primaryLink}

@@ -108,6 +108,16 @@ service cloud.firestore {
       allow write: if isPowerUser();
     }
 
+    match /radarProviders/{providerId} {
+      allow read: if hasProfile();
+      allow write: if isPowerUser();
+    }
+
+    match /radarFamilies/{familyId} {
+      allow read: if hasProfile();
+      allow write: if isPowerUser();
+    }
+
     match /radarItems/{radarItemId} {
       allow get, list: if canReadRadarItem(resource.data);
       allow create: if hasProfile()

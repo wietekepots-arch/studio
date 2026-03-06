@@ -13,13 +13,17 @@ import {
   ItemStatus,
   RadarConfig,
   RadarConfigOption,
+  RadarFamily,
   RadarItem,
+  RadarProvider,
   Role,
   UserProfile,
 } from "@/app/lib/radar-types";
 import { canReviewBlips } from "@/lib/company-auth";
 import {
   getSeedRadarItems,
+  seedFamilies,
+  seedProviders,
   getSeedTags,
   seedQuadrants,
   seedRings,
@@ -28,9 +32,18 @@ import {
 export interface SeedResult {
   quadrants: number;
   rings: number;
+  providers: number;
+  families: number;
   tags: number;
   items: number;
   historyEntries: number;
+}
+
+interface OrderedNamedEntity {
+  id: string;
+  name: string;
+  order: number;
+  description?: string;
 }
 
 function hasConfigOptionChanged(
@@ -45,6 +58,36 @@ function hasConfigOptionChanged(
     existingOption.name !== nextOption.name ||
     existingOption.order !== nextOption.order ||
     existingOption.description !== nextOption.description
+  );
+}
+
+function hasSharedProfileChanged<
+  T extends OrderedNamedEntity & {
+    origin?: string;
+    sustainabilityNotes?: string;
+    securityNotes?: string;
+    ethicsNotes?: string;
+    providerId?: string;
+    website?: string;
+  },
+>(
+  existingProfile: Partial<T> | undefined,
+  nextProfile: T,
+): boolean {
+  if (!existingProfile) {
+    return true;
+  }
+
+  return (
+    existingProfile.name !== nextProfile.name ||
+    existingProfile.order !== nextProfile.order ||
+    existingProfile.description !== nextProfile.description ||
+    existingProfile.origin !== nextProfile.origin ||
+    existingProfile.sustainabilityNotes !== nextProfile.sustainabilityNotes ||
+    existingProfile.securityNotes !== nextProfile.securityNotes ||
+    existingProfile.ethicsNotes !== nextProfile.ethicsNotes ||
+    existingProfile.providerId !== nextProfile.providerId ||
+    existingProfile.website !== nextProfile.website
   );
 }
 
@@ -65,9 +108,9 @@ function canFinalizeSeedItem(
   );
 }
 
-export function sortConfigOptions(
-  options: RadarConfigOption[] | null | undefined,
-): RadarConfigOption[] {
+function sortOrderedNamedEntities<T extends OrderedNamedEntity>(
+  options: T[] | null | undefined,
+): T[] {
   if (!options) {
     return [];
   }
@@ -75,12 +118,12 @@ export function sortConfigOptions(
   return [...options].sort((left, right) => left.order - right.order);
 }
 
-export function mergeConfigOptions(
-  options: RadarConfigOption[] | null | undefined,
-  fallback: RadarConfigOption[],
+function mergeOrderedNamedEntities<T extends OrderedNamedEntity>(
+  options: T[] | null | undefined,
+  fallback: T[],
   preferFallback = false,
-): RadarConfigOption[] {
-  const sortedOptions = sortConfigOptions(options);
+): T[] {
+  const sortedOptions = sortOrderedNamedEntities(options);
 
   if (!sortedOptions.length) {
     return fallback;
@@ -99,7 +142,110 @@ export function mergeConfigOptions(
       : { ...fallbackItem, ...option };
   });
 
-  return sortConfigOptions(merged);
+  return sortOrderedNamedEntities(merged);
+}
+
+function buildEntityMap<T extends { id: string }>(
+  items: T[] | Map<string, T> | null | undefined,
+): Map<string, T> {
+  if (!items) {
+    return new Map();
+  }
+
+  if (items instanceof Map) {
+    return items;
+  }
+
+  return new Map(items.map((item) => [item.id, item]));
+}
+
+export function sortConfigOptions(
+  options: RadarConfigOption[] | null | undefined,
+): RadarConfigOption[] {
+  return sortOrderedNamedEntities(options);
+}
+
+export function mergeConfigOptions(
+  options: RadarConfigOption[] | null | undefined,
+  fallback: RadarConfigOption[],
+  preferFallback = false,
+): RadarConfigOption[] {
+  return mergeOrderedNamedEntities(options, fallback, preferFallback);
+}
+
+export function sortRadarProviders(
+  providers: RadarProvider[] | null | undefined,
+): RadarProvider[] {
+  return sortOrderedNamedEntities(providers);
+}
+
+export function mergeRadarProviders(
+  providers: RadarProvider[] | null | undefined,
+  fallback: RadarProvider[],
+  preferFallback = false,
+): RadarProvider[] {
+  return mergeOrderedNamedEntities(providers, fallback, preferFallback);
+}
+
+export function sortRadarFamilies(
+  families: RadarFamily[] | null | undefined,
+): RadarFamily[] {
+  return sortOrderedNamedEntities(families);
+}
+
+export function mergeRadarFamilies(
+  families: RadarFamily[] | null | undefined,
+  fallback: RadarFamily[],
+  preferFallback = false,
+): RadarFamily[] {
+  return mergeOrderedNamedEntities(families, fallback, preferFallback);
+}
+
+export function resolveRadarSharedProfile(
+  provider?: RadarProvider | null,
+  family?: RadarFamily | null,
+  fallbackOrigin: RadarItem["origin"] = "Other",
+): Pick<
+  RadarItem,
+  "origin" | "sustainabilityNotes" | "securityNotes" | "ethicsNotes"
+> {
+  return {
+    origin: family?.origin ?? provider?.origin ?? fallbackOrigin,
+    sustainabilityNotes:
+      family?.sustainabilityNotes ?? provider?.sustainabilityNotes ?? "",
+    securityNotes: family?.securityNotes ?? provider?.securityNotes ?? "",
+    ethicsNotes: family?.ethicsNotes ?? provider?.ethicsNotes ?? "",
+  };
+}
+
+export function resolveRadarItem(
+  item: RadarItem,
+  families: RadarFamily[] | Map<string, RadarFamily> | null | undefined,
+  providers: RadarProvider[] | Map<string, RadarProvider> | null | undefined,
+): RadarItem {
+  const familyMap = buildEntityMap(families);
+  const providerMap = buildEntityMap(providers);
+  const family = item.familyId ? familyMap.get(item.familyId) : undefined;
+  const providerId = item.providerId || family?.providerId;
+  const provider = providerId ? providerMap.get(providerId) : undefined;
+  const sharedProfile = resolveRadarSharedProfile(provider, family, item.origin);
+
+  return {
+    ...item,
+    ...(providerId ? { providerId } : {}),
+    ...(provider?.name || item.providerName
+      ? { providerName: item.providerName || provider?.name }
+      : {}),
+    ...(family?.id || item.familyId ? { familyId: item.familyId || family?.id } : {}),
+    ...(family?.name || item.familyName
+      ? { familyName: item.familyName || family?.name }
+      : {}),
+    origin: item.originOverride ?? sharedProfile.origin ?? item.origin,
+    sustainabilityNotes:
+      item.sustainabilityNotesOverride ?? sharedProfile.sustainabilityNotes,
+    securityNotes: item.securityNotesOverride ?? sharedProfile.securityNotes,
+    ethicsNotes: item.ethicsNotesOverride ?? sharedProfile.ethicsNotes,
+  };
 }
 
 export function buildRadarConfig(
@@ -245,9 +391,18 @@ export async function seedRadarCollections(
   db: Firestore,
   userProfile: UserProfile,
 ): Promise<SeedResult> {
-  const [quadrantDocs, ringDocs, tagDocs, radarItemDocs] = await Promise.all([
+  const [
+    quadrantDocs,
+    ringDocs,
+    providerDocs,
+    familyDocs,
+    tagDocs,
+    radarItemDocs,
+  ] = await Promise.all([
     getDocs(collection(db, "quadrants")),
     getDocs(collection(db, "rings")),
+    getDocs(collection(db, "radarProviders")),
+    getDocs(collection(db, "radarFamilies")),
     getDocs(collection(db, "tags")),
     getDocs(collection(db, "radarItems")),
   ]);
@@ -259,6 +414,12 @@ export async function seedRadarCollections(
     ]),
   );
   const existingRings = new Set(ringDocs.docs.map((item) => item.id));
+  const existingProviders = new Map(
+    providerDocs.docs.map((item) => [item.id, item.data() as Partial<RadarProvider>]),
+  );
+  const existingFamilies = new Map(
+    familyDocs.docs.map((item) => [item.id, item.data() as Partial<RadarFamily>]),
+  );
   const existingTags = new Set(tagDocs.docs.map((item) => item.id));
   const existingRadarItems = new Map(
     radarItemDocs.docs.map((item) => [item.id, item.data() as Partial<RadarItem>]),
@@ -267,6 +428,8 @@ export async function seedRadarCollections(
   let result: SeedResult = {
     quadrants: 0,
     rings: 0,
+    providers: 0,
+    families: 0,
     tags: 0,
     items: 0,
     historyEntries: 0,
@@ -297,6 +460,36 @@ export async function seedRadarCollections(
     configBatch.set(doc(db, "rings", ring.id), ring);
     hasConfigWrites = true;
     result = { ...result, rings: result.rings + 1 };
+  }
+
+  for (const provider of seedProviders) {
+    const existingProvider = existingProviders.get(provider.id);
+
+    if (!hasSharedProfileChanged(existingProvider, provider)) {
+      continue;
+    }
+
+    configBatch.set(doc(db, "radarProviders", provider.id), provider);
+    hasConfigWrites = true;
+
+    if (!existingProvider) {
+      result = { ...result, providers: result.providers + 1 };
+    }
+  }
+
+  for (const family of seedFamilies) {
+    const existingFamily = existingFamilies.get(family.id);
+
+    if (!hasSharedProfileChanged(existingFamily, family)) {
+      continue;
+    }
+
+    configBatch.set(doc(db, "radarFamilies", family.id), family);
+    hasConfigWrites = true;
+
+    if (!existingFamily) {
+      result = { ...result, families: result.families + 1 };
+    }
   }
 
   for (const tag of getSeedTags()) {

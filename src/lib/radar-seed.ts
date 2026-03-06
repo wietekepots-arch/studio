@@ -1,8 +1,11 @@
 "use client";
 
 import {
+  Origin,
   RadarConfigOption,
+  RadarFamily,
   RadarItem,
+  RadarProvider,
 } from "@/app/lib/radar-types";
 
 export const seedQuadrants: RadarConfigOption[] = [
@@ -59,8 +62,141 @@ export const seedRings: RadarConfigOption[] = [
   },
 ];
 
+export const seedProviders: RadarProvider[] = [
+  {
+    id: "anthropic",
+    name: "Anthropic",
+    order: 0,
+    description: "Anthropic foundation models and coding products.",
+    website: "https://anthropic.com",
+    origin: "American",
+    sustainabilityNotes: "Optimised inference efficiency.",
+    securityNotes: "Full privacy compliance.",
+    ethicsNotes: "",
+  },
+  {
+    id: "openai",
+    name: "OpenAI",
+    order: 1,
+    description: "OpenAI chat, reasoning, and coding model line.",
+    website: "https://openai.com",
+    origin: "American",
+    sustainabilityNotes: "Standard inference footprint.",
+    securityNotes: "Enterprise privacy controls available.",
+    ethicsNotes: "",
+  },
+  {
+    id: "google",
+    name: "Google",
+    order: 2,
+    description: "Google AI model and infrastructure platform.",
+    website: "https://ai.google",
+    origin: "American",
+    sustainabilityNotes: "Google infrastructure, carbon-neutral goals.",
+    securityNotes: "Google Workspace integration, standard compliance.",
+    ethicsNotes: "",
+  },
+];
+
+export const seedFamilies: RadarFamily[] = [
+  {
+    id: "claude",
+    providerId: "anthropic",
+    providerName: "Anthropic",
+    name: "Claude",
+    order: 0,
+    description: "Anthropic's Claude model family.",
+  },
+  {
+    id: "gpt",
+    providerId: "openai",
+    providerName: "OpenAI",
+    name: "GPT",
+    order: 1,
+    description: "OpenAI's general chat and reasoning models.",
+  },
+  {
+    id: "codex",
+    providerId: "openai",
+    providerName: "OpenAI",
+    name: "Codex",
+    order: 2,
+    description: "OpenAI's coding-focused model line.",
+  },
+  {
+    id: "gemini",
+    providerId: "google",
+    providerName: "Google",
+    name: "Gemini",
+    order: 3,
+    description: "Google's Gemini multimodal model family.",
+  },
+];
+
+interface SeedRadarItemInput
+  extends Omit<
+    RadarItem,
+    | "providerName"
+    | "familyName"
+    | "originOverride"
+    | "sustainabilityNotesOverride"
+    | "securityNotesOverride"
+    | "ethicsNotesOverride"
+  > {}
+
+const seedProvidersById = new Map(seedProviders.map((item) => [item.id, item]));
+const seedFamiliesById = new Map(seedFamilies.map((item) => [item.id, item]));
+
+function buildSeedRadarItem(input: SeedRadarItemInput): RadarItem {
+  const family = input.familyId ? seedFamiliesById.get(input.familyId) : undefined;
+  const providerId = input.providerId || family?.providerId;
+  const provider = providerId ? seedProvidersById.get(providerId) : undefined;
+  const inheritedOrigin = family?.origin ?? provider?.origin;
+  const inheritedSustainability =
+    family?.sustainabilityNotes ?? provider?.sustainabilityNotes;
+  const inheritedSecurity = family?.securityNotes ?? provider?.securityNotes;
+  const inheritedEthics = family?.ethicsNotes ?? provider?.ethicsNotes;
+  const origin = input.origin ?? inheritedOrigin ?? "Other";
+  const sustainabilityNotes =
+    input.sustainabilityNotes ?? inheritedSustainability ?? "";
+  const securityNotes = input.securityNotes ?? inheritedSecurity ?? "";
+  const ethicsNotes = input.ethicsNotes ?? inheritedEthics ?? "";
+  const providerName = provider?.name;
+  const familyName = family?.name;
+
+  return {
+    ...input,
+    ...(providerId ? { providerId } : {}),
+    ...(providerName ? { providerName } : {}),
+    ...(family?.id ? { familyId: family.id } : {}),
+    ...(familyName ? { familyName } : {}),
+    origin,
+    sustainabilityNotes,
+    securityNotes,
+    ethicsNotes,
+    ...(providerId && input.origin !== undefined && input.origin !== inheritedOrigin
+      ? { originOverride: input.origin as Origin }
+      : {}),
+    ...(providerId &&
+    input.sustainabilityNotes !== undefined &&
+    input.sustainabilityNotes !== inheritedSustainability
+      ? { sustainabilityNotesOverride: input.sustainabilityNotes }
+      : {}),
+    ...(providerId &&
+    input.securityNotes !== undefined &&
+    input.securityNotes !== inheritedSecurity
+      ? { securityNotesOverride: input.securityNotes }
+      : {}),
+    ...(providerId &&
+    input.ethicsNotes !== undefined &&
+    input.ethicsNotes !== inheritedEthics
+      ? { ethicsNotesOverride: input.ethicsNotes }
+      : {}),
+  };
+}
+
 export function getSeedRadarItems(now = Date.now()): RadarItem[] {
-  return [
+  const items: SeedRadarItemInput[] = [
     {
       id: "claude-3-5",
       name: "Claude 3.5 Sonnet",
@@ -74,6 +210,8 @@ export function getSeedRadarItems(now = Date.now()): RadarItem[] {
       team: "Creative Tech",
       ownerId: "seed-admin",
       ownerName: "Greenberry Admin",
+      providerId: "anthropic",
+      familyId: "claude",
       scores: { maturity: 5, impact: 3, effort: 1, risk: 2 },
       costRange: "Medium",
       origin: "American",
@@ -125,6 +263,8 @@ export function getSeedRadarItems(now = Date.now()): RadarItem[] {
       team: "Creative Tech",
       ownerId: "seed-admin",
       ownerName: "Greenberry Admin",
+      providerId: "anthropic",
+      familyId: "claude",
       scores: { maturity: 5, impact: 5, effort: 1, risk: 2 },
       costRange: "Medium",
       origin: "American",
@@ -235,6 +375,8 @@ export function getSeedRadarItems(now = Date.now()): RadarItem[] {
       team: "Creative Tech",
       ownerId: "seed-admin",
       ownerName: "Greenberry Admin",
+      providerId: "openai",
+      familyId: "gpt",
       scores: { maturity: 5, impact: 5, effort: 1, risk: 2 },
       costRange: "Medium",
       origin: "American",
@@ -277,6 +419,8 @@ export function getSeedRadarItems(now = Date.now()): RadarItem[] {
       team: "Creative Tech",
       ownerId: "seed-admin",
       ownerName: "Greenberry Admin",
+      providerId: "openai",
+      familyId: "gpt",
       scores: { maturity: 5, impact: 4, effort: 1, risk: 2 },
       costRange: "Medium",
       origin: "American",
@@ -305,6 +449,8 @@ export function getSeedRadarItems(now = Date.now()): RadarItem[] {
       team: "Engineering",
       ownerId: "seed-admin",
       ownerName: "Greenberry Admin",
+      providerId: "openai",
+      familyId: "codex",
       scores: { maturity: 4, impact: 4, effort: 1, risk: 2 },
       costRange: "Medium",
       origin: "American",
@@ -333,6 +479,8 @@ export function getSeedRadarItems(now = Date.now()): RadarItem[] {
       team: "Engineering",
       ownerId: "seed-admin",
       ownerName: "Greenberry Admin",
+      providerId: "openai",
+      familyId: "codex",
       scores: { maturity: 3, impact: 3, effort: 1, risk: 2 },
       costRange: "Low",
       origin: "American",
@@ -361,6 +509,8 @@ export function getSeedRadarItems(now = Date.now()): RadarItem[] {
       team: "Creative Tech",
       ownerId: "seed-admin",
       ownerName: "Greenberry Admin",
+      providerId: "google",
+      familyId: "gemini",
       scores: { maturity: 4, impact: 4, effort: 1, risk: 2 },
       costRange: "Low",
       origin: "American",
@@ -500,6 +650,8 @@ export function getSeedRadarItems(now = Date.now()): RadarItem[] {
       team: "Engineering",
       ownerId: "seed-admin",
       ownerName: "Greenberry Admin",
+      providerId: "anthropic",
+      familyId: "claude",
       scores: { maturity: 4, impact: 5, effort: 1, risk: 2 },
       costRange: "Medium",
       origin: "American",
@@ -772,6 +924,8 @@ export function getSeedRadarItems(now = Date.now()): RadarItem[] {
       ],
     },
   ];
+
+  return items.map((item) => buildSeedRadarItem(item));
 }
 
 export function getSeedTags(): RadarConfigOption[] {

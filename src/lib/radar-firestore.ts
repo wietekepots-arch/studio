@@ -137,7 +137,49 @@ export function canEditRadarItem(
 
   return (
     item.createdBy === userId &&
-    (item.status === "Draft" || item.status === "Pending")
+    item.ownerId === userId &&
+    item.status !== "Archived"
+  );
+}
+
+export function getNextRadarItemStatus(
+  item: RadarItem | null | undefined,
+  userId: string,
+  role?: Role | null,
+): ItemStatus {
+  if (!item) {
+    return "Pending";
+  }
+
+  const isOwner = item.createdBy === userId && item.ownerId === userId;
+
+  if (!isOwner) {
+    return item.status;
+  }
+
+  if (item.status === "Draft") {
+    return "Pending";
+  }
+
+  if (item.status === "Approved" && !canReviewBlips(role)) {
+    return "Pending";
+  }
+
+  return item.status;
+}
+
+export function isRadarItemEditResubmission(
+  item: RadarItem | null | undefined,
+  userId: string,
+  role?: Role | null,
+): boolean {
+  if (!item) {
+    return false;
+  }
+
+  return (
+    getNextRadarItemStatus(item, userId, role) === "Pending" &&
+    item.status !== "Pending"
   );
 }
 

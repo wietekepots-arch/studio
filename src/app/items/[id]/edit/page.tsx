@@ -62,8 +62,9 @@ export default function EditItemPage({
         <div className="container mx-auto flex min-h-[60vh] flex-col items-center justify-center gap-4 px-6 text-center">
           <h1 className="text-4xl font-black">Editing not allowed</h1>
           <p className="max-w-lg text-muted-foreground">
-            Members can only edit their own draft or pending blips. Reviewers
-            can edit all items.
+            Members can edit their own draft, pending, or approved blips.
+            Approved edits return to the review queue. Reviewers can edit all
+            items.
           </p>
           <Button asChild className="rounded-full px-8">
             <Link href={`/items/${item.id}`}>Open Detail View</Link>

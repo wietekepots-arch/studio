@@ -22,6 +22,30 @@ export interface RadarConfigOption {
   description?: string;
 }
 
+export interface RadarSharedProfile {
+  origin?: Origin;
+  sustainabilityNotes?: string;
+  securityNotes?: string;
+  ethicsNotes?: string;
+}
+
+export interface RadarProvider extends RadarSharedProfile {
+  id: string;
+  name: string;
+  order: number;
+  description?: string;
+  website?: string;
+}
+
+export interface RadarFamily extends RadarSharedProfile {
+  id: string;
+  providerId: string;
+  providerName?: string;
+  name: string;
+  order: number;
+  description?: string;
+}
+
 export type ItemStatus = "Draft" | "Pending" | "Approved" | "Archived";
 export type CostRange = "Free" | "Low" | "Medium" | "High";
 export type Origin = "European" | "American" | "Other";
@@ -57,6 +81,10 @@ export interface RadarItem {
   team: string;
   ownerId: string;
   ownerName: string;
+  providerId?: string;
+  providerName?: string;
+  familyId?: string;
+  familyName?: string;
   scores: {
     maturity: number;
     impact: number;
@@ -65,9 +93,13 @@ export interface RadarItem {
   };
   costRange: CostRange;
   origin: Origin;
+  originOverride?: Origin;
   sustainabilityNotes: string;
+  sustainabilityNotesOverride?: string;
   securityNotes: string;
+  securityNotesOverride?: string;
   ethicsNotes: string;
+  ethicsNotesOverride?: string;
   pricingTiers?: PricingTier[];
   links: string[];
   status: ItemStatus;

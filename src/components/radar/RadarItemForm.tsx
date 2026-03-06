@@ -2,7 +2,16 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { addDoc, collection, doc, updateDoc } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  deleteField,
+  doc,
+  updateDoc,
+  type DocumentData,
+  type UpdateData,
+  type WithFieldValue,
+} from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -35,6 +44,8 @@ import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import {
   buildRadarConfig,
   canEditRadarItem,
+  getNextRadarItemStatus,
+  isRadarItemEditResubmission,
   mergeConfigOptions,
 } from "@/lib/radar-firestore";
 import { getSeedTags, seedQuadrants, seedRings } from "@/lib/radar-seed";
@@ -131,6 +142,21 @@ export function RadarItemForm({
   }, [tagDocs]);
   const config = buildRadarConfig(quadrants, rings);
   const isEditMode = Boolean(initialItem);
+  const isResubmittingForReview = authUser
+    ? isRadarItemEditResubmission(initialItem, authUser.uid, role)
+    : false;
+  const submitLabel = isEditMode
+    ? isResubmittingForReview
+      ? "Save & Resubmit"
+      : "Save Changes"
+    : "Submit Suggestion";
+  const helperText = !isEditMode
+    ? "Submit a new tool suggestion for review."
+    : initialItem?.status === "Approved" && isResubmittingForReview
+      ? "Update the approved blip. Saving will send it back to the review queue."
+      : isResubmittingForReview
+        ? "Update the blip and send it back for review."
+        : "Update the blip and keep the workflow moving.";
 
   useEffect(() => {
     setFormData(getFormState(initialItem));
@@ -241,16 +267,19 @@ export function RadarItemForm({
     setIsSubmitting(true);
 
     const now = Date.now();
-    const nextStatus =
-      initialItem?.status === "Draft" && initialItem.createdBy === authUser.uid
-        ? "Pending"
-        : initialItem?.status || "Pending";
-    const payload = {
+    const nextStatus = getNextRadarItemStatus(initialItem, authUser.uid, role);
+    const isResubmittingForReview = isRadarItemEditResubmission(
+      initialItem,
+      authUser.uid,
+      role,
+    );
+    const nextRingId = Number(formData.ringId);
+    const basePayload: WithFieldValue<DocumentData> = {
       name: formData.name,
       shortDesc: formData.shortDesc,
       notes: formData.notes,
       quadrantId: Number(formData.quadrantId),
-      ringId: Number(formData.ringId),
+      ringId: nextRingId,
       tags: formData.tags
         .split(",")
         .map((item) => item.trim())
@@ -271,64 +300,77 @@ export function RadarItemForm({
       ethicsNotes: formData.ethicsNotes,
       links: formData.primaryLink ? [formData.primaryLink] : [],
       status: nextStatus,
-      submittedAt: initialItem?.submittedAt || now,
-      submittedBy: initialItem?.submittedBy || authUser.uid,
+      submittedAt:
+        isResubmittingForReview || !initialItem?.submittedAt
+          ? now
+          : initialItem.submittedAt,
+      submittedBy:
+        isResubmittingForReview || !initialItem?.submittedBy
+          ? authUser.uid
+          : initialItem.submittedBy,
       lastReviewedAt: initialItem?.lastReviewedAt || now,
       createdAt: initialItem?.createdAt || now,
       createdBy: initialItem?.createdBy || authUser.uid,
       updatedAt: now,
       updatedBy: authUser.uid,
-      previousRingId: initialItem?.previousRingId,
       pricingTiers: initialItem?.pricingTiers || [],
       history: initialItem?.history || [],
-      ...(initialItem?.status === "Draft"
-        ? {
-            reviewComment: "",
-          }
-        : {
-            ...(initialItem?.reviewComment
-              ? { reviewComment: initialItem.reviewComment }
-              : {}),
-            ...(typeof initialItem?.reviewedAt === "number"
-              ? { reviewedAt: initialItem.reviewedAt }
-              : {}),
-            ...(initialItem?.reviewedBy
-              ? { reviewedBy: initialItem.reviewedBy }
-              : {}),
-          }),
     };
 
     try {
       if (initialItem) {
+        const payload: UpdateData<DocumentData> = { ...basePayload };
+
+        if (initialItem.ringId !== nextRingId) {
+          payload.previousRingId = initialItem.ringId;
+        } else if (typeof initialItem.previousRingId === "number") {
+          payload.previousRingId = initialItem.previousRingId;
+        }
+
+        if (isResubmittingForReview) {
+          payload.reviewComment = "";
+          payload.reviewedAt = deleteField();
+          payload.reviewedBy = deleteField();
+        } else {
+          if (initialItem.reviewComment) {
+            payload.reviewComment = initialItem.reviewComment;
+          }
+
+          if (typeof initialItem.reviewedAt === "number") {
+            payload.reviewedAt = initialItem.reviewedAt;
+          }
+
+          if (initialItem.reviewedBy) {
+            payload.reviewedBy = initialItem.reviewedBy;
+          }
+        }
+
         await updateDoc(doc(db, "radarItems", initialItem.id), payload);
         await addDoc(collection(db, "radarItems", initialItem.id, "itemHistory"), {
           itemId: initialItem.id,
-          action:
-            initialItem.status === "Draft" && nextStatus === "Pending"
-              ? "resubmitted"
-              : "updated",
-          note:
-            initialItem.status === "Draft" && nextStatus === "Pending"
-              ? "Reworked and sent back for review."
-              : "Details updated.",
+          action: isResubmittingForReview ? "resubmitted" : "updated",
+          note: isResubmittingForReview
+            ? initialItem.status === "Approved"
+              ? "Updated after approval and sent back for review."
+              : "Reworked and sent back for review."
+            : "Details updated.",
           before: initialItem.status,
           after: nextStatus,
           createdAt: now,
           createdBy: authUser.uid,
         });
         toast({
-          title:
-            nextStatus === "Pending" && initialItem.status === "Draft"
-              ? "Blip resubmitted"
-              : "Changes saved",
-          description:
-            nextStatus === "Pending" && initialItem.status === "Draft"
-              ? "The updated blip is back in the review queue."
-              : "The blip details were updated.",
+          title: isResubmittingForReview ? "Blip resubmitted" : "Changes saved",
+          description: isResubmittingForReview
+            ? "The updated blip is now pending reviewer approval."
+            : "The blip details were updated.",
         });
         router.push(`/items/${initialItem.id}`);
       } else {
-        const documentReference = await addDoc(collection(db, "radarItems"), payload);
+        const documentReference = await addDoc(
+          collection(db, "radarItems"),
+          basePayload,
+        );
         await addDoc(
           collection(db, "radarItems", documentReference.id, "itemHistory"),
           {
@@ -378,11 +420,7 @@ export function RadarItemForm({
             {isEditMode ? "Edit" : "Propose"} <br />
             <span className="text-primary">Tool Blip</span>
           </h1>
-          <p className="text-xl font-medium text-muted-foreground">
-            {isEditMode
-              ? "Update the blip and keep the workflow moving."
-              : "Submit a new tool suggestion for review."}
-          </p>
+          <p className="text-xl font-medium text-muted-foreground">{helperText}</p>
         </div>
         <Button
           type="submit"
@@ -390,7 +428,7 @@ export function RadarItemForm({
           disabled={isSubmitting}
         >
           <Save className="h-5 w-5" />
-          {isEditMode ? "Save Changes" : "Submit Suggestion"}
+          {submitLabel}
         </Button>
       </div>
 

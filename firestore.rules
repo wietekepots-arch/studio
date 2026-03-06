@@ -56,12 +56,19 @@ service cloud.firestore {
     function isOwnerEditingOwnBlip() {
       return hasProfile()
         && resource.data.createdBy == request.auth.uid
-        && (resource.data.status == 'Draft' || resource.data.status == 'Pending')
+        && resource.data.ownerId == request.auth.uid
+        && resource.data.status != 'Archived'
         && request.resource.data.createdBy == resource.data.createdBy
         && request.resource.data.ownerId == resource.data.ownerId
         && (
           request.resource.data.status == resource.data.status
-          || (resource.data.status == 'Draft' && request.resource.data.status == 'Pending')
+          || (
+            (
+              resource.data.status == 'Draft'
+              || resource.data.status == 'Approved'
+            )
+            && request.resource.data.status == 'Pending'
+          )
         );
     }
 
@@ -132,8 +139,8 @@ service cloud.firestore {
 
       match /itemHistory/{historyId} {
         allow read: if hasProfile();
-      allow create: if hasProfile()
-        && (isPowerUser() || request.resource.data.createdBy == request.auth.uid);
+        allow create: if hasProfile()
+          && (isPowerUser() || request.resource.data.createdBy == request.auth.uid);
         allow update, delete: if isAdmin();
       }
     }

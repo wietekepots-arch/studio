@@ -164,6 +164,7 @@ export default function Home() {
   }, []);
 
   const isItemNew = (item: RadarItem) => {
+    if (!mounted) return false;
     const twoWeeksAgo = Date.now() - 1000 * 60 * 60 * 24 * 14;
     return item.createdAt > twoWeeksAgo;
   };

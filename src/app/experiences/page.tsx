@@ -33,7 +33,6 @@ export default function ExperiencesPage() {
   }, []);
 
   const experiencesQuery = useMemoFirebase(() => {
-    // Domain guard for strategic data
     if (!db || !user) return null;
     
     const email = user.email || '';

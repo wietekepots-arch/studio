@@ -28,6 +28,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
+import common from "@/content/common.json";
+import dashboardContent from "@/content/pages/dashboard.json";
 import {
   RadarConfigOption,
   RadarItem,
@@ -169,13 +171,13 @@ export default function DashboardPage(): React.ReactElement {
         reviewNotes[item.id] || "",
       );
       toast({
-        title: "Blip approved",
-        description: `${item.name} is now visible on the radar.`,
+        title: dashboardContent.toasts.approved.title,
+        description: dashboardContent.toasts.approved.description.replace("{name}", item.name),
       });
     } catch (error) {
       toast({
-        title: "Approval failed",
-        description: "The review action could not be saved.",
+        title: dashboardContent.toasts.approvalFailed.title,
+        description: dashboardContent.toasts.approvalFailed.description,
         variant: "destructive",
       });
     } finally {
@@ -199,13 +201,13 @@ export default function DashboardPage(): React.ReactElement {
         reviewNotes[item.id] || "",
       );
       toast({
-        title: "Blip returned to draft",
-        description: `${item.name} was sent back for revision.`,
+        title: dashboardContent.toasts.returnedToDraft.title,
+        description: dashboardContent.toasts.returnedToDraft.description.replace("{name}", item.name),
       });
     } catch (error) {
       toast({
-        title: "Review failed",
-        description: "The rejection action could not be saved.",
+        title: dashboardContent.toasts.reviewFailed.title,
+        description: dashboardContent.toasts.reviewFailed.description,
         variant: "destructive",
       });
     } finally {
@@ -223,13 +225,13 @@ export default function DashboardPage(): React.ReactElement {
     try {
       const result = await seedRadarCollections(db, profile);
       toast({
-        title: "Radar seeded",
-        description: `Added ${result.items} blips and ${result.tags} tags.`,
+        title: dashboardContent.toasts.seeded.title,
+        description: dashboardContent.toasts.seeded.description.replace("{items}", String(result.items)).replace("{tags}", String(result.tags)),
       });
     } catch (error) {
       toast({
-        title: "Seed failed",
-        description: "Starter radar data could not be written to Firestore.",
+        title: dashboardContent.toasts.seedFailed.title,
+        description: dashboardContent.toasts.seedFailed.description,
         variant: "destructive",
       });
     } finally {
@@ -258,15 +260,14 @@ export default function DashboardPage(): React.ReactElement {
           </div>
           <div className="space-y-3">
             <h1 className="text-5xl font-black tracking-tighter">
-              Company sign-in required
+              {common.auth.companySignInRequired}
             </h1>
             <p className="max-w-xl text-lg font-medium text-muted-foreground">
-              Sign in with your Greenberry Google account to access the dashboard
-              and workflow queues.
+              {dashboardContent.authError.description}
             </p>
           </div>
           <Button asChild className="rounded-full px-8">
-            <Link href="/login">Go to Sign In</Link>
+            <Link href="/login">{common.auth.goToSignIn}</Link>
           </Button>
         </div>
       </div>
@@ -281,14 +282,13 @@ export default function DashboardPage(): React.ReactElement {
         <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div className="space-y-3">
             <div className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">
-              Internal workflow
+              {dashboardContent.sectionLabel}
             </div>
             <h1 className="text-6xl font-black uppercase leading-none tracking-tighter">
-              Radar <span className="text-primary">Dashboard</span>
+              {dashboardContent.heading} <span className="text-primary">{dashboardContent.headingHighlight}</span>
             </h1>
             <p className="max-w-2xl text-lg font-medium text-muted-foreground">
-              Track live radar items, your own submissions, and coworker reviews
-              in one place.
+              {dashboardContent.description}
             </p>
           </div>
 
@@ -300,17 +300,16 @@ export default function DashboardPage(): React.ReactElement {
                 disabled={!canReview || actionItemId === "seed"}
                 title={
                   canReview
-                    ? "Seed starter radar"
-                    : "Only PowerUsers and Admins can seed the starter radar."
+                    ? dashboardContent.seed.tooltip
+                    : dashboardContent.seed.restrictedTooltip
                 }
               >
                 <DatabaseZap className="h-5 w-5" />
-                Seed starter radar
+                {dashboardContent.seed.button}
               </Button>
               {!canReview ? (
                 <p className="max-w-sm text-right text-sm font-medium text-muted-foreground">
-                  Starter data can only be seeded by a PowerUser or Admin. Your
-                  current role is {role || "Member"}.
+                  {dashboardContent.seed.restrictedMessage.replace("{role}", role || "Member")}
                 </p>
               ) : null}
             </div>
@@ -321,7 +320,7 @@ export default function DashboardPage(): React.ReactElement {
           <Card className="border-none bg-secondary/20 shadow-none">
             <CardHeader>
               <CardTitle className="text-[10px] font-black uppercase tracking-[0.25em] text-primary">
-                Role
+                {common.labels.role}
               </CardTitle>
             </CardHeader>
             <CardContent className="text-3xl font-black tracking-tight">
@@ -331,7 +330,7 @@ export default function DashboardPage(): React.ReactElement {
           <Card className="border-none bg-secondary/20 shadow-none">
             <CardHeader>
               <CardTitle className="text-[10px] font-black uppercase tracking-[0.25em] text-primary">
-                Visible blips
+                {common.labels.visibleBlips}
               </CardTitle>
             </CardHeader>
             <CardContent className="text-3xl font-black tracking-tight">
@@ -341,7 +340,7 @@ export default function DashboardPage(): React.ReactElement {
           <Card className="border-none bg-secondary/20 shadow-none">
             <CardHeader>
               <CardTitle className="text-[10px] font-black uppercase tracking-[0.25em] text-primary">
-                Pending coworker review
+                {common.labels.pendingCoworkerReview}
               </CardTitle>
             </CardHeader>
             <CardContent className="text-3xl font-black tracking-tight">
@@ -354,33 +353,33 @@ export default function DashboardPage(): React.ReactElement {
           <CardHeader className="flex flex-row items-center justify-between gap-4">
             <div>
               <CardTitle className="text-2xl font-black tracking-tight">
-                {canReview ? "All blips" : "Your dashboard"}
+                {canReview ? dashboardContent.table.allBlips : dashboardContent.table.yourDashboard}
               </CardTitle>
               <p className="text-sm font-medium text-muted-foreground">
                 {canReview
-                  ? "Cross-status view of every radar item."
-                  : "Approved radar items and your own draft or pending submissions."}
+                  ? dashboardContent.table.allBlipsDescription
+                  : dashboardContent.table.yourDashboardDescription}
               </p>
             </div>
             <Button asChild className="rounded-full px-6 font-bold">
-              <Link href="/items/new">Suggest a Tool</Link>
+              <Link href="/items/new">{dashboardContent.table.suggestTool}</Link>
             </Button>
           </CardHeader>
           <CardContent>
             {isAnyTableLoading ? (
               <div className="py-12 text-center text-muted-foreground">
-                Loading dashboard data...
+                {common.common.loadingDashboardData}
               </div>
             ) : mainItems.length ? (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Blip</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Quadrant</TableHead>
-                    <TableHead>Ring</TableHead>
-                    <TableHead>Updated</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead>{dashboardContent.table.columns.blip}</TableHead>
+                    <TableHead>{dashboardContent.table.columns.status}</TableHead>
+                    <TableHead>{dashboardContent.table.columns.quadrant}</TableHead>
+                    <TableHead>{dashboardContent.table.columns.ring}</TableHead>
+                    <TableHead>{dashboardContent.table.columns.updated}</TableHead>
+                    <TableHead className="text-right">{dashboardContent.table.columns.actions}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -400,9 +399,9 @@ export default function DashboardPage(): React.ReactElement {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {quadrantMap.get(item.quadrantId) || "Unassigned"}
+                        {quadrantMap.get(item.quadrantId) || common.common.unassigned}
                       </TableCell>
-                      <TableCell>{ringMap.get(item.ringId) || "Unassigned"}</TableCell>
+                      <TableCell>{ringMap.get(item.ringId) || common.common.unassigned}</TableCell>
                       <TableCell>
                         {new Date(item.updatedAt).toLocaleDateString()}
                       </TableCell>
@@ -411,14 +410,14 @@ export default function DashboardPage(): React.ReactElement {
                           <Button variant="ghost" size="sm" asChild>
                             <Link href={`/items/${item.id}`}>
                               <Eye className="mr-2 h-4 w-4" />
-                              View
+                              {common.common.view}
                             </Link>
                           </Button>
                           {canEditRadarItem(item, authUser.uid, role) ? (
                             <Button variant="ghost" size="sm" asChild>
                               <Link href={`/items/${item.id}/edit`}>
                                 <Pencil className="mr-2 h-4 w-4" />
-                                Edit
+                                {common.common.edit}
                               </Link>
                             </Button>
                           ) : null}
@@ -431,13 +430,13 @@ export default function DashboardPage(): React.ReactElement {
             ) : (
               <div className="py-12 text-center">
                 <ClipboardList className="mx-auto mb-4 h-10 w-10 text-primary" />
-                <div className="text-xl font-black">No blips yet</div>
+                <div className="text-xl font-black">{dashboardContent.emptyState.heading}</div>
                 <p className="mt-2 text-sm font-medium text-muted-foreground">
-                  Add the first tool suggestion or seed the starter radar.
+                  {dashboardContent.emptyState.description}
                 </p>
                 {!canReview ? (
                   <p className="mt-2 text-sm font-medium text-muted-foreground">
-                    Seeding is restricted to PowerUsers and Admins.
+                    {dashboardContent.emptyState.seedRestricted}
                   </p>
                 ) : null}
               </div>
@@ -449,7 +448,7 @@ export default function DashboardPage(): React.ReactElement {
           <Card className="mt-10 border-none bg-white shadow-xl shadow-primary/5">
             <CardHeader>
               <CardTitle className="text-2xl font-black tracking-tight">
-                Pending blips from coworkers
+                {dashboardContent.coworkerReview.title}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -473,19 +472,19 @@ export default function DashboardPage(): React.ReactElement {
                         <div className="flex flex-wrap gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
                           <span>{item.team}</span>
                           <span>
-                            {quadrantMap.get(item.quadrantId) || "Unassigned"}
+                            {quadrantMap.get(item.quadrantId) || common.common.unassigned}
                           </span>
-                          <span>{ringMap.get(item.ringId) || "Unassigned"}</span>
+                          <span>{ringMap.get(item.ringId) || common.common.unassigned}</span>
                         </div>
                       </div>
                       <Button variant="ghost" asChild>
-                        <Link href={`/items/${item.id}`}>Open detail</Link>
+                        <Link href={`/items/${item.id}`}>{dashboardContent.coworkerReview.openDetail}</Link>
                       </Button>
                     </div>
 
                     <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_auto_auto]">
                       <Input
-                        placeholder="Optional review note"
+                        placeholder={dashboardContent.coworkerReview.reviewPlaceholder}
                         value={reviewNotes[item.id] || ""}
                         onChange={(event) =>
                           setReviewNotes((currentState) => ({
@@ -500,7 +499,7 @@ export default function DashboardPage(): React.ReactElement {
                         onClick={() => handleApprove(item)}
                       >
                         <CheckCircle2 className="h-4 w-4" />
-                        Approve
+                        {common.common.approve}
                       </Button>
                       <Button
                         variant="outline"
@@ -509,14 +508,14 @@ export default function DashboardPage(): React.ReactElement {
                         onClick={() => handleReject(item)}
                       >
                         <XCircle className="h-4 w-4" />
-                        Send to Draft
+                        {common.common.sendToDraft}
                       </Button>
                     </div>
                   </div>
                 ))
               ) : (
                 <div className="py-10 text-center text-sm font-medium text-muted-foreground">
-                  No coworker submissions are waiting for review.
+                  {dashboardContent.coworkerReview.emptyState}
                 </div>
               )}
             </CardContent>

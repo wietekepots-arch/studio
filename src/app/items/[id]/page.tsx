@@ -26,6 +26,8 @@ import {
   getStatusBadgeVariant,
   sortConfigOptions,
 } from "@/lib/radar-firestore";
+import common from "@/content/common.json";
+import itemDetailContent from "@/content/pages/item-detail.json";
 
 interface ItemDetailPageProps {
   params: Promise<{ id: string }>;
@@ -141,14 +143,14 @@ export default function ItemDetailPage({
           </div>
           <div className="space-y-3">
             <h1 className="text-5xl font-black tracking-tighter">
-              Company sign-in required
+              {common.auth.companySignInRequired}
             </h1>
             <p className="max-w-xl text-lg font-medium text-muted-foreground">
-              Sign in with your Greenberry Google account to view radar items.
+              {itemDetailContent.authError.description}
             </p>
           </div>
           <Button asChild className="rounded-full px-8">
-            <Link href="/login">Go to Sign In</Link>
+            <Link href="/login">{common.auth.goToSignIn}</Link>
           </Button>
         </div>
       </div>
@@ -160,9 +162,9 @@ export default function ItemDetailPage({
       <div className="min-h-screen bg-background">
         <Navbar />
         <div className="container mx-auto flex min-h-[60vh] flex-col items-center justify-center gap-4 px-6 text-center">
-          <h1 className="text-4xl font-black">Blip not found</h1>
+          <h1 className="text-4xl font-black">{itemDetailContent.blipNotFound}</h1>
           <Button asChild className="rounded-full px-8">
-            <Link href="/dashboard">Back to Dashboard</Link>
+            <Link href="/dashboard">{itemDetailContent.backToDashboard}</Link>
           </Button>
         </div>
       </div>
@@ -184,7 +186,7 @@ export default function ItemDetailPage({
           >
             <Link href="/dashboard">
               <ArrowLeft className="h-5 w-5" />
-              Return to Dashboard
+              {itemDetailContent.returnToDashboard}
             </Link>
           </Button>
 
@@ -199,7 +201,7 @@ export default function ItemDetailPage({
               <Button asChild className="rounded-full px-6 font-bold">
                 <Link href={`/items/${item.id}/edit`}>
                   <Pencil className="mr-2 h-4 w-4" />
-                  Edit
+                  {common.common.edit}
                 </Link>
               </Button>
             ) : null}
@@ -211,10 +213,10 @@ export default function ItemDetailPage({
             <div className="space-y-6">
               <div className="flex flex-wrap gap-3">
                 <Badge className="rounded-full bg-primary/10 px-6 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-primary">
-                  {quadrantMap.get(item.quadrantId) || "Unassigned"}
+                  {quadrantMap.get(item.quadrantId) || common.common.unassigned}
                 </Badge>
                 <Badge variant="outline" className="rounded-full px-6 py-2">
-                  {ringMap.get(item.ringId) || "Unassigned"}
+                  {ringMap.get(item.ringId) || common.common.unassigned}
                 </Badge>
               </div>
               <h1 className="text-7xl font-black leading-[0.85] tracking-tighter">
@@ -236,7 +238,7 @@ export default function ItemDetailPage({
               <Card className="rounded-[2.5rem] border-none bg-primary/5 shadow-none">
                 <CardHeader>
                   <CardTitle className="text-lg font-black tracking-tight">
-                    Latest review note
+                    {itemDetailContent.latestReviewNote}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="text-muted-foreground">
@@ -248,7 +250,7 @@ export default function ItemDetailPage({
             <Card className="rounded-[3rem] border-none bg-secondary/10 shadow-none">
               <CardHeader>
                 <CardTitle className="text-3xl font-black tracking-tight">
-                  Overview
+                  {common.labels.overview}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-10">
@@ -260,31 +262,31 @@ export default function ItemDetailPage({
                   <Card className="border-none bg-white shadow-none">
                     <CardHeader>
                       <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
-                        Sustainability
+                        {common.labels.sustainability}
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>{item.sustainabilityNotes || "Pending review"}</CardContent>
+                    <CardContent>{item.sustainabilityNotes || common.common.pendingReview}</CardContent>
                   </Card>
                   <Card className="border-none bg-white shadow-none">
                     <CardHeader>
                       <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
-                        Security
+                        {common.labels.security}
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>{item.securityNotes || "Pending review"}</CardContent>
+                    <CardContent>{item.securityNotes || common.common.pendingReview}</CardContent>
                   </Card>
                   <Card className="border-none bg-white shadow-none">
                     <CardHeader>
                       <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
-                        Ethics
+                        {common.labels.ethics}
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>{item.ethicsNotes || "Pending review"}</CardContent>
+                    <CardContent>{item.ethicsNotes || common.common.pendingReview}</CardContent>
                   </Card>
                   <Card className="border-none bg-white shadow-none">
                     <CardHeader>
                       <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
-                        Origin
+                        {common.labels.origin}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>{item.origin}</CardContent>
@@ -297,7 +299,7 @@ export default function ItemDetailPage({
               <Card className="rounded-[3rem] border-none bg-secondary/10 shadow-none">
                 <CardHeader>
                   <CardTitle className="text-3xl font-black tracking-tight">
-                    Pricing
+                    {common.labels.pricing}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -312,7 +314,7 @@ export default function ItemDetailPage({
                             {tier.name}
                           </div>
                           <div className="text-sm font-medium text-muted-foreground">
-                            {tier.billing || "Flexible billing"}
+                            {tier.billing || common.labels.flexibleBilling}
                           </div>
                         </div>
                         <div className="text-2xl font-black text-primary">
@@ -339,7 +341,7 @@ export default function ItemDetailPage({
             <Card className="rounded-[3rem] border-none bg-secondary/10 shadow-none">
               <CardHeader>
                 <CardTitle className="text-3xl font-black tracking-tight">
-                  Related Experiences
+                  {common.labels.relatedExperiences}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -365,7 +367,7 @@ export default function ItemDetailPage({
                   ))
                 ) : (
                   <div className="rounded-[2rem] border border-dashed border-border p-8 text-center text-sm font-medium text-muted-foreground">
-                    No published experiences are linked to this blip yet.
+                    {itemDetailContent.noExperiences}
                   </div>
                 )}
               </CardContent>
@@ -376,33 +378,33 @@ export default function ItemDetailPage({
             <Card className="rounded-[3rem] border-none bg-white shadow-xl shadow-primary/10">
               <CardHeader>
                 <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">
-                  Strategic Pulse
+                  {common.labels.strategicPulse}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-8">
-                <ScoreRow label="Tool Maturity" value={item.scores.maturity} />
-                <ScoreRow label="Potential Impact" value={item.scores.impact} />
-                <ScoreRow label="Effort to Build" value={item.scores.effort} />
-                <ScoreRow label="Risk Profile" value={item.scores.risk} />
+                <ScoreRow label={itemDetailContent.scores.toolMaturity} value={item.scores.maturity} />
+                <ScoreRow label={itemDetailContent.scores.potentialImpact} value={item.scores.impact} />
+                <ScoreRow label={itemDetailContent.scores.effortToBuild} value={item.scores.effort} />
+                <ScoreRow label={itemDetailContent.scores.riskProfile} value={item.scores.risk} />
               </CardContent>
             </Card>
 
             <Card className="rounded-[3rem] border-none bg-white shadow-xl shadow-primary/10">
               <CardHeader>
                 <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">
-                  Lifecycle Data
+                  {common.labels.lifecycleData}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-1">
                   <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
-                    Owner
+                    {common.labels.owner}
                   </div>
                   <div className="text-xl font-bold">{item.ownerName}</div>
                 </div>
                 <div className="space-y-1">
                   <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
-                    Created
+                    {common.labels.created}
                   </div>
                   <div className="text-xl font-bold">
                     {new Date(item.createdAt).toLocaleDateString()}
@@ -411,7 +413,7 @@ export default function ItemDetailPage({
                 {item.submittedAt ? (
                   <div className="space-y-1">
                     <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
-                      Submitted
+                      {common.labels.submitted}
                     </div>
                     <div className="text-xl font-bold">
                       {new Date(item.submittedAt).toLocaleDateString()}
@@ -422,7 +424,7 @@ export default function ItemDetailPage({
                   <Button asChild variant="outline" className="w-full rounded-full">
                     <a href={item.links[0]} target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="mr-2 h-4 w-4" />
-                      Open Vendor Link
+                      {common.labels.openVendorLink}
                     </a>
                   </Button>
                 ) : null}
@@ -432,7 +434,7 @@ export default function ItemDetailPage({
             <Card className="rounded-[3rem] border-none bg-white shadow-xl shadow-primary/10">
               <CardHeader>
                 <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">
-                  Activity
+                  {common.labels.activity}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -456,7 +458,7 @@ export default function ItemDetailPage({
                   ))
                 ) : (
                   <div className="text-sm font-medium text-muted-foreground">
-                    No workflow history has been recorded yet.
+                    {itemDetailContent.noHistory}
                   </div>
                 )}
               </CardContent>

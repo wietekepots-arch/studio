@@ -14,6 +14,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/firebase";
 import { useAppUser } from "@/components/app/AppUserProvider";
+import common from "@/content/common.json";
+
+const { navigation, branding, auth: authContent } = common;
 
 export function Navbar(): React.ReactElement {
   const pathname = usePathname();
@@ -21,21 +24,21 @@ export function Navbar(): React.ReactElement {
   const { authUser, hasCompanyAccess, isLoading, profile, role } = useAppUser();
 
   const navItems = [
-    { label: "Radar", href: "/", icon: Radar, requiresAuth: false },
+    { label: navigation.radar, href: "/", icon: Radar, requiresAuth: false },
     {
-      label: "Dashboard",
+      label: navigation.dashboard,
       href: "/dashboard",
       icon: LayoutDashboard,
       requiresAuth: true,
     },
     {
-      label: "Experiences",
+      label: navigation.experiences,
       href: "/experiences",
       icon: Sparkles,
       requiresAuth: true,
     },
     {
-      label: "Propose Tool",
+      label: navigation.proposeTool,
       href: "/items/new",
       icon: PlusCircle,
       requiresAuth: true,
@@ -59,10 +62,10 @@ export function Navbar(): React.ReactElement {
             </div>
             <div className="flex flex-col leading-none">
               <span className="text-2xl font-black tracking-tighter">
-                Greenberry
+                {branding.companyName}
               </span>
               <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground opacity-80">
-                Design for Progress
+                {branding.tagline}
               </span>
             </div>
           </Link>
@@ -93,7 +96,7 @@ export function Navbar(): React.ReactElement {
             <>
               <div className="hidden text-right sm:flex sm:flex-col">
                 <span className="text-sm font-bold tracking-tight">
-                  {profile?.displayName || authUser.displayName || "Member"}
+                  {profile?.displayName || authUser.displayName || authContent.memberFallback}
                 </span>
                 <span className="text-[10px] font-black uppercase tracking-wider text-primary">
                   {role}
@@ -103,7 +106,7 @@ export function Navbar(): React.ReactElement {
                 <img
                   src={authUser.photoURL}
                   className="h-10 w-10 rounded-full border-2 border-primary/20"
-                  alt="Profile"
+                  alt={authContent.profileAlt}
                 />
               ) : null}
               <Button
@@ -119,7 +122,7 @@ export function Navbar(): React.ReactElement {
             <Button asChild className="rounded-full px-6 font-bold gap-2">
               <Link href="/login">
                 <LogIn className="h-4 w-4" />
-                Sign In
+                {navigation.signIn}
               </Link>
             </Button>
           )}

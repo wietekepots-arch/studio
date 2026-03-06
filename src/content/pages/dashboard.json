@@ -1,0 +1,68 @@
+{
+  "sectionLabel": "Internal workflow",
+  "heading": "Radar",
+  "headingHighlight": "Dashboard",
+  "description": "Track live radar items, your own submissions, and coworker reviews in one place.",
+  "seed": {
+    "button": "Seed starter radar",
+    "tooltip": "Seed starter radar",
+    "restrictedMessage": "Starter data can only be seeded by a PowerUser or Admin. Your current role is {role}.",
+    "restrictedTooltip": "Only PowerUsers and Admins can seed the starter radar."
+  },
+  "table": {
+    "allBlips": "All blips",
+    "yourDashboard": "Your dashboard",
+    "allBlipsDescription": "Cross-status view of every radar item.",
+    "yourDashboardDescription": "Approved radar items and your own draft or pending submissions.",
+    "suggestTool": "Suggest a Tool",
+    "columns": {
+      "blip": "Blip",
+      "status": "Status",
+      "quadrant": "Quadrant",
+      "ring": "Ring",
+      "updated": "Updated",
+      "actions": "Actions"
+    }
+  },
+  "emptyState": {
+    "heading": "No blips yet",
+    "description": "Add the first tool suggestion or seed the starter radar.",
+    "seedRestricted": "Seeding is restricted to PowerUsers and Admins."
+  },
+  "coworkerReview": {
+    "title": "Pending blips from coworkers",
+    "reviewPlaceholder": "Optional review note",
+    "openDetail": "Open detail",
+    "emptyState": "No coworker submissions are waiting for review."
+  },
+  "toasts": {
+    "approved": {
+      "title": "Blip approved",
+      "description": "{name} is now visible on the radar."
+    },
+    "approvalFailed": {
+      "title": "Approval failed",
+      "description": "The review action could not be saved."
+    },
+    "returnedToDraft": {
+      "title": "Blip returned to draft",
+      "description": "{name} was sent back for revision."
+    },
+    "reviewFailed": {
+      "title": "Review failed",
+      "description": "The rejection action could not be saved."
+    },
+    "seeded": {
+      "title": "Radar seeded",
+      "description": "Added {items} blips and {tags} tags."
+    },
+    "seedFailed": {
+      "title": "Seed failed",
+      "description": "Starter radar data could not be written to Firestore."
+    }
+  },
+  "authError": {
+    "heading": "Company sign-in required",
+    "description": "Sign in with your Greenberry Google account to access the dashboard and workflow queues."
+  }
+}

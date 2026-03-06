@@ -1,0 +1,59 @@
+{
+  "meta": {
+    "title": "AI Tooling Radar | Agency Knowledge",
+    "description": "Internal tech radar for tracking AI models, coding assistants, and generative agents."
+  },
+  "branding": {
+    "companyName": "Greenberry",
+    "tagline": "Design for Progress"
+  },
+  "navigation": {
+    "radar": "Radar",
+    "dashboard": "Dashboard",
+    "experiences": "Experiences",
+    "proposeTool": "Propose Tool",
+    "signIn": "Sign In"
+  },
+  "auth": {
+    "companySignInRequired": "Company sign-in required",
+    "goToSignIn": "Go to Sign In",
+    "signInRequired": "Sign-in required",
+    "signInRequiredDescription": "You must be signed in with a company account.",
+    "profileAlt": "Profile",
+    "memberFallback": "Member"
+  },
+  "common": {
+    "unassigned": "Unassigned",
+    "pendingReview": "Pending review",
+    "blips": "blips",
+    "new": "NEW",
+    "return": "Return",
+    "view": "View",
+    "edit": "Edit",
+    "approve": "Approve",
+    "sendToDraft": "Send to Draft",
+    "openDashboard": "Open Dashboard",
+    "loadingDashboardData": "Loading dashboard data..."
+  },
+  "labels": {
+    "role": "Role",
+    "visibleBlips": "Visible blips",
+    "pendingCoworkerReview": "Pending coworker review",
+    "sustainability": "Sustainability",
+    "security": "Security",
+    "securityGdpr": "Security & GDPR",
+    "ethics": "Ethics",
+    "origin": "Origin",
+    "overview": "Overview",
+    "pricing": "Pricing",
+    "relatedExperiences": "Related Experiences",
+    "strategicPulse": "Strategic Pulse",
+    "lifecycleData": "Lifecycle Data",
+    "activity": "Activity",
+    "owner": "Owner",
+    "created": "Created",
+    "submitted": "Submitted",
+    "openVendorLink": "Open Vendor Link",
+    "flexibleBilling": "Flexible billing"
+  }
+}

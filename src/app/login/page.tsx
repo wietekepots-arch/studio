@@ -67,9 +67,13 @@ export default function LoginPage(): React.ReactElement {
         typeof error === "object" && error && "code" in error
           ? String(error.code)
           : null;
+      const currentHostname =
+        typeof window === "undefined" ? "this domain" : window.location.hostname;
       const description =
         code === "auth/operation-not-allowed"
           ? "Enable Google sign-in in Firebase Authentication before continuing."
+          : code === "auth/unauthorized-domain"
+            ? `Add ${currentHostname} to Firebase Authentication -> Settings -> Authorized domains.`
           : "Google sign-in could not be started. Please try again.";
 
       toast({

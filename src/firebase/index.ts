@@ -5,21 +5,23 @@ import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
+function hasFirebaseHostingDefaults(): boolean {
+  return typeof (globalThis as { __FIREBASE_DEFAULTS__?: unknown }).__FIREBASE_DEFAULTS__ !== "undefined";
+}
+
 function initializeFirebaseApp(): FirebaseApp {
-  if (typeof window === "undefined") {
+  if (!hasFirebaseHostingDefaults()) {
     return initializeApp(firebaseConfig);
   }
 
   try {
-    // Attempt to initialize via Firebase App Hosting environment variables.
+    // Firebase App Hosting injects runtime defaults for zero-argument initialization.
     return initializeApp();
-  } catch (e) {
-    // Only warn in production because it's normal to use the firebaseConfig to initialize
-    // during development.
+  } catch (error) {
     if (process.env.NODE_ENV === "production") {
       console.warn(
         "Automatic initialization failed. Falling back to firebase config object.",
-        e
+        error
       );
     }
 

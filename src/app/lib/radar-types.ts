@@ -10,6 +10,16 @@ export interface UserProfile {
   updatedAt?: number;
 }
 
+export interface RoleAssignment {
+  uid: string;
+  email: string;
+  role: Role;
+  createdAt?: number;
+  createdBy?: string;
+  updatedAt?: number;
+  updatedBy?: string;
+}
+
 export interface RadarConfig {
   quadrants: string[];
   rings: string[];

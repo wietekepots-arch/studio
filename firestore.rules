@@ -21,10 +21,29 @@ service cloud.firestore {
         && exists(/databases/$(database)/documents/userProfiles/$(request.auth.uid));
     }
 
-    function getUserRole() {
+    function hasRoleAssignment() {
+      return isCompanyUser()
+        && exists(/databases/$(database)/documents/roleAssignments/$(request.auth.uid));
+    }
+
+    function getStoredProfileRole() {
       return hasProfile()
         ? get(/databases/$(database)/documents/userProfiles/$(request.auth.uid)).data.role
         : null;
+    }
+
+    function getAssignedRole() {
+      return hasRoleAssignment()
+        ? get(/databases/$(database)/documents/roleAssignments/$(request.auth.uid)).data.role
+        : null;
+    }
+
+    function getInitialProfileRole() {
+      return hasRoleAssignment() ? getAssignedRole() : 'Member';
+    }
+
+    function getUserRole() {
+      return hasRoleAssignment() ? getAssignedRole() : getStoredProfileRole();
     }
 
     function isPowerUser() {
@@ -79,7 +98,7 @@ service cloud.firestore {
         && isOwner(userId)
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.email == request.auth.token.email
-        && request.resource.data.role == 'Member';
+        && request.resource.data.role == getInitialProfileRole();
       allow update: if isCompanyUser()
         && (
           isAdmin()
@@ -91,6 +110,26 @@ service cloud.firestore {
           )
         );
       allow delete: if isAdmin();
+    }
+
+    match /roleAssignments/{userId} {
+      allow get: if isCompanyUser() && (isOwner(userId) || isPowerUser());
+      allow list: if isAdmin();
+      allow create: if isCompanyUser()
+        && (
+          (
+            isAdmin()
+            && request.resource.data.uid == userId
+          )
+          || (
+            isOwner(userId)
+            && !hasRoleAssignment()
+            && request.resource.data.uid == request.auth.uid
+            && request.resource.data.email == request.auth.token.email
+            && request.resource.data.role == getStoredProfileRole()
+          )
+        );
+      allow update, delete: if isAdmin();
     }
 
     match /quadrants/{quadrantId} {

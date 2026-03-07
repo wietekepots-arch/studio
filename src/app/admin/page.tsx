@@ -4,12 +4,15 @@ import React from "react";
 import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
 import { useAppUser } from "@/components/app/AppUserProvider";
+import { RoleAssignmentsManager } from "@/components/admin/RoleAssignmentsManager";
 import { SharedProfilesAdmin } from "@/components/admin/SharedProfilesAdmin";
 import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
+import { useFirestore } from "@/firebase";
 
 export default function AdminPage(): React.ReactElement {
-  const { authUser, canReview, hasCompanyAccess, isLoading } = useAppUser();
+  const db = useFirestore();
+  const { authUser, canReview, hasCompanyAccess, isAdmin, isLoading } = useAppUser();
 
   if (isLoading) {
     return (
@@ -32,14 +35,14 @@ export default function AdminPage(): React.ReactElement {
           </div>
           <div className="space-y-3">
             <h1 className="text-5xl font-black tracking-tighter">
-              Company sign-in required
+              Inloggen met Greenberry-account vereist
             </h1>
             <p className="max-w-xl text-lg font-medium text-muted-foreground">
-              Sign in with your Greenberry account to manage shared radar profiles.
+              Log in met je Greenberry-account om gedeelde radarprofielen te beheren.
             </p>
           </div>
           <Button asChild className="rounded-full px-8">
-            <Link href="/login">Go to Sign In</Link>
+            <Link href="/login">Naar inloggen</Link>
           </Button>
         </div>
       </div>
@@ -51,12 +54,12 @@ export default function AdminPage(): React.ReactElement {
       <div className="min-h-screen bg-background">
         <Navbar />
         <div className="container mx-auto flex min-h-[70vh] flex-col items-center justify-center gap-4 px-6 text-center">
-          <h1 className="text-4xl font-black">Admin access required</h1>
+          <h1 className="text-4xl font-black">Adminrechten vereist</h1>
           <p className="max-w-xl text-muted-foreground">
-            Only PowerUsers and Admins can manage provider and family defaults.
+            Alleen PowerUsers en Admins mogen provider- en family-profielen beheren.
           </p>
           <Button asChild className="rounded-full px-8">
-            <Link href="/dashboard">Back to Dashboard</Link>
+            <Link href="/dashboard">Terug naar dashboard</Link>
           </Button>
         </div>
       </div>
@@ -66,7 +69,8 @@ export default function AdminPage(): React.ReactElement {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <main className="container mx-auto max-w-7xl px-6 py-12">
+      <main className="container mx-auto max-w-7xl space-y-10 px-6 py-12">
+        {isAdmin ? <RoleAssignmentsManager db={db} /> : null}
         <SharedProfilesAdmin />
       </main>
     </div>

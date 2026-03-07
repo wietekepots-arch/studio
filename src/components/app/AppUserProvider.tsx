@@ -8,10 +8,10 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { doc, runTransaction } from "firebase/firestore";
+import { doc, runTransaction, setDoc } from "firebase/firestore";
 import { signOut, User } from "firebase/auth";
 import { useAuth, useDoc, useFirestore, useMemoFirebase, useUser } from "@/firebase";
-import { Role, UserProfile } from "@/app/lib/radar-types";
+import { Role, RoleAssignment, UserProfile } from "@/app/lib/radar-types";
 import {
   canReviewBlips,
   isAdminRole,
@@ -41,8 +41,13 @@ export function AppUserProvider({
   const db = useFirestore();
   const { user, isUserLoading } = useUser();
   const [isEnsuringProfile, setIsEnsuringProfile] = useState(false);
+  const [isEnsuringRoleAssignment, setIsEnsuringRoleAssignment] = useState(false);
   const isSigningOutRef = useRef(false);
   const isCompanyUser = isCompanyEmail(user?.email);
+
+  function isRole(value: unknown): value is Role {
+    return value === "Member" || value === "PowerUser" || value === "Admin";
+  }
 
   const profileRef = useMemoFirebase(() => {
     if (!db || !user || !isCompanyUser) {
@@ -51,12 +56,24 @@ export function AppUserProvider({
 
     return doc(db, "userProfiles", user.uid);
   }, [db, user, isCompanyUser]);
+  const roleAssignmentRef = useMemoFirebase(() => {
+    if (!db || !user || !isCompanyUser) {
+      return null;
+    }
+
+    return doc(db, "roleAssignments", user.uid);
+  }, [db, user, isCompanyUser]);
 
   const {
     data: profileDocument,
     isLoading: isProfileLoading,
     error: profileError,
   } = useDoc<UserProfile>(profileRef);
+  const {
+    data: roleAssignmentDocument,
+    isLoading: isRoleAssignmentLoading,
+    error: roleAssignmentError,
+  } = useDoc<RoleAssignment>(roleAssignmentRef);
 
   useEffect(() => {
     if (isUserLoading || !user || isCompanyUser || isSigningOutRef.current) {
@@ -74,10 +91,13 @@ export function AppUserProvider({
       !user ||
       !isCompanyUser ||
       isProfileLoading ||
+      isRoleAssignmentLoading ||
       profileError ||
+      roleAssignmentError ||
       profileDocument ||
       isEnsuringProfile ||
-      !profileRef
+      !profileRef ||
+      !roleAssignmentRef
     ) {
       return;
     }
@@ -90,11 +110,15 @@ export function AppUserProvider({
         return;
       }
 
+      const currentRoleAssignment = await transaction.get(roleAssignmentRef);
+      const assignedRole = currentRoleAssignment.data()?.role;
+      const initialRole = isRole(assignedRole) ? assignedRole : "Member";
+
       transaction.set(profileRef, {
         uid: user.uid,
         displayName: user.displayName || user.email?.split("@")[0] || "Member",
         email: user.email || "",
-        role: "Member",
+        role: initialRole,
         team: "",
         createdAt: Date.now(),
         updatedAt: Date.now(),
@@ -107,19 +131,72 @@ export function AppUserProvider({
     isCompanyUser,
     isEnsuringProfile,
     isProfileLoading,
+    isRoleAssignmentLoading,
     profileError,
+    roleAssignmentError,
     profileDocument,
     profileRef,
+    roleAssignmentRef,
     user,
   ]);
 
+  useEffect(() => {
+    if (
+      !user ||
+      !isCompanyUser ||
+      isProfileLoading ||
+      isRoleAssignmentLoading ||
+      profileError ||
+      roleAssignmentError ||
+      !profileDocument ||
+      roleAssignmentDocument ||
+      isEnsuringRoleAssignment ||
+      !roleAssignmentRef ||
+      profileDocument.role === "Member"
+    ) {
+      return;
+    }
+
+    setIsEnsuringRoleAssignment(true);
+    const now = Date.now();
+
+    void setDoc(
+      roleAssignmentRef,
+      {
+        uid: user.uid,
+        email: user.email || profileDocument.email || "",
+        role: profileDocument.role,
+        createdAt: now,
+        createdBy: user.uid,
+        updatedAt: now,
+        updatedBy: user.uid,
+      } satisfies RoleAssignment,
+      { merge: true },
+    ).finally(() => {
+      setIsEnsuringRoleAssignment(false);
+    });
+  }, [
+    isCompanyUser,
+    isEnsuringRoleAssignment,
+    isProfileLoading,
+    isRoleAssignmentLoading,
+    profileDocument,
+    profileError,
+    roleAssignmentDocument,
+    roleAssignmentError,
+    roleAssignmentRef,
+    user,
+  ]);
+
+  const resolvedRole = roleAssignmentDocument?.role || profileDocument?.role || null;
   const profile = profileDocument
     ? {
         ...profileDocument,
         uid: profileDocument.uid || user?.uid || "",
+        role: resolvedRole || profileDocument.role,
       }
     : null;
-  const role = profile?.role || null;
+  const role = resolvedRole;
   const hasCompanyAccess = Boolean(user && isCompanyUser && profile);
 
   const value = useMemo<AppUserContextValue>(() => {
@@ -127,7 +204,12 @@ export function AppUserProvider({
       authUser: user,
       profile,
       role,
-      isLoading: isUserLoading || isProfileLoading || isEnsuringProfile,
+      isLoading:
+        isUserLoading ||
+        isProfileLoading ||
+        isRoleAssignmentLoading ||
+        isEnsuringProfile ||
+        isEnsuringRoleAssignment,
       hasCompanyAccess,
       canReview: canReviewBlips(role),
       isAdmin: isAdminRole(role),
@@ -135,7 +217,9 @@ export function AppUserProvider({
   }, [
     hasCompanyAccess,
     isEnsuringProfile,
+    isEnsuringRoleAssignment,
     isProfileLoading,
+    isRoleAssignmentLoading,
     isUserLoading,
     profile,
     role,

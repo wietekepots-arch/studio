@@ -38,14 +38,14 @@ export function SharedProfilesAdmin(): React.ReactElement {
     <div className="space-y-10">
       <div className="space-y-4">
         <div className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">
-          Shared Governance Profiles
+          Gedeelde governanceprofielen
         </div>
         <h1 className="text-6xl font-black uppercase leading-none tracking-tighter">
-          Provider and <span className="text-primary">Family Defaults</span>
+          Provider- en <span className="text-primary">family-standaarden</span>
         </h1>
         <p className="max-w-3xl text-lg font-medium text-muted-foreground">
-          Manage the shared origin, security, sustainability, and ethics defaults
-          inherited by model families and individual blips.
+          Beheer de gedeelde standaardwaarden voor herkomst, security,
+          sustainability en ethics die door families en blips worden overgenomen.
         </p>
       </div>
 
@@ -75,22 +75,22 @@ export function SharedProfilesAdmin(): React.ReactElement {
         <Card className="border-none bg-secondary/20 shadow-none">
           <CardHeader>
             <CardTitle className="text-[10px] font-black uppercase tracking-[0.25em] text-primary">
-              Resolution Order
+              Resolutievolgorde
             </CardTitle>
           </CardHeader>
           <CardContent className="text-lg font-black tracking-tight">
-            Item Override → Family → Provider
+            Blip-override → Family → Provider
           </CardContent>
         </Card>
       </div>
 
       <Alert className="rounded-[2rem] border-primary/10 bg-primary/5">
         <ShieldCheck className="h-4 w-4 text-primary" />
-        <AlertTitle>How inheritance works</AlertTitle>
+        <AlertTitle>Hoe overerving werkt</AlertTitle>
         <AlertDescription>
-          Provider records define the broad defaults. Family records only need
-          values that differ. Blips should override shared fields only when a
-          specific version genuinely diverges from its family.
+          Providers bepalen de brede standaardwaarden. Families vullen alleen
+          in wat afwijkt. Blips horen gedeelde velden alleen te overschrijven
+          als een specifieke variant echt afwijkt van zijn family.
         </AlertDescription>
       </Alert>
 

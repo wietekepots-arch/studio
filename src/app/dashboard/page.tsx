@@ -438,6 +438,17 @@ export default function DashboardPage(): React.ReactElement {
                               </Link>
                             </Button>
                           ) : null}
+                          {canReview && item.status === "Pending" ? (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              disabled={actionItemId === item.id}
+                              onClick={() => handleApprove(item)}
+                            >
+                              <CheckCircle2 className="mr-2 h-4 w-4" />
+                              Approve
+                            </Button>
+                          ) : null}
                         </div>
                       </TableCell>
                     </TableRow>

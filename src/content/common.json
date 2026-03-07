@@ -1,0 +1,60 @@
+{
+  "meta": {
+    "title": "AI Tooling Radar | Greenberry",
+    "description": "Interne toolradar voor AI-platformen, werkvormen en praktijkervaringen."
+  },
+  "branding": {
+    "companyName": "Greenberry",
+    "tagline": "Design for Progress"
+  },
+  "navigation": {
+    "radar": "Radar",
+    "dashboard": "Dashboard",
+    "experiences": "Ervaringen",
+    "proposeTool": "Tool voorstellen",
+    "signIn": "Inloggen"
+  },
+  "auth": {
+    "companySignInRequired": "Inloggen vereist",
+    "goToSignIn": "Ga naar inloggen",
+    "signInRequired": "Inloggen vereist",
+    "signInRequiredDescription": "Je moet ingelogd zijn met een bedrijfsaccount.",
+    "profileAlt": "Profiel",
+    "memberFallback": "Member"
+  },
+  "common": {
+    "unassigned": "Niet toegewezen",
+    "pendingReview": "Nog te verifieren",
+    "blips": "blips",
+    "new": "NIEUW",
+    "return": "Terug",
+    "view": "Bekijken",
+    "edit": "Bewerken",
+    "approve": "Goedkeuren",
+    "sendToDraft": "Terug naar concept",
+    "openDashboard": "Open dashboard",
+    "loadingDashboardData": "Dashboard wordt geladen..."
+  },
+  "labels": {
+    "role": "Rol",
+    "visibleBlips": "Zichtbare blips",
+    "pendingCoworkerReview": "Reviews van collega's",
+    "sustainability": "Duurzaamheid",
+    "security": "Security",
+    "securityGdpr": "Security & certificering",
+    "ethics": "Ethiek",
+    "origin": "Herkomst",
+    "overview": "Overzicht",
+    "pricing": "Prijs",
+    "relatedExperiences": "Ervaringen",
+    "lifecycleData": "Levenscyclus",
+    "activity": "Activiteit",
+    "owner": "Eigenaar",
+    "created": "Aangemaakt",
+    "submitted": "Ingediend",
+    "openVendorLink": "Bekijk link",
+    "flexibleBilling": "Flexibele facturatie",
+    "provider": "Provider",
+    "family": "Familie"
+  }
+}

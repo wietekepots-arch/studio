@@ -1,0 +1,26 @@
+[
+  {
+    "id": "creation-craft",
+    "name": "Bouwen & Prototypen",
+    "order": 0,
+    "description": "Appbouwers, coding-assistenten en prototypingtools waarmee teams sneller kunnen maken en valideren."
+  },
+  {
+    "id": "strategy-intelligence",
+    "name": "Modellen & Intelligentie",
+    "order": 1,
+    "description": "Foundation models, researchtools en AI-platformen voor redeneren, schrijven en synthese."
+  },
+  {
+    "id": "process-flow",
+    "name": "Workflow & Agents",
+    "order": 2,
+    "description": "AI-producten die samenwerking, automatisering en dagelijkse werkprocessen ondersteunen."
+  },
+  {
+    "id": "positive-impact",
+    "name": "Vertrouwen & Governance",
+    "order": 3,
+    "description": "Tools en platformen die helpen om privacy, beleid en organisatierisico's beheersbaar te houden."
+  }
+]

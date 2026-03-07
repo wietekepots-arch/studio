@@ -1,0 +1,46 @@
+[
+  {
+    "id": "anthropic",
+    "name": "Anthropic",
+    "order": 0,
+    "description": "Providerplatform voor Claude-modellen en Anthropic-workflows.",
+    "website": "https://www.anthropic.com",
+    "origin": "American",
+    "sustainabilityNotes": "Publieke duurzaamheidsinformatie moet nog worden geverifieerd.",
+    "securityNotes": "Controleer actuele enterprise-instellingen voor dataverwerking, retentie en workspacebeheer voor gebruik.",
+    "ethicsNotes": "Gebruik menselijke controle voor klantwerk en andere high-stakes output."
+  },
+  {
+    "id": "openai",
+    "name": "OpenAI",
+    "order": 1,
+    "description": "Algemeen AI-platform voor schrijven, redeneren, automatiseren en coderen.",
+    "website": "https://openai.com",
+    "origin": "American",
+    "sustainabilityNotes": "Publieke duurzaamheidsinformatie moet nog worden geverifieerd.",
+    "securityNotes": "Controleer actuele workspace-, retentie- en enterprise-instellingen voordat teams het platform breed gebruiken.",
+    "ethicsNotes": "Gebruik menselijke controle voor klantwerk en andere high-stakes output."
+  },
+  {
+    "id": "google",
+    "name": "Google",
+    "order": 2,
+    "description": "AI-platform rond Gemini-modellen en Google-verbonden workflows.",
+    "website": "https://ai.google",
+    "origin": "American",
+    "sustainabilityNotes": "Publieke duurzaamheidsinformatie moet nog worden geverifieerd.",
+    "securityNotes": "Controleer per product welke workspace-, toegangs- en dataverwerkingsinstellingen gelden.",
+    "ethicsNotes": "Gebruik menselijke controle voor klantwerk en andere high-stakes output."
+  },
+  {
+    "id": "mistral",
+    "name": "Mistral",
+    "order": 3,
+    "description": "Europees AI-platform dat relevant is voor regionaal gevoelige workflows.",
+    "website": "https://mistral.ai",
+    "origin": "European",
+    "sustainabilityNotes": "Publieke duurzaamheidsinformatie moet nog worden geverifieerd.",
+    "securityNotes": "Beoordeel actuele hostingopties, contractvoorwaarden en deploymentmogelijkheden voordat je het platform inzet.",
+    "ethicsNotes": "Gebruik menselijke controle voor klantwerk en andere high-stakes output."
+  }
+]

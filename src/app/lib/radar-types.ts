@@ -15,7 +15,36 @@ export interface RadarConfig {
   rings: string[];
 }
 
-export interface RadarConfigOption {
+export interface SeedMetadata {
+  seedManaged?: boolean;
+  seedVersion?: string;
+}
+
+export interface RadarLink {
+  label: string;
+  url: string;
+}
+
+export interface RadarSecurityReference {
+  label: string;
+  url?: string;
+  details?: string;
+}
+
+export interface RadarUseCase {
+  role: string;
+  summary: string;
+}
+
+export interface RadarModelEntry {
+  name: string;
+  familyId?: string;
+  summary: string;
+  vendorLink?: string;
+  benchmarkLinks?: RadarLink[];
+}
+
+export interface RadarConfigOption extends SeedMetadata {
   id: string;
   name: string;
   order: number;
@@ -26,10 +55,11 @@ export interface RadarSharedProfile {
   origin?: Origin;
   sustainabilityNotes?: string;
   securityNotes?: string;
+  securityCertifications?: RadarSecurityReference[];
   ethicsNotes?: string;
 }
 
-export interface RadarProvider extends RadarSharedProfile {
+export interface RadarProvider extends RadarSharedProfile, SeedMetadata {
   id: string;
   name: string;
   order: number;
@@ -37,7 +67,7 @@ export interface RadarProvider extends RadarSharedProfile {
   website?: string;
 }
 
-export interface RadarFamily extends RadarSharedProfile {
+export interface RadarFamily extends RadarSharedProfile, SeedMetadata {
   id: string;
   providerId: string;
   providerName?: string;
@@ -50,6 +80,7 @@ export type ItemStatus = "Draft" | "Pending" | "Approved" | "Archived";
 export type CostRange = "Free" | "Low" | "Medium" | "High";
 export type Origin = "European" | "American" | "Other";
 export type DataSensitivity = "Public" | "Internal" | "Client Confidential";
+export type RadarEntityType = "provider" | "product" | "workflow" | "governance";
 
 export interface PricingTier {
   name: string;
@@ -74,6 +105,8 @@ export interface RadarItem {
   name: string;
   shortDesc: string;
   notes: string;
+  entityType?: RadarEntityType;
+  useCases?: RadarUseCase[];
   quadrantId: number; // 0 to 3
   ringId: number;     // 0 to 3
   previousRingId?: number; // For tracking movement
@@ -85,12 +118,6 @@ export interface RadarItem {
   providerName?: string;
   familyId?: string;
   familyName?: string;
-  scores: {
-    maturity: number;
-    impact: number;
-    effort: number;
-    risk: number;
-  };
   costRange: CostRange;
   origin: Origin;
   originOverride?: Origin;
@@ -98,9 +125,16 @@ export interface RadarItem {
   sustainabilityNotesOverride?: string;
   securityNotes: string;
   securityNotesOverride?: string;
+  securityCertifications?: RadarSecurityReference[];
   ethicsNotes: string;
   ethicsNotesOverride?: string;
+  availabilitySummary?: string;
+  accessNotes?: string;
+  accessRequestUrl?: string;
   pricingTiers?: PricingTier[];
+  pricingSummary?: string;
+  pricingUrl?: string;
+  modelEntries?: RadarModelEntry[];
   links: string[];
   status: ItemStatus;
   submittedAt?: number;
@@ -115,6 +149,16 @@ export interface RadarItem {
   updatedBy: string;
   viewCount?: number;
   history?: HistoryEntry[];
+  seedManaged?: boolean;
+  seedVersion?: string;
+}
+
+export interface ExperienceToolContext {
+  itemId: string;
+  providerId?: string;
+  familyId?: string;
+  modelName?: string;
+  modelVersion?: string;
 }
 
 export interface Experience {
@@ -122,6 +166,7 @@ export interface Experience {
   title: string;
   summary: string;
   toolLinks: string[]; // RadarItem IDs
+  toolContexts?: ExperienceToolContext[];
   howUsed: string;
   promptsOrTemplates?: string;
   findings: string;
@@ -146,15 +191,15 @@ export interface Experience {
 
 export const DEFAULT_CONFIG: RadarConfig = {
   quadrants: [
-    "Build & Prototype",
-    "Models & Intelligence",
+    "Bouwen & Prototypen",
+    "Modellen & Intelligentie",
     "Workflow & Agents",
-    "Trust & Governance"
+    "Vertrouwen & Governance"
   ],
   rings: [
-    "Adopt",
-    "Trial",
-    "Assess",
-    "Hold"
+    "Inzetten",
+    "Uitproberen",
+    "Beoordelen",
+    "Parkeren"
   ]
 };

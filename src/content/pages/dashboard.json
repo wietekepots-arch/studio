@@ -1,0 +1,80 @@
+{
+  "sectionLabel": "Interne workflow",
+  "heading": "Radar",
+  "headingHighlight": "Dashboard",
+  "description": "Volg live blips, eigen inzendingen en reviews van collega's op een plek.",
+  "seed": {
+    "button": "Starter radar laden",
+    "reseedButton": "Starter radar opnieuw laden",
+    "resetButton": "Starter radar resetten",
+    "tooltip": "Starter radar laden",
+    "resetTooltip": "Starter radar resetten",
+    "restrictedMessage": "Starterdata kan alleen worden geladen door een PowerUser of Admin. Jouw rol is {role}.",
+    "restrictedTooltip": "Alleen PowerUsers en Admins kunnen starterdata laden.",
+    "confirmReset": "Starter radar resetten? Hiermee verwijder je bekende starterblips en laad je de nieuwste starterset opnieuw."
+  },
+  "table": {
+    "allBlips": "Alle blips",
+    "yourDashboard": "Jouw dashboard",
+    "allBlipsDescription": "Overzicht van alle radar-items, ongeacht status.",
+    "yourDashboardDescription": "Goedgekeurde radar-items en je eigen concepten of inzendingen.",
+    "suggestTool": "Tool voorstellen",
+    "columns": {
+      "blip": "Blip",
+      "status": "Status",
+      "quadrant": "Kwadrant",
+      "ring": "Ring",
+      "updated": "Bijgewerkt",
+      "actions": "Acties"
+    }
+  },
+  "emptyState": {
+    "heading": "Nog geen blips",
+    "description": "Voeg de eerste tool toe of laad de starter radar.",
+    "seedRestricted": "Starterdata laden is alleen toegestaan voor PowerUsers en Admins."
+  },
+  "coworkerReview": {
+    "title": "Blips van collega's in review",
+    "reviewPlaceholder": "Optionele reviewnotitie",
+    "openDetail": "Open detail",
+    "emptyState": "Er wachten geen inzendingen van collega's op review."
+  },
+  "toasts": {
+    "approved": {
+      "title": "Blip goedgekeurd",
+      "description": "{name} is nu zichtbaar op de radar."
+    },
+    "approvalFailed": {
+      "title": "Goedkeuren mislukt",
+      "description": "De reviewactie kon niet worden opgeslagen."
+    },
+    "returnedToDraft": {
+      "title": "Blip teruggezet naar concept",
+      "description": "{name} is teruggestuurd voor aanpassing."
+    },
+    "reviewFailed": {
+      "title": "Review mislukt",
+      "description": "De afwijzing kon niet worden opgeslagen."
+    },
+    "seeded": {
+      "title": "Starter radar geladen",
+      "description": "{items} blips, {providers} providers, {families} families, {tags} tags en {historyEntries} historie-items toegevoegd."
+    },
+    "seedFailed": {
+      "title": "Starterdata laden mislukt",
+      "description": "De starter radar kon niet naar Firestore worden geschreven."
+    },
+    "reset": {
+      "title": "Starter radar gereset",
+      "description": "{items} blips, {providers} providers, {families} families, {tags} tags en {historyEntries} historie-items opnieuw geladen."
+    },
+    "resetFailed": {
+      "title": "Reset mislukt",
+      "description": "De starter radar kon niet worden gereset."
+    }
+  },
+  "authError": {
+    "heading": "Inloggen vereist",
+    "description": "Log in met je Greenberry Google-account om het dashboard en de workflowqueues te openen."
+  }
+}

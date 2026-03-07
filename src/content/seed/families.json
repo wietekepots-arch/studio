@@ -1,0 +1,34 @@
+[
+  {
+    "id": "claude",
+    "providerId": "anthropic",
+    "providerName": "Anthropic",
+    "name": "Claude",
+    "order": 0,
+    "description": "Claude-familie voor redeneren, schrijven en coderen."
+  },
+  {
+    "id": "gpt",
+    "providerId": "openai",
+    "providerName": "OpenAI",
+    "name": "GPT",
+    "order": 1,
+    "description": "GPT-familie voor chat, redeneren en synthese."
+  },
+  {
+    "id": "codex",
+    "providerId": "openai",
+    "providerName": "OpenAI",
+    "name": "Codex",
+    "order": 2,
+    "description": "OpenAI-familie die specifiek is gericht op development-workflows."
+  },
+  {
+    "id": "gemini",
+    "providerId": "google",
+    "providerName": "Google",
+    "name": "Gemini",
+    "order": 3,
+    "description": "Gemini-familie voor multimodale en Google-verbonden workflows."
+  }
+]

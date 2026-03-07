@@ -32,26 +32,28 @@ const prompt = ai.definePrompt({
   name: 'itemCategorizationPrompt',
   input: {schema: ItemCategorizationInputSchema},
   output: {schema: ItemCategorizationOutputSchema},
-  prompt: `You are an expert in categorizing technology and methods for an agency's Tech Radar.
-Your task is to analyze a new radar item and suggest the most appropriate quadrant and a list of relevant tags.
+  prompt: `Je categoriseert technologie en werkwijzen voor een intern Tech Radar.
+Analyseer een nieuw radar-item en kies het best passende kwadrant plus relevante tags.
+De interface is Nederlandstalig, dus gebruik Nederlandse labels en Nederlandse generieke tags.
+Behoud product- en merknamen zoals ze officieel geschreven worden.
 
-The available quadrants are:
+Beschikbare kwadranten:
 {{#each availableQuadrants}}- {{this}}
 {{/each}}
 
-The item's details are:
-Item Name: {{{itemName}}}
-Item Description: {{{itemDescription}}}
+Details van het item:
+Naam: {{{itemName}}}
+Beschrijving: {{{itemDescription}}}
 
-Consider the following common tags for inspiration, but feel free to suggest new, relevant tags:
+Gebruik onderstaande tags als inspiratie, maar voeg gerust nieuwe relevante tags toe:
 {{#if availableTags}}
 {{#each availableTags}}- {{this}}
 {{/each}}
-{{else}}No specific tags provided as examples. Suggest relevant tags based on the item.{{/if}}
+{{else}}Er zijn geen voorbeeldtags opgegeven. Stel zelf passende tags voor op basis van het item.{{/if}}
 
-Based on the item's name and description, select exactly one quadrant from the 'availableQuadrants' list and suggest a list of relevant tags.
-The suggested quadrant MUST be one of the provided availableQuadrants.
-Ensure the output matches the specified JSON schema.`
+Kies exact een kwadrant uit de lijst 'availableQuadrants' en stel een lijst relevante tags voor.
+Het gekozen kwadrant MOET exact een van de opgegeven waarden zijn.
+Houd de output strikt aan het opgegeven JSON-schema.`
 });
 
 const itemCategorizationFlow = ai.defineFlow(

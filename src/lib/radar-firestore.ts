@@ -6,6 +6,8 @@ import {
   setDoc,
   updateDoc,
   writeBatch,
+  type DocumentData,
+  type DocumentReference,
   type Firestore,
 } from "firebase/firestore";
 import {
@@ -25,7 +27,12 @@ import {
   seedFamilies,
   seedProviders,
   getSeedTags,
+  legacySeedRadarItemIds,
+  legacySeedTagIds,
+  seedFamilyIds,
+  seedProviderIds,
   seedQuadrants,
+  seedRadarItemIds,
   seedRings,
 } from "@/lib/radar-seed";
 
@@ -46,6 +53,10 @@ interface OrderedNamedEntity {
   description?: string;
 }
 
+function hasJsonChanged(left: unknown, right: unknown): boolean {
+  return JSON.stringify(left ?? null) !== JSON.stringify(right ?? null);
+}
+
 function hasConfigOptionChanged(
   existingOption: Partial<RadarConfigOption> | undefined,
   nextOption: RadarConfigOption,
@@ -57,7 +68,9 @@ function hasConfigOptionChanged(
   return (
     existingOption.name !== nextOption.name ||
     existingOption.order !== nextOption.order ||
-    existingOption.description !== nextOption.description
+    existingOption.description !== nextOption.description ||
+    existingOption.seedManaged !== nextOption.seedManaged ||
+    existingOption.seedVersion !== nextOption.seedVersion
   );
 }
 
@@ -66,9 +79,12 @@ function hasSharedProfileChanged<
     origin?: string;
     sustainabilityNotes?: string;
     securityNotes?: string;
+    securityCertifications?: unknown;
     ethicsNotes?: string;
     providerId?: string;
     website?: string;
+    seedManaged?: boolean;
+    seedVersion?: string;
   },
 >(
   existingProfile: Partial<T> | undefined,
@@ -85,9 +101,15 @@ function hasSharedProfileChanged<
     existingProfile.origin !== nextProfile.origin ||
     existingProfile.sustainabilityNotes !== nextProfile.sustainabilityNotes ||
     existingProfile.securityNotes !== nextProfile.securityNotes ||
+    hasJsonChanged(
+      existingProfile.securityCertifications,
+      nextProfile.securityCertifications,
+    ) ||
     existingProfile.ethicsNotes !== nextProfile.ethicsNotes ||
     existingProfile.providerId !== nextProfile.providerId ||
-    existingProfile.website !== nextProfile.website
+    existingProfile.website !== nextProfile.website ||
+    existingProfile.seedManaged !== nextProfile.seedManaged ||
+    existingProfile.seedVersion !== nextProfile.seedVersion
   );
 }
 
@@ -207,13 +229,19 @@ export function resolveRadarSharedProfile(
   fallbackOrigin: RadarItem["origin"] = "Other",
 ): Pick<
   RadarItem,
-  "origin" | "sustainabilityNotes" | "securityNotes" | "ethicsNotes"
+  | "origin"
+  | "sustainabilityNotes"
+  | "securityNotes"
+  | "securityCertifications"
+  | "ethicsNotes"
 > {
   return {
     origin: family?.origin ?? provider?.origin ?? fallbackOrigin,
     sustainabilityNotes:
       family?.sustainabilityNotes ?? provider?.sustainabilityNotes ?? "",
     securityNotes: family?.securityNotes ?? provider?.securityNotes ?? "",
+    securityCertifications:
+      family?.securityCertifications ?? provider?.securityCertifications ?? [],
     ethicsNotes: family?.ethicsNotes ?? provider?.ethicsNotes ?? "",
   };
 }
@@ -252,6 +280,12 @@ export function resolveRadarItem(
       family?.securityNotes ??
       provider?.securityNotes ??
       item.securityNotes,
+    securityCertifications:
+      item.securityCertifications?.length
+        ? item.securityCertifications
+        : family?.securityCertifications ??
+          provider?.securityCertifications ??
+          [],
     ethicsNotes:
       item.ethicsNotesOverride ??
       family?.ethicsNotes ??
@@ -399,9 +433,133 @@ export async function reviewRadarItem(
   });
 }
 
+function shouldResetSeedDoc(
+  id: string,
+  data: { seedManaged?: boolean } | undefined,
+  ids: Set<string>,
+): boolean {
+  return ids.has(id) || Boolean(data?.seedManaged);
+}
+
+async function deleteDocumentRefs(
+  db: Firestore,
+  refs: Array<DocumentReference<unknown, DocumentData>>,
+): Promise<void> {
+  const chunkSize = 400;
+
+  for (let index = 0; index < refs.length; index += chunkSize) {
+    const batch = writeBatch(db);
+
+    for (const ref of refs.slice(index, index + chunkSize)) {
+      batch.delete(ref);
+    }
+
+    await batch.commit();
+  }
+}
+
+async function deleteItemHistories(
+  db: Firestore,
+  itemIds: string[],
+): Promise<void> {
+  const historyRefs: Array<DocumentReference<unknown, DocumentData>> = [];
+
+  for (const itemId of itemIds) {
+    const historyDocs = await getDocs(
+      collection(db, "radarItems", itemId, "itemHistory"),
+    );
+
+    historyRefs.push(...historyDocs.docs.map((entry) => entry.ref));
+  }
+
+  await deleteDocumentRefs(db, historyRefs);
+}
+
+async function resetStarterRadarCollections(
+  db: Firestore,
+  snapshots: {
+    quadrants: Awaited<ReturnType<typeof getDocs>>;
+    rings: Awaited<ReturnType<typeof getDocs>>;
+    providers: Awaited<ReturnType<typeof getDocs>>;
+    families: Awaited<ReturnType<typeof getDocs>>;
+    tags: Awaited<ReturnType<typeof getDocs>>;
+    items: Awaited<ReturnType<typeof getDocs>>;
+  },
+): Promise<void> {
+  const quadrantIds = new Set(seedQuadrants.map((item) => item.id));
+  const ringIds = new Set(seedRings.map((item) => item.id));
+  const providerIds = new Set(seedProviderIds);
+  const familyIds = new Set(seedFamilyIds);
+  const tagIds = new Set([...legacySeedTagIds, ...getSeedTags().map((item) => item.id)]);
+  const itemIds = new Set([...legacySeedRadarItemIds, ...seedRadarItemIds]);
+
+  const itemDocsToDelete = snapshots.items.docs.filter((entry) =>
+    shouldResetSeedDoc(
+      entry.id,
+      entry.data() as { seedManaged?: boolean } | undefined,
+      itemIds,
+    ),
+  );
+  const itemIdsToDelete = itemDocsToDelete.map((entry) => entry.id);
+
+  await deleteItemHistories(db, itemIdsToDelete);
+
+  await deleteDocumentRefs(db, [
+    ...snapshots.quadrants.docs
+      .filter((entry) =>
+        shouldResetSeedDoc(
+          entry.id,
+          entry.data() as { seedManaged?: boolean } | undefined,
+          quadrantIds,
+        ),
+      )
+      .map((entry) => entry.ref),
+    ...snapshots.rings.docs
+      .filter((entry) =>
+        shouldResetSeedDoc(
+          entry.id,
+          entry.data() as { seedManaged?: boolean } | undefined,
+          ringIds,
+        ),
+      )
+      .map((entry) => entry.ref),
+    ...snapshots.providers.docs
+      .filter((entry) =>
+        shouldResetSeedDoc(
+          entry.id,
+          entry.data() as { seedManaged?: boolean } | undefined,
+          providerIds,
+        ),
+      )
+      .map((entry) => entry.ref),
+    ...snapshots.families.docs
+      .filter((entry) =>
+        shouldResetSeedDoc(
+          entry.id,
+          entry.data() as { seedManaged?: boolean } | undefined,
+          familyIds,
+        ),
+      )
+      .map((entry) => entry.ref),
+    ...snapshots.tags.docs
+      .filter((entry) =>
+        shouldResetSeedDoc(
+          entry.id,
+          entry.data() as { seedManaged?: boolean } | undefined,
+          tagIds,
+        ),
+      )
+      .map((entry) => entry.ref),
+    ...itemDocsToDelete.map((entry) => entry.ref),
+  ]);
+}
+
 export async function seedRadarCollections(
   db: Firestore,
   userProfile: UserProfile,
+  options?: {
+    reset?: boolean;
+  },
 ): Promise<SeedResult> {
   const [
     quadrantDocs,
@@ -418,6 +576,19 @@ export async function seedRadarCollections(
     getDocs(collection(db, "tags")),
     getDocs(collection(db, "radarItems")),
   ]);
+
+  if (options?.reset) {
+    await resetStarterRadarCollections(db, {
+      quadrants: quadrantDocs,
+      rings: ringDocs,
+      providers: providerDocs,
+      families: familyDocs,
+      tags: tagDocs,
+      items: radarItemDocs,
+    });
+
+    return seedRadarCollections(db, userProfile);
+  }
 
   const existingQuadrants = new Map(
     quadrantDocs.docs.map((item) => [

@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Experience } from "@/app/lib/radar-types";
+import experiencesContent from "@/content/pages/experiences.json";
 
 export default function ExperiencesPage(): React.ReactElement {
   const [search, setSearch] = useState("");
@@ -99,18 +100,17 @@ export default function ExperiencesPage(): React.ReactElement {
           </div>
           <div className="max-w-md space-y-4">
             <h1 className="text-5xl font-black tracking-tighter">
-              Locked Experiences
+              {experiencesContent.locked.heading}
             </h1>
             <p className="text-xl font-medium text-muted-foreground">
-              Real-world AI insights are reserved for authenticated Greenberry
-              members.
+              {experiencesContent.locked.description}
             </p>
           </div>
           <Button
             asChild
             className="h-14 rounded-full px-10 text-lg font-black uppercase tracking-widest shadow-xl shadow-primary/20"
           >
-            <Link href="/login">Sign In to View Feed</Link>
+            <Link href="/login">{experiencesContent.locked.button}</Link>
           </Button>
         </div>
       </div>
@@ -125,12 +125,13 @@ export default function ExperiencesPage(): React.ReactElement {
         <div className="mb-16 flex flex-col items-start justify-between gap-8 md:flex-row md:items-end">
           <div className="space-y-4">
             <h1 className="text-7xl font-black uppercase leading-none tracking-tighter text-foreground">
-              The <span className="text-primary">Collective</span> <br />
-              Experience
+              {experiencesContent.heading}{" "}
+              <span className="text-primary">{experiencesContent.headingHighlight}</span>{" "}
+              <br />
+              {experiencesContent.headingEnd}
             </h1>
             <p className="max-w-2xl text-2xl font-medium text-muted-foreground">
-              Real-world pulses from our studios. See how we&apos;re pushing
-              boundaries with AI.
+              {experiencesContent.description}
             </p>
           </div>
           <Button
@@ -139,7 +140,7 @@ export default function ExperiencesPage(): React.ReactElement {
           >
             <Link href="/experiences/new">
               <Plus className="h-6 w-6" />
-              Log an Experience
+              {experiencesContent.logExperience}
             </Link>
           </Button>
         </div>
@@ -148,12 +149,12 @@ export default function ExperiencesPage(): React.ReactElement {
           <div className="space-y-10 lg:col-span-3">
             <div className="space-y-4">
               <div className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">
-                Search Pulses
+                {experiencesContent.search.label}
               </div>
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
-                  placeholder="Keywords..."
+                  placeholder={experiencesContent.search.placeholder}
                   className="h-14 rounded-2xl border-2 border-border bg-secondary/20 pl-12 focus:border-primary"
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
@@ -163,7 +164,7 @@ export default function ExperiencesPage(): React.ReactElement {
 
             <div className="space-y-6">
               <div className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">
-                Filter by Studio
+                {experiencesContent.filter.label}
               </div>
               <div className="flex flex-col gap-2">
                 <Button
@@ -171,7 +172,7 @@ export default function ExperiencesPage(): React.ReactElement {
                   className="h-12 justify-start rounded-xl px-4 font-bold"
                   onClick={() => setActiveTeam(undefined)}
                 >
-                  All Studios
+                  {experiencesContent.filter.allStudios}
                 </Button>
                 {teams.map((team) => (
                   <Button
@@ -235,7 +236,7 @@ export default function ExperiencesPage(): React.ReactElement {
                                 variant="secondary"
                                 className="rounded-full bg-secondary/40 px-3 py-1 text-[10px] font-bold uppercase"
                               >
-                                Tool Pulled
+                                {experiencesContent.card.toolPulled}
                               </Badge>
                             ))}
                             {experience.toolLinks.length > 2 ? (
@@ -243,7 +244,7 @@ export default function ExperiencesPage(): React.ReactElement {
                                 variant="outline"
                                 className="text-[10px] font-bold opacity-50"
                               >
-                                +{experience.toolLinks.length - 2} more
+                                {experiencesContent.card.more.replace("{count}", String(experience.toolLinks.length - 2))}
                               </Badge>
                             ) : null}
                           </div>
@@ -269,14 +270,13 @@ export default function ExperiencesPage(): React.ReactElement {
                   <Sparkles className="h-10 w-10" />
                 </div>
                 <h3 className="text-3xl font-black tracking-tight">
-                  No experiences found
+                  {experiencesContent.emptyState.heading}
                 </h3>
                 <p className="mx-auto max-w-sm text-muted-foreground">
-                  Be the first to log a strategic pulse with your favorite AI
-                  tools.
+                  {experiencesContent.emptyState.description}
                 </p>
                 <Button asChild variant="outline" className="rounded-full border-2 px-8">
-                  <Link href="/experiences/new">Start Logging</Link>
+                  <Link href="/experiences/new">{experiencesContent.emptyState.button}</Link>
                 </Button>
               </div>
             )}

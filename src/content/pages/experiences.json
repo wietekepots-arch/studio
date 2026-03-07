@@ -1,0 +1,29 @@
+{
+  "heading": "De",
+  "headingHighlight": "Collectieve",
+  "headingEnd": "Ervaring",
+  "description": "Praktijkverhalen uit onze teams. Zie hoe we AI echt inzetten in het werk.",
+  "logExperience": "Ervaring delen",
+  "search": {
+    "label": "Zoek ervaringen",
+    "placeholder": "Zoekwoorden..."
+  },
+  "filter": {
+    "label": "Filter op team",
+    "allStudios": "Alle teams"
+  },
+  "card": {
+    "toolPulled": "Gebruikte tool",
+    "more": "+{count} meer"
+  },
+  "emptyState": {
+    "heading": "Geen ervaringen gevonden",
+    "description": "Wees de eerste die een praktijkervaring deelt met je favoriete AI-tools.",
+    "button": "Ervaring toevoegen"
+  },
+  "locked": {
+    "heading": "Ervaringen afgeschermd",
+    "description": "Praktische AI-inzichten zijn alleen zichtbaar voor ingelogde Greenberry-collega's.",
+    "button": "Log in om de feed te bekijken"
+  }
+}

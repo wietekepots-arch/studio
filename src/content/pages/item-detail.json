@@ -1,0 +1,50 @@
+{
+  "returnToDashboard": "Terug naar dashboard",
+  "backToDashboard": "Terug naar dashboard",
+  "blipNotFound": "Blip niet gevonden",
+  "latestReviewNote": "Laatste reviewnotitie",
+  "sections": {
+    "usefulFor": "Geschikt voor",
+    "availabilityAccess": "Beschikbaarheid & toegang",
+    "availability": "Beschikbaarheid",
+    "access": "Toegang",
+    "governanceSnapshot": "Governance in het kort",
+    "modelsBenchmarks": "Modellen & benchmarks",
+    "pricingDetails": "Prijsdetails",
+    "vendorLink": "Vendorlink",
+    "viewPricing": "Bekijk prijsinformatie",
+    "responsibilityNotes": "Verantwoord gebruik"
+  },
+  "fallbacks": {
+    "notSet": "Nog niet vastgelegd.",
+    "needsVerification": "Nog te verifieren",
+    "noExperiences": "Er zijn nog geen gepubliceerde ervaringen gekoppeld aan deze blip.",
+    "noHistory": "Er is nog geen activiteit vastgelegd.",
+    "requestAccess": "Toegang aanvragen",
+    "openLink": "Bekijk link",
+    "flexibleBilling": "Flexibele facturatie"
+  },
+  "statuses": {
+    "Approved": "Goedgekeurd",
+    "Pending": "In review",
+    "Draft": "Concept",
+    "Archived": "Gearchiveerd"
+  },
+  "origins": {
+    "European": "Europees",
+    "American": "Amerikaans",
+    "Other": "Overig"
+  },
+  "historyActions": {
+    "submitted": "Ingediend",
+    "updated": "Bijgewerkt",
+    "resubmitted": "Opnieuw ingediend",
+    "approved": "Goedgekeurd",
+    "archived": "Gearchiveerd",
+    "sent back to draft": "Terug naar concept"
+  },
+  "authError": {
+    "heading": "Inloggen vereist",
+    "description": "Log in met je Greenberry Google-account om blips te bekijken."
+  }
+}

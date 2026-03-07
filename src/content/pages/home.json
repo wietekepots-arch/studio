@@ -1,0 +1,25 @@
+{
+  "sectionLabel": "Live Firestore Radar",
+  "heading": "Design for",
+  "headingHighlight": "Progress",
+  "description": "Goedgekeurde toolblips uit de Greenberry-workflow, zichtbaar zodra een reviewer ze publiceert.",
+  "searchPlaceholder": "Zoek in de radar...",
+  "entireNetwork": "Hele netwerk",
+  "focus": "Focus:",
+  "radarNotInitialized": {
+    "heading": "Radar nog niet geinitialiseerd",
+    "description": "Laad eerst de starterconfiguratie en goedgekeurde items via het dashboard om de radar te activeren."
+  },
+  "latestPulses": {
+    "title": "Laatste bewegingen",
+    "emptyState": "Wacht op de eerste strategische beweging..."
+  },
+  "governance": {
+    "title": "Governance-workflow",
+    "description": "Alleen goedgekeurde blips verschijnen op de radar. Suggesties en reviewqueues vind je in het dashboard."
+  },
+  "authError": {
+    "heading": "Inloggen vereist",
+    "description": "Log in met je Greenberry-account om de live radar te bekijken."
+  }
+}

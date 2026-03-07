@@ -1,0 +1,35 @@
+{
+  "heading": "Kom in het",
+  "headingHighlight": "Netwerk",
+  "description": "Log in met je Greenberry Google-account om de radar te bekijken, tools voor te stellen en de nieuwste bewegingen te reviewen.",
+  "features": {
+    "internalWorkflow": {
+      "label": "Interne workflow",
+      "description": "Toegang alleen voor collega's, met rolgebaseerde reviewqueues."
+    },
+    "googleOnly": {
+      "label": "Alleen Google",
+      "description": "Toegang is beperkt tot geverifieerde `@greenberry.nl`-accounts."
+    }
+  },
+  "signInCard": {
+    "title": "Inloggen",
+    "description": "Gebruik je zakelijke Google-account.",
+    "button": "Doorgaan met Google"
+  },
+  "accessPolicy": {
+    "label": "Toegangsbeleid",
+    "description": "Persoonlijke Gmail-accounts, gasttoegang en legacy wachtwoord-login zijn voor deze workflow uitgeschakeld."
+  },
+  "toasts": {
+    "accessDenied": {
+      "title": "Toegang geweigerd",
+      "description": "Log in met je officiele @greenberry.nl-account."
+    },
+    "signInFailed": {
+      "title": "Inloggen mislukt",
+      "operationNotAllowed": "Activeer Google Sign-In in Firebase Authentication voordat je verdergaat.",
+      "fallback": "Google Sign-In kon niet worden gestart. Probeer het opnieuw."
+    }
+  }
+}

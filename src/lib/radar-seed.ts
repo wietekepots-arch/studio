@@ -1,152 +1,167 @@
 "use client";
 
 import {
-  RadarConfigOption,
-  RadarFamily,
-  RadarItem,
-  RadarProvider,
+  type RadarConfigOption,
+  type RadarFamily,
+  type RadarItem,
+  type RadarProvider,
+  type SeedMetadata,
 } from "@/app/lib/radar-types";
+import seedFamiliesData from "@/content/seed/families.json";
+import seedItemsData from "@/content/seed/items.json";
+import seedProvidersData from "@/content/seed/providers.json";
+import seedQuadrantsData from "@/content/seed/quadrants.json";
+import seedRingsData from "@/content/seed/rings.json";
 
-export const seedQuadrants: RadarConfigOption[] = [
-  {
-    id: "creation-craft",
-    name: "Build & Prototype",
-    order: 0,
-    description:
-      "App builders, coding copilots, and rapid concepting tools used to make and ship faster.",
-  },
-  {
-    id: "strategy-intelligence",
-    name: "Models & Intelligence",
-    order: 1,
-    description:
-      "Foundation models, chat systems, and research tools used for reasoning, search, and synthesis.",
-  },
-  {
-    id: "process-flow",
-    name: "Workflow & Agents",
-    order: 2,
-    description:
-      "AI-native products that automate delivery, execution, and day-to-day team workflows.",
-  },
-  {
-    id: "positive-impact",
-    name: "Trust & Governance",
-    order: 3,
-    description:
-      "Privacy-first, compliant, or policy-shaping tools that help reduce organisational risk.",
-  },
-];
+export const STARTER_SEED_VERSION = "v2";
 
-export const seedRings: RadarConfigOption[] = [
-  {
-    id: "adopt",
-    name: "Adopt",
-    order: 0,
-  },
-  {
-    id: "trial",
-    name: "Trial",
-    order: 1,
-  },
-  {
-    id: "assess",
-    name: "Assess",
-    order: 2,
-  },
-  {
-    id: "hold",
-    name: "Hold",
-    order: 3,
-  },
-];
+function withSeedMetadata<T extends object>(entity: T): T & SeedMetadata {
+  return {
+    ...entity,
+    seedManaged: true,
+    seedVersion: STARTER_SEED_VERSION,
+  };
+}
 
-export const seedProviders: RadarProvider[] = [
-  {
-    id: "anthropic",
-    name: "Anthropic",
-    order: 0,
-    description: "Anthropic foundation models and coding products.",
-    website: "https://anthropic.com",
-    origin: "American",
-    sustainabilityNotes: "Optimised inference efficiency.",
-    securityNotes: "Full privacy compliance.",
-    ethicsNotes: "",
-  },
-  {
-    id: "openai",
-    name: "OpenAI",
-    order: 1,
-    description: "OpenAI chat, reasoning, and coding model line.",
-    website: "https://openai.com",
-    origin: "American",
-    sustainabilityNotes: "Standard inference footprint.",
-    securityNotes: "Enterprise privacy controls available.",
-    ethicsNotes: "",
-  },
-  {
-    id: "google",
-    name: "Google",
-    order: 2,
-    description: "Google AI model and infrastructure platform.",
-    website: "https://ai.google",
-    origin: "American",
-    sustainabilityNotes: "Google infrastructure, carbon-neutral goals.",
-    securityNotes: "Google Workspace integration, standard compliance.",
-    ethicsNotes: "",
-  },
-];
+function slugifyTag(tag: string): string {
+  return tag.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
 
-export const seedFamilies: RadarFamily[] = [
-  {
-    id: "claude",
-    providerId: "anthropic",
-    providerName: "Anthropic",
-    name: "Claude",
-    order: 0,
-    description: "Anthropic's Claude model family.",
-  },
-  {
-    id: "gpt",
-    providerId: "openai",
-    providerName: "OpenAI",
-    name: "GPT",
-    order: 1,
-    description: "OpenAI's general chat and reasoning models.",
-  },
-  {
-    id: "codex",
-    providerId: "openai",
-    providerName: "OpenAI",
-    name: "Codex",
-    order: 2,
-    description: "OpenAI's coding-focused model line.",
-  },
-  {
-    id: "gemini",
-    providerId: "google",
-    providerName: "Google",
-    name: "Gemini",
-    order: 3,
-    description: "Google's Gemini multimodal model family.",
-  },
-];
+type SeedConfigOptionData = Omit<RadarConfigOption, "seedManaged" | "seedVersion">;
+type SeedProviderData = Omit<RadarProvider, "seedManaged" | "seedVersion">;
+type SeedFamilyData = Omit<RadarFamily, "seedManaged" | "seedVersion">;
+type SeedRadarItemInput = Omit<
+  RadarItem,
+  | "ownerId"
+  | "ownerName"
+  | "status"
+  | "submittedAt"
+  | "submittedBy"
+  | "reviewedAt"
+  | "reviewedBy"
+  | "reviewComment"
+  | "lastReviewedAt"
+  | "createdAt"
+  | "createdBy"
+  | "updatedAt"
+  | "updatedBy"
+  | "history"
+  | "providerName"
+  | "familyName"
+  | "originOverride"
+  | "sustainabilityNotesOverride"
+  | "securityNotesOverride"
+  | "ethicsNotesOverride"
+  | "seedManaged"
+  | "seedVersion"
+>;
 
-interface SeedRadarItemInput
-  extends Omit<
-    RadarItem,
-    | "providerName"
-    | "familyName"
-    | "originOverride"
-    | "sustainabilityNotesOverride"
-    | "securityNotesOverride"
-    | "ethicsNotesOverride"
-  > {}
+type SeedResolvedRadarItem = Omit<
+  RadarItem,
+  | "ownerId"
+  | "ownerName"
+  | "status"
+  | "submittedAt"
+  | "submittedBy"
+  | "reviewedAt"
+  | "reviewedBy"
+  | "reviewComment"
+  | "lastReviewedAt"
+  | "createdAt"
+  | "createdBy"
+  | "updatedAt"
+  | "updatedBy"
+  | "history"
+>;
+
+export const seedQuadrants: RadarConfigOption[] = (
+  seedQuadrantsData as SeedConfigOptionData[]
+).map((item) => withSeedMetadata(item));
+
+export const seedRings: RadarConfigOption[] = (
+  seedRingsData as SeedConfigOptionData[]
+).map((item) => withSeedMetadata(item));
+
+export const seedProviders: RadarProvider[] = (
+  seedProvidersData as SeedProviderData[]
+).map((item) => withSeedMetadata(item));
+
+export const seedFamilies: RadarFamily[] = (
+  seedFamiliesData as SeedFamilyData[]
+).map((item) => withSeedMetadata(item));
+
+export const legacySeedRadarItemIds = [
+  "claude-3-5",
+  "claude-4-6",
+  "transcriptor",
+  "firebase-studio",
+  "gpt-5-4",
+  "gpt-5-3",
+  "gpt-5-3-codex",
+  "gpt-5-1-codex-mini",
+  "gemini-3-flash",
+  "antigravity",
+  "cursor",
+  "copilot",
+  "github-copilot",
+  "claude-code",
+  "warp",
+  "windsurf",
+  "v0",
+  "perplexity",
+  "mistral-le-chat",
+  "lovable",
+] as const;
+
+const legacySeedTagNames = [
+  "AI Editor",
+  "Agentic",
+  "Anthropic",
+  "App Builder",
+  "Audio",
+  "CLI",
+  "Cloud",
+  "Coding",
+  "Creative",
+  "Emerging",
+  "EU",
+  "European",
+  "Fast",
+  "Flagship",
+  "Full-stack",
+  "GDPR",
+  "GitHub",
+  "GitLab",
+  "Google",
+  "IDE",
+  "Legacy",
+  "Lightweight",
+  "LLM",
+  "Microsoft",
+  "Multimodal",
+  "OpenAI",
+  "Privacy-First",
+  "Productivity",
+  "Prototyping",
+  "React",
+  "Research",
+  "Search",
+  "Terminal",
+  "UI",
+  "Vercel",
+] as const;
+
+export const legacySeedTagIds = legacySeedTagNames.map((tag) => slugifyTag(tag));
+export const seedProviderIds = seedProviders.map((item) => item.id);
+export const seedFamilyIds = seedFamilies.map((item) => item.id);
+export const seedRadarItemIds = (seedItemsData as SeedRadarItemInput[]).map(
+  (item) => item.id,
+);
 
 const seedProvidersById = new Map(seedProviders.map((item) => [item.id, item]));
 const seedFamiliesById = new Map(seedFamilies.map((item) => [item.id, item]));
 
-function buildSeedRadarItem(input: SeedRadarItemInput): RadarItem {
+function buildSeedRadarItem(input: SeedRadarItemInput): SeedResolvedRadarItem {
   const family = input.familyId ? seedFamiliesById.get(input.familyId) : undefined;
   const providerId = input.providerId || family?.providerId;
   const provider = providerId ? seedProvidersById.get(providerId) : undefined;
@@ -155,15 +170,19 @@ function buildSeedRadarItem(input: SeedRadarItemInput): RadarItem {
     family?.sustainabilityNotes ?? provider?.sustainabilityNotes;
   const inheritedSecurity = family?.securityNotes ?? provider?.securityNotes;
   const inheritedEthics = family?.ethicsNotes ?? provider?.ethicsNotes;
+  const inheritedSecurityReferences =
+    family?.securityCertifications ?? provider?.securityCertifications;
   const origin = input.origin ?? inheritedOrigin ?? "Other";
   const sustainabilityNotes =
     input.sustainabilityNotes ?? inheritedSustainability ?? "";
   const securityNotes = input.securityNotes ?? inheritedSecurity ?? "";
   const ethicsNotes = input.ethicsNotes ?? inheritedEthics ?? "";
+  const securityCertifications =
+    input.securityCertifications ?? inheritedSecurityReferences ?? [];
   const providerName = provider?.name;
   const familyName = family?.name;
 
-  return {
+  return withSeedMetadata({
     ...input,
     ...(providerId ? { providerId } : {}),
     ...(providerName ? { providerName } : {}),
@@ -173,6 +192,7 @@ function buildSeedRadarItem(input: SeedRadarItemInput): RadarItem {
     sustainabilityNotes,
     securityNotes,
     ethicsNotes,
+    securityCertifications,
     ...(providerId && input.origin !== undefined && input.origin !== inheritedOrigin
       ? { originOverride: input.origin }
       : {}),
@@ -191,740 +211,32 @@ function buildSeedRadarItem(input: SeedRadarItemInput): RadarItem {
     input.ethicsNotes !== inheritedEthics
       ? { ethicsNotesOverride: input.ethicsNotes }
       : {}),
-  };
+  });
 }
 
 export function getSeedRadarItems(now = Date.now()): RadarItem[] {
-  const items: SeedRadarItemInput[] = [
-    {
-      id: "claude-3-5",
-      name: "Claude 3.5 Sonnet",
-      shortDesc: "High-performance reasoning model.",
-      notes:
-        "Legacy support for existing workflows. Superseded by newer models for primary production.",
-      quadrantId: 0,
-      ringId: 3,
-      previousRingId: 0,
-      tags: ["LLM", "Anthropic", "Legacy"],
-      team: "Creative Tech",
-      ownerId: "seed-admin",
-      ownerName: "Greenberry Admin",
-      providerId: "anthropic",
-      familyId: "claude",
-      scores: { maturity: 5, impact: 3, effort: 1, risk: 2 },
-      costRange: "Medium",
-      origin: "American",
-      sustainabilityNotes: "Standard inference footprint.",
-      securityNotes: "Enterprise safety verified.",
-      ethicsNotes: "",
-      links: ["https://anthropic.com"],
-      status: "Approved",
-      lastReviewedAt: now,
-      reviewedAt: now,
-      reviewedBy: "seed-admin",
-      createdAt: now - 30_000_000,
-      updatedAt: now,
-      createdBy: "seed-admin",
-      updatedBy: "seed-admin",
-      pricingTiers: [
-        {
-          name: "Individual",
-          cost: "Free",
-          features: ["Basic usage", "Standard support"],
-        },
-        {
-          name: "Pro",
-          cost: "$20",
-          billing: "per user/month",
-          features: ["High limits", "Priority access", "Latest features"],
-        },
-      ],
-      history: [
-        {
-          id: "h1",
-          itemId: "claude-3-5",
-          action: "Moved to Hold",
-          note: "Outdated model",
-          createdAt: now,
-          createdBy: "seed-admin",
-        },
-      ],
-    },
-    {
-      id: "claude-4-6",
-      name: "Claude 4.6 Sonnet",
-      shortDesc: "Latest intelligence flagship.",
-      notes:
-        "Primary recommendation for reasoning and complex coding tasks.",
-      quadrantId: 1,
-      ringId: 0,
-      tags: ["LLM", "Anthropic", "Flagship"],
-      team: "Creative Tech",
-      ownerId: "seed-admin",
-      ownerName: "Greenberry Admin",
-      providerId: "anthropic",
-      familyId: "claude",
-      scores: { maturity: 5, impact: 5, effort: 1, risk: 2 },
-      costRange: "Medium",
-      origin: "American",
-      sustainabilityNotes: "Optimized efficiency metrics.",
-      securityNotes: "Full privacy compliance.",
-      ethicsNotes: "",
-      links: ["https://anthropic.com"],
-      status: "Approved",
-      lastReviewedAt: now,
-      reviewedAt: now,
-      reviewedBy: "seed-admin",
-      createdAt: now,
-      updatedAt: now,
-      createdBy: "seed-admin",
-      updatedBy: "seed-admin",
-      pricingTiers: [
-        {
-          name: "Developer",
-          cost: "Usage-based",
-          billing: "per million tokens",
-          features: ["API Access", "Enterprise Support"],
-        },
-        {
-          name: "Pro",
-          cost: "$20",
-          billing: "per month",
-          features: ["Unlimited Web Access", "Team workspace"],
-        },
-      ],
-    },
-    {
-      id: "transcriptor",
-      name: "Transcriptor",
-      shortDesc: "Meeting intelligence for studios.",
-      notes:
-        "Excellent support for Dutch language and studio-wide integration.",
-      quadrantId: 2,
-      ringId: 0,
-      tags: ["Audio", "Productivity", "EU"],
-      team: "Operations",
-      ownerId: "seed-admin",
-      ownerName: "Greenberry Admin",
-      scores: { maturity: 4, impact: 4, effort: 2, risk: 1 },
-      costRange: "Low",
-      origin: "European",
-      sustainabilityNotes: "Low energy overhead.",
-      securityNotes: "EU-hosted, GDPR compliant.",
-      ethicsNotes: "",
-      links: [],
-      status: "Approved",
-      lastReviewedAt: now,
-      reviewedAt: now,
-      reviewedBy: "seed-admin",
-      createdAt: now - 1_000_000,
-      updatedAt: now,
-      createdBy: "seed-admin",
-      updatedBy: "seed-admin",
-      pricingTiers: [
-        {
-          name: "Starter",
-          cost: "Free",
-          features: ["10h per month", "Basic export"],
-        },
-        {
-          name: "Business",
-          cost: "€12",
-          billing: "per seat/month",
-          features: ["Unlimited hours", "Team sharing", "AI Summaries"],
-        },
-      ],
-    },
-    {
-      id: "firebase-studio",
-      name: "Firebase Studio",
-      shortDesc: "Rapid prototyping environment.",
-      notes: "Our core platform for building internal tools and MVPs.",
-      quadrantId: 0,
-      ringId: 0,
-      tags: ["Prototyping", "Cloud"],
-      team: "Engineering",
-      ownerId: "seed-admin",
-      ownerName: "Greenberry Admin",
-      scores: { maturity: 5, impact: 5, effort: 1, risk: 1 },
-      costRange: "Medium",
-      origin: "American",
-      sustainabilityNotes: "Google Cloud managed.",
-      securityNotes: "Enterprise Auth & Rules.",
-      ethicsNotes: "",
-      links: [],
-      status: "Approved",
-      lastReviewedAt: now,
-      reviewedAt: now,
-      reviewedBy: "seed-admin",
-      createdAt: now - 5_000_000,
-      updatedAt: now,
-      createdBy: "seed-admin",
-      updatedBy: "seed-admin",
-    },
-    {
-      id: "gpt-5-4",
-      name: "GPT-5.4",
-      shortDesc: "OpenAI flagship reasoning model.",
-      notes:
-        "Top-tier general intelligence from OpenAI. Strong for complex strategy and analysis tasks.",
-      quadrantId: 1,
-      ringId: 0,
-      tags: ["LLM", "OpenAI", "Flagship"],
-      team: "Creative Tech",
-      ownerId: "seed-admin",
-      ownerName: "Greenberry Admin",
-      providerId: "openai",
-      familyId: "gpt",
-      scores: { maturity: 5, impact: 5, effort: 1, risk: 2 },
-      costRange: "Medium",
-      origin: "American",
-      sustainabilityNotes: "Standard inference footprint.",
-      securityNotes: "Enterprise privacy controls available.",
-      ethicsNotes: "",
-      links: [],
-      status: "Approved",
-      lastReviewedAt: now,
-      reviewedAt: now,
-      reviewedBy: "seed-admin",
-      createdAt: now,
-      updatedAt: now,
-      createdBy: "seed-admin",
-      updatedBy: "seed-admin",
-      pricingTiers: [
-        {
-          name: "Plus",
-          cost: "$20",
-          billing: "per month",
-          features: ["High limits", "Latest models"],
-        },
-        {
-          name: "API",
-          cost: "Usage-based",
-          billing: "per million tokens",
-          features: ["Full API access"],
-        },
-      ],
-    },
-    {
-      id: "gpt-5-3",
-      name: "GPT-5.3",
-      shortDesc: "Previous OpenAI flagship.",
-      notes:
-        "Strong general model, largely superseded by GPT-5.4 for primary tasks.",
-      quadrantId: 1,
-      ringId: 1,
-      tags: ["LLM", "OpenAI"],
-      team: "Creative Tech",
-      ownerId: "seed-admin",
-      ownerName: "Greenberry Admin",
-      providerId: "openai",
-      familyId: "gpt",
-      scores: { maturity: 5, impact: 4, effort: 1, risk: 2 },
-      costRange: "Medium",
-      origin: "American",
-      sustainabilityNotes: "Standard inference footprint.",
-      securityNotes: "Enterprise privacy controls available.",
-      ethicsNotes: "",
-      links: [],
-      status: "Approved",
-      lastReviewedAt: now,
-      reviewedAt: now,
-      reviewedBy: "seed-admin",
-      createdAt: now - 8_000_000,
-      updatedAt: now,
-      createdBy: "seed-admin",
-      updatedBy: "seed-admin",
-    },
-    {
-      id: "gpt-5-3-codex",
-      name: "GPT-5.3 Codex",
-      shortDesc: "OpenAI code-optimised model.",
-      notes:
-        "Specialised for code generation and refactoring. Evaluate against Claude Code and Cursor for daily dev workflows.",
-      quadrantId: 0,
-      ringId: 1,
-      tags: ["LLM", "OpenAI", "Coding"],
-      team: "Engineering",
-      ownerId: "seed-admin",
-      ownerName: "Greenberry Admin",
-      providerId: "openai",
-      familyId: "codex",
-      scores: { maturity: 4, impact: 4, effort: 1, risk: 2 },
-      costRange: "Medium",
-      origin: "American",
-      sustainabilityNotes: "Standard inference footprint.",
-      securityNotes: "Enterprise privacy controls available.",
-      ethicsNotes: "",
-      links: [],
-      status: "Approved",
-      lastReviewedAt: now,
-      reviewedAt: now,
-      reviewedBy: "seed-admin",
-      createdAt: now - 2_000_000,
-      updatedAt: now,
-      createdBy: "seed-admin",
-      updatedBy: "seed-admin",
-    },
-    {
-      id: "gpt-5-1-codex-mini",
-      name: "GPT-5.1 Codex mini",
-      shortDesc: "Lightweight coding model from OpenAI.",
-      notes:
-        "Fast, low-cost code completions. Assess for high-volume or embedded coding use cases.",
-      quadrantId: 0,
-      ringId: 2,
-      tags: ["LLM", "OpenAI", "Coding", "Lightweight"],
-      team: "Engineering",
-      ownerId: "seed-admin",
-      ownerName: "Greenberry Admin",
-      providerId: "openai",
-      familyId: "codex",
-      scores: { maturity: 3, impact: 3, effort: 1, risk: 2 },
-      costRange: "Low",
-      origin: "American",
-      sustainabilityNotes: "Smaller model, lower energy footprint.",
-      securityNotes: "Enterprise privacy controls available.",
-      ethicsNotes: "",
-      links: [],
-      status: "Approved",
-      lastReviewedAt: now,
-      reviewedAt: now,
-      reviewedBy: "seed-admin",
-      createdAt: now - 1_000_000,
-      updatedAt: now,
-      createdBy: "seed-admin",
-      updatedBy: "seed-admin",
-    },
-    {
-      id: "gemini-3-flash",
-      name: "Gemini 3 Flash",
-      shortDesc: "Google's fast multimodal model.",
-      notes:
-        "Excellent speed-to-intelligence ratio. Useful for high-throughput or real-time creative workflows.",
-      quadrantId: 1,
-      ringId: 1,
-      tags: ["LLM", "Google", "Multimodal", "Fast"],
-      team: "Creative Tech",
-      ownerId: "seed-admin",
-      ownerName: "Greenberry Admin",
-      providerId: "google",
-      familyId: "gemini",
-      scores: { maturity: 4, impact: 4, effort: 1, risk: 2 },
-      costRange: "Low",
-      origin: "American",
-      sustainabilityNotes: "Google infrastructure, carbon-neutral goals.",
-      securityNotes: "Google Workspace integration, standard compliance.",
-      ethicsNotes: "",
-      links: [],
-      status: "Approved",
-      lastReviewedAt: now,
-      reviewedAt: now,
-      reviewedBy: "seed-admin",
-      createdAt: now - 1_500_000,
-      updatedAt: now,
-      createdBy: "seed-admin",
-      updatedBy: "seed-admin",
-    },
-    {
-      id: "antigravity",
-      name: "Antigravity",
-      shortDesc: "Emerging AI creative tool.",
-      notes:
-        "Under assessment for fit in creative workflows. Monitor for production readiness.",
-      quadrantId: 0,
-      ringId: 2,
-      tags: ["Creative", "Emerging"],
-      team: "Creative Tech",
-      ownerId: "seed-admin",
-      ownerName: "Greenberry Admin",
-      scores: { maturity: 2, impact: 3, effort: 2, risk: 3 },
-      costRange: "Low",
-      origin: "Other",
-      sustainabilityNotes: "Under review.",
-      securityNotes: "Under review.",
-      ethicsNotes: "",
-      links: [],
-      status: "Approved",
-      lastReviewedAt: now,
-      reviewedAt: now,
-      reviewedBy: "seed-admin",
-      createdAt: now,
-      updatedAt: now,
-      createdBy: "seed-admin",
-      updatedBy: "seed-admin",
-    },
-    {
-      id: "cursor",
-      name: "Cursor",
-      shortDesc: "AI-first code editor.",
-      notes:
-        "Strong adoption across engineering. Deep codebase awareness and multi-file editing make it a preferred daily driver.",
-      quadrantId: 2,
-      ringId: 0,
-      tags: ["IDE", "Coding", "AI Editor"],
-      team: "Engineering",
-      ownerId: "seed-admin",
-      ownerName: "Greenberry Admin",
-      scores: { maturity: 5, impact: 5, effort: 1, risk: 1 },
-      costRange: "Low",
-      origin: "American",
-      sustainabilityNotes: "Lightweight desktop app.",
-      securityNotes: "Privacy mode available, SOC 2 compliant.",
-      ethicsNotes: "",
-      links: [],
-      status: "Approved",
-      lastReviewedAt: now,
-      reviewedAt: now,
-      reviewedBy: "seed-admin",
-      createdAt: now - 10_000_000,
-      updatedAt: now,
-      createdBy: "seed-admin",
-      updatedBy: "seed-admin",
-      pricingTiers: [
-        {
-          name: "Hobby",
-          cost: "Free",
-          features: ["2000 completions/month", "Basic AI"],
-        },
-        {
-          name: "Pro",
-          cost: "$20",
-          billing: "per month",
-          features: ["Unlimited completions", "Advanced models", "Privacy mode"],
-        },
-      ],
-    },
-    {
-      id: "copilot",
-      name: "GitHub Copilot",
-      shortDesc: "AI pair programmer by GitHub.",
-      notes:
-        "Deeply integrated into VS Code. Trial alongside Cursor to compare daily developer experience.",
-      quadrantId: 2,
-      ringId: 1,
-      tags: ["IDE", "Coding", "Microsoft", "GitHub"],
-      team: "Engineering",
-      ownerId: "seed-admin",
-      ownerName: "Greenberry Admin",
-      scores: { maturity: 5, impact: 4, effort: 1, risk: 2 },
-      costRange: "Low",
-      origin: "American",
-      sustainabilityNotes: "Microsoft Azure infrastructure.",
-      securityNotes: "Enterprise plan with IP indemnification available.",
-      ethicsNotes: "",
-      links: [],
-      status: "Approved",
-      lastReviewedAt: now,
-      reviewedAt: now,
-      reviewedBy: "seed-admin",
-      createdAt: now - 7_000_000,
-      updatedAt: now,
-      createdBy: "seed-admin",
-      updatedBy: "seed-admin",
-      pricingTiers: [
-        {
-          name: "Individual",
-          cost: "$10",
-          billing: "per month",
-          features: ["Unlimited completions", "Chat"],
-        },
-        {
-          name: "Business",
-          cost: "$19",
-          billing: "per seat/month",
-          features: ["Policy management", "Audit logs"],
-        },
-      ],
-    },
-    {
-      id: "claude-code",
-      name: "Claude Code",
-      shortDesc: "Anthropic's agentic CLI for development.",
-      notes:
-        "Terminal-native AI coding agent. Excellent for complex multi-step engineering tasks and codebase-wide changes.",
-      quadrantId: 2,
-      ringId: 0,
-      tags: ["CLI", "Coding", "Anthropic", "Agentic"],
-      team: "Engineering",
-      ownerId: "seed-admin",
-      ownerName: "Greenberry Admin",
-      providerId: "anthropic",
-      familyId: "claude",
-      scores: { maturity: 4, impact: 5, effort: 1, risk: 2 },
-      costRange: "Medium",
-      origin: "American",
-      sustainabilityNotes: "Optimised inference efficiency.",
-      securityNotes: "Full privacy compliance, no training on prompts.",
-      ethicsNotes: "",
-      links: [],
-      status: "Approved",
-      lastReviewedAt: now,
-      reviewedAt: now,
-      reviewedBy: "seed-admin",
-      createdAt: now,
-      updatedAt: now,
-      createdBy: "seed-admin",
-      updatedBy: "seed-admin",
-      pricingTiers: [
-        {
-          name: "Pro",
-          cost: "$20",
-          billing: "per month",
-          features: ["Unlimited Claude Code usage", "Latest models"],
-        },
-        {
-          name: "API",
-          cost: "Usage-based",
-          billing: "per million tokens",
-          features: ["Direct API access"],
-        },
-      ],
-    },
-    {
-      id: "warp",
-      name: "Warp",
-      shortDesc: "AI-powered terminal.",
-      notes:
-        "Modern terminal with built-in AI assistance for commands and workflows. Trial for engineering teams.",
-      quadrantId: 2,
-      ringId: 1,
-      tags: ["Terminal", "CLI", "Productivity"],
-      team: "Engineering",
-      ownerId: "seed-admin",
-      ownerName: "Greenberry Admin",
-      scores: { maturity: 4, impact: 3, effort: 1, risk: 1 },
-      costRange: "Low",
-      origin: "American",
-      sustainabilityNotes: "Lightweight native app.",
-      securityNotes: "Optional local mode, no cloud logging.",
-      ethicsNotes: "",
-      links: [],
-      status: "Approved",
-      lastReviewedAt: now,
-      reviewedAt: now,
-      reviewedBy: "seed-admin",
-      createdAt: now - 3_000_000,
-      updatedAt: now,
-      createdBy: "seed-admin",
-      updatedBy: "seed-admin",
-      pricingTiers: [
-        {
-          name: "Free",
-          cost: "Free",
-          features: ["Core terminal", "AI commands"],
-        },
-        {
-          name: "Team",
-          cost: "$15",
-          billing: "per seat/month",
-          features: ["Shared workflows", "Team settings"],
-        },
-      ],
-    },
-    {
-      id: "windsurf",
-      name: "Windsurf",
-      shortDesc: "Agentic AI IDE by Codeium.",
-      notes:
-        "Cursor alternative with strong agentic \"flows\". Assess for teams exploring alternatives to Cursor.",
-      quadrantId: 2,
-      ringId: 2,
-      tags: ["IDE", "Coding", "Agentic"],
-      team: "Engineering",
-      ownerId: "seed-admin",
-      ownerName: "Greenberry Admin",
-      scores: { maturity: 3, impact: 4, effort: 1, risk: 2 },
-      costRange: "Low",
-      origin: "American",
-      sustainabilityNotes: "Lightweight desktop app.",
-      securityNotes: "SOC 2 compliant, privacy mode available.",
-      ethicsNotes: "",
-      links: [],
-      status: "Approved",
-      lastReviewedAt: now,
-      reviewedAt: now,
-      reviewedBy: "seed-admin",
-      createdAt: now - 500_000,
-      updatedAt: now,
-      createdBy: "seed-admin",
-      updatedBy: "seed-admin",
-    },
-    {
-      id: "v0",
-      name: "v0 by Vercel",
-      shortDesc: "Prompt-to-UI component generator.",
-      notes:
-        "Rapidly generates React/Tailwind UI from natural language. Strong fit for prototyping and design handoff acceleration.",
-      quadrantId: 0,
-      ringId: 1,
-      tags: ["UI", "Prototyping", "Vercel", "React"],
-      team: "Creative Tech",
-      ownerId: "seed-admin",
-      ownerName: "Greenberry Admin",
-      scores: { maturity: 3, impact: 4, effort: 1, risk: 2 },
-      costRange: "Low",
-      origin: "American",
-      sustainabilityNotes: "Vercel edge infrastructure.",
-      securityNotes: "Standard web security, no sensitive data required.",
-      ethicsNotes: "",
-      links: [],
-      status: "Approved",
-      lastReviewedAt: now,
-      reviewedAt: now,
-      reviewedBy: "seed-admin",
-      createdAt: now - 2_500_000,
-      updatedAt: now,
-      createdBy: "seed-admin",
-      updatedBy: "seed-admin",
-      pricingTiers: [
-        {
-          name: "Free",
-          cost: "Free",
-          features: ["200 tokens/day", "Basic generation"],
-        },
-        {
-          name: "Premium",
-          cost: "$20",
-          billing: "per month",
-          features: ["Unlimited tokens", "Private projects"],
-        },
-      ],
-    },
-    {
-      id: "perplexity",
-      name: "Perplexity",
-      shortDesc: "AI-powered research and search.",
-      notes:
-        "Fast, cited answers for research tasks. Good for competitive intelligence and brief discovery.",
-      quadrantId: 1,
-      ringId: 1,
-      tags: ["Research", "Search", "Productivity"],
-      team: "Creative Tech",
-      ownerId: "seed-admin",
-      ownerName: "Greenberry Admin",
-      scores: { maturity: 4, impact: 3, effort: 1, risk: 2 },
-      costRange: "Low",
-      origin: "American",
-      sustainabilityNotes: "Standard cloud footprint.",
-      securityNotes: "No enterprise privacy guarantee on free tier.",
-      ethicsNotes: "",
-      links: [],
-      status: "Approved",
-      lastReviewedAt: now,
-      reviewedAt: now,
-      reviewedBy: "seed-admin",
-      createdAt: now - 4_000_000,
-      updatedAt: now,
-      createdBy: "seed-admin",
-      updatedBy: "seed-admin",
-      pricingTiers: [
-        {
-          name: "Free",
-          cost: "Free",
-          features: ["Unlimited searches", "Basic Pro queries"],
-        },
-        {
-          name: "Pro",
-          cost: "$20",
-          billing: "per month",
-          features: [
-            "600 Pro queries/day",
-            "File upload",
-            "API access",
-          ],
-        },
-      ],
-    },
-    {
-      id: "mistral-le-chat",
-      name: "Mistral Le Chat",
-      shortDesc: "European LLM with strong privacy story.",
-      notes:
-        "EU-hosted, GDPR-native. Strong candidate for workflows requiring data residency or client privacy commitments.",
-      quadrantId: 3,
-      ringId: 2,
-      tags: ["LLM", "European", "Privacy-First", "GDPR"],
-      team: "Creative Tech",
-      ownerId: "seed-admin",
-      ownerName: "Greenberry Admin",
-      scores: { maturity: 3, impact: 3, effort: 2, risk: 1 },
-      costRange: "Low",
-      origin: "European",
-      sustainabilityNotes: "European data centres, EU Green Deal aligned.",
-      securityNotes: "GDPR compliant, EU data residency guaranteed.",
-      ethicsNotes: "",
-      links: [],
-      status: "Approved",
-      lastReviewedAt: now,
-      reviewedAt: now,
-      reviewedBy: "seed-admin",
-      createdAt: now - 1_200_000,
-      updatedAt: now,
-      createdBy: "seed-admin",
-      updatedBy: "seed-admin",
-      pricingTiers: [
-        {
-          name: "Free",
-          cost: "Free",
-          features: ["Generous limits", "Web access"],
-        },
-        {
-          name: "Pro",
-          cost: "€14.99",
-          billing: "per month",
-          features: [
-            "Unlimited messages",
-            "All models",
-            "Priority access",
-          ],
-        },
-      ],
-    },
-    {
-      id: "lovable",
-      name: "Lovable",
-      shortDesc: "AI app builder from prompt to production.",
-      notes:
-        "Generates full-stack apps from natural language. Assess for rapid client prototyping and MVP delivery.",
-      quadrantId: 2,
-      ringId: 2,
-      tags: ["App Builder", "Prototyping", "Full-stack"],
-      team: "Engineering",
-      ownerId: "seed-admin",
-      ownerName: "Greenberry Admin",
-      scores: { maturity: 3, impact: 4, effort: 1, risk: 3 },
-      costRange: "Low",
-      origin: "European",
-      sustainabilityNotes: "European-founded, standard cloud infra.",
-      securityNotes: "Review generated code before production deployment.",
-      ethicsNotes: "",
-      links: [],
-      status: "Approved",
-      lastReviewedAt: now,
-      reviewedAt: now,
-      reviewedBy: "seed-admin",
-      createdAt: now - 800_000,
-      updatedAt: now,
-      createdBy: "seed-admin",
-      updatedBy: "seed-admin",
-      pricingTiers: [
-        {
-          name: "Free",
-          cost: "Free",
-          features: ["5 projects", "Basic generation"],
-        },
-        {
-          name: "Starter",
-          cost: "$20",
-          billing: "per month",
-          features: ["Unlimited projects", "Custom domains"],
-        },
-      ],
-    },
-  ];
+  const items = seedItemsData as SeedRadarItemInput[];
+  const totalItems = items.length;
 
-  return items.map((item) => buildSeedRadarItem(item));
+  return items.map((item, index) => {
+    const seededItem = buildSeedRadarItem(item);
+    const createdAt = now - (totalItems - index) * 86_400_000;
+
+    return {
+      ...seededItem,
+      ownerId: "seed-admin",
+      ownerName: "Greenberry Admin",
+      status: "Approved",
+      lastReviewedAt: now,
+      reviewedAt: now,
+      reviewedBy: "seed-admin",
+      createdAt,
+      updatedAt: now,
+      createdBy: "seed-admin",
+      updatedBy: "seed-admin",
+      history: [],
+    };
+  });
 }
 
 export function getSeedTags(): RadarConfigOption[] {
@@ -938,9 +250,11 @@ export function getSeedTags(): RadarConfigOption[] {
 
   return Array.from(tags)
     .sort((left, right) => left.localeCompare(right))
-    .map((tag, index) => ({
-      id: tag.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
-      name: tag,
-      order: index,
-    }));
+    .map((tag, index) =>
+      withSeedMetadata({
+        id: slugifyTag(tag),
+        name: tag,
+        order: index,
+      }),
+    );
 }

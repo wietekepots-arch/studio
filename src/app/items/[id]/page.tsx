@@ -5,7 +5,6 @@ import Link from "next/link";
 import { collection, doc, query, where } from "firebase/firestore";
 import {
   ArrowLeft,
-  CheckCircle2,
   Clock,
   ExternalLink,
   FileClock,
@@ -16,13 +15,13 @@ import {
 import { Navbar } from "@/components/layout/Navbar";
 import { useAppUser } from "@/components/app/AppUserProvider";
 import { useCollection, useDoc, useFirestore, useMemoFirebase } from "@/firebase";
-import { Badge } from "@/components/ui/badge";
+import { Badge, badgeVariants } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import {
   Experience,
   HistoryEntry,
+  PricingTier,
   RadarConfigOption,
   RadarFamily,
   RadarItem,
@@ -42,27 +41,54 @@ import {
   seedQuadrants,
   seedRings,
 } from "@/lib/radar-seed";
+import common from "@/content/common.json";
+import itemDetailContent from "@/content/pages/item-detail.json";
 
 interface ItemDetailPageProps {
   params: Promise<{ id: string }>;
 }
 
-function ScoreRow({
-  label,
-  value,
-}: {
-  label: string;
-  value: number;
-}): React.ReactElement {
+function formatDate(timestamp: number): string {
+  return new Date(timestamp).toLocaleDateString("nl-NL", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+function getStatusLabel(status: RadarItem["status"]): string {
   return (
-    <div className="space-y-3">
-      <div className="flex justify-between text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
-        <span>{label}</span>
-        <span>{value}/5</span>
-      </div>
-      <Progress value={value * 20} className="h-4 rounded-full bg-secondary" />
-    </div>
+    itemDetailContent.statuses[
+      status as keyof typeof itemDetailContent.statuses
+    ] || status
   );
+}
+
+function getOriginLabel(origin: RadarItem["origin"]): string {
+  return (
+    itemDetailContent.origins[
+      origin as keyof typeof itemDetailContent.origins
+    ] || origin
+  );
+}
+
+function getHistoryActionLabel(action: string): string {
+  return (
+    itemDetailContent.historyActions[
+      action as keyof typeof itemDetailContent.historyActions
+    ] || action
+  );
+}
+
+function getLegacyPricingSummary(pricingTiers?: PricingTier[]): string | null {
+  if (!pricingTiers?.length) {
+    return null;
+  }
+
+  return pricingTiers
+    .slice(0, 2)
+    .map((tier) => `${tier.name}: ${tier.cost}${tier.billing ? ` ${tier.billing}` : ""}`)
+    .join(" | ");
 }
 
 export default function ItemDetailPage({
@@ -135,6 +161,7 @@ export default function ItemDetailPage({
   const { data: relatedExperiences } = useCollection<Experience>(
     relatedExperiencesQuery,
   );
+
   const providers = useMemo(() => {
     return mergeRadarProviders(providerDocs, seedProviders);
   }, [providerDocs]);
@@ -192,14 +219,14 @@ export default function ItemDetailPage({
           </div>
           <div className="space-y-3">
             <h1 className="text-5xl font-black tracking-tighter">
-              Company sign-in required
+              {common.auth.companySignInRequired}
             </h1>
             <p className="max-w-xl text-lg font-medium text-muted-foreground">
-              Sign in with your Greenberry Google account to view radar items.
+              {itemDetailContent.authError.description}
             </p>
           </div>
           <Button asChild className="rounded-full px-8">
-            <Link href="/login">Go to Sign In</Link>
+            <Link href="/login">{common.auth.goToSignIn}</Link>
           </Button>
         </div>
       </div>
@@ -211,9 +238,9 @@ export default function ItemDetailPage({
       <div className="min-h-screen bg-background">
         <Navbar />
         <div className="container mx-auto flex min-h-[60vh] flex-col items-center justify-center gap-4 px-6 text-center">
-          <h1 className="text-4xl font-black">Blip not found</h1>
+          <h1 className="text-4xl font-black">{itemDetailContent.blipNotFound}</h1>
           <Button asChild className="rounded-full px-8">
-            <Link href="/dashboard">Back to Dashboard</Link>
+            <Link href="/dashboard">{itemDetailContent.backToDashboard}</Link>
           </Button>
         </div>
       </div>
@@ -222,6 +249,9 @@ export default function ItemDetailPage({
 
   const editableItem = rawItem || item;
   const canEdit = canEditRadarItem(editableItem, authUser.uid, role);
+  const primaryLink = item.links?.[0] || item.pricingUrl || null;
+  const pricingSummary =
+    item.pricingSummary || getLegacyPricingSummary(item.pricingTiers) || "";
 
   return (
     <div className="min-h-screen bg-background">
@@ -236,7 +266,7 @@ export default function ItemDetailPage({
           >
             <Link href="/dashboard">
               <ArrowLeft className="h-5 w-5" />
-              Return to Dashboard
+              {itemDetailContent.returnToDashboard}
             </Link>
           </Button>
 
@@ -245,13 +275,13 @@ export default function ItemDetailPage({
               variant={getStatusBadgeVariant(item.status)}
               className="rounded-full px-6 py-2 font-black uppercase tracking-widest"
             >
-              {item.status}
+              {getStatusLabel(item.status)}
             </Badge>
             {canEdit ? (
               <Button asChild className="rounded-full px-6 font-bold">
                 <Link href={`/items/${item.id}/edit`}>
                   <Pencil className="mr-2 h-4 w-4" />
-                  Edit
+                  {common.common.edit}
                 </Link>
               </Button>
             ) : null}
@@ -263,10 +293,10 @@ export default function ItemDetailPage({
             <div className="space-y-6">
               <div className="flex flex-wrap gap-3">
                 <Badge className="rounded-full bg-primary/10 px-6 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-primary">
-                  {quadrantMap.get(item.quadrantId) || "Unassigned"}
+                  {quadrantMap.get(item.quadrantId) || common.common.unassigned}
                 </Badge>
                 <Badge variant="outline" className="rounded-full px-6 py-2">
-                  {ringMap.get(item.ringId) || "Unassigned"}
+                  {ringMap.get(item.ringId) || common.common.unassigned}
                 </Badge>
                 {item.providerName ? (
                   <Badge variant="outline" className="rounded-full px-6 py-2">
@@ -298,7 +328,7 @@ export default function ItemDetailPage({
               <Card className="rounded-[2.5rem] border-none bg-primary/5 shadow-none">
                 <CardHeader>
                   <CardTitle className="text-lg font-black tracking-tight">
-                    Latest review note
+                    {itemDetailContent.latestReviewNote}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="text-muted-foreground">
@@ -310,7 +340,7 @@ export default function ItemDetailPage({
             <Card className="rounded-[3rem] border-none bg-secondary/10 shadow-none">
               <CardHeader>
                 <CardTitle className="text-3xl font-black tracking-tight">
-                  Overview
+                  {common.labels.overview}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-10">
@@ -318,48 +348,211 @@ export default function ItemDetailPage({
                   {item.notes}
                 </div>
 
-                <div className="grid gap-6 md:grid-cols-2">
-                  <Card className="border-none bg-white shadow-none">
-                    <CardHeader>
-                      <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
-                        Sustainability
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>{item.sustainabilityNotes || "Pending review"}</CardContent>
-                  </Card>
-                  <Card className="border-none bg-white shadow-none">
-                    <CardHeader>
-                      <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
-                        Security
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>{item.securityNotes || "Pending review"}</CardContent>
-                  </Card>
-                  <Card className="border-none bg-white shadow-none">
-                    <CardHeader>
-                      <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
-                        Ethics
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>{item.ethicsNotes || "Pending review"}</CardContent>
-                  </Card>
-                  <Card className="border-none bg-white shadow-none">
-                    <CardHeader>
-                      <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
-                        Origin
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>{item.origin}</CardContent>
-                  </Card>
-                </div>
+                {item.useCases?.length ? (
+                  <div className="space-y-4">
+                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
+                      {itemDetailContent.sections.usefulFor}
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                      {item.useCases.map((useCase) => (
+                        <Card
+                          key={`${item.id}-${useCase.role}`}
+                          className="border-none bg-white shadow-none"
+                        >
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-black tracking-tight">
+                              {useCase.role}
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="text-sm font-medium text-muted-foreground">
+                            {useCase.summary}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
               </CardContent>
             </Card>
 
-            {item.pricingTiers?.length ? (
+            {(item.availabilitySummary || item.accessNotes || item.accessRequestUrl) ? (
               <Card className="rounded-[3rem] border-none bg-secondary/10 shadow-none">
                 <CardHeader>
                   <CardTitle className="text-3xl font-black tracking-tight">
-                    Pricing
+                    {itemDetailContent.sections.availabilityAccess}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="grid gap-6 md:grid-cols-2">
+                  <Card className="border-none bg-white shadow-none">
+                    <CardHeader>
+                      <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
+                        {itemDetailContent.sections.availability}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-sm font-medium text-foreground/90">
+                      {item.availabilitySummary || itemDetailContent.fallbacks.notSet}
+                    </CardContent>
+                  </Card>
+                  <Card className="border-none bg-white shadow-none">
+                    <CardHeader>
+                      <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
+                        {itemDetailContent.sections.access}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3 text-sm font-medium text-foreground/90">
+                      <div>{item.accessNotes || itemDetailContent.fallbacks.notSet}</div>
+                      {item.accessRequestUrl ? (
+                        <a
+                          href={item.accessRequestUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 text-primary hover:underline"
+                        >
+                          {itemDetailContent.fallbacks.requestAccess}
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
+                      ) : null}
+                    </CardContent>
+                  </Card>
+                </CardContent>
+              </Card>
+            ) : null}
+
+            <Card className="rounded-[3rem] border-none bg-secondary/10 shadow-none">
+              <CardHeader>
+                <CardTitle className="text-3xl font-black tracking-tight">
+                  {itemDetailContent.sections.governanceSnapshot}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-6 md:grid-cols-3">
+                <Card className="border-none bg-white shadow-none">
+                  <CardHeader>
+                    <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
+                      {common.labels.security}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4 text-sm font-medium text-foreground/90">
+                    <div>{item.securityNotes || itemDetailContent.fallbacks.needsVerification}</div>
+                    {item.securityCertifications?.length ? (
+                      <div className="flex flex-wrap gap-2">
+                        {item.securityCertifications.map((reference) =>
+                          reference.url ? (
+                            <a
+                              key={`${item.id}-${reference.label}`}
+                              href={reference.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={`${badgeVariants({ variant: "outline" })} border-primary/20 text-primary`}
+                            >
+                              {reference.label}
+                            </a>
+                          ) : (
+                            <span
+                              key={`${item.id}-${reference.label}`}
+                              className={`${badgeVariants({ variant: "outline" })} border-primary/20 text-primary`}
+                              title={reference.details}
+                            >
+                              {reference.label}
+                            </span>
+                          ),
+                        )}
+                      </div>
+                    ) : null}
+                  </CardContent>
+                </Card>
+                <Card className="border-none bg-white shadow-none">
+                  <CardHeader>
+                    <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
+                      {common.labels.origin}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-sm font-medium text-foreground/90">
+                    {getOriginLabel(item.origin)}
+                  </CardContent>
+                </Card>
+                <Card className="border-none bg-white shadow-none">
+                  <CardHeader>
+                    <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
+                      {common.labels.pricing}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3 text-sm font-medium text-foreground/90">
+                    <div>{pricingSummary || itemDetailContent.fallbacks.needsVerification}</div>
+                    {item.pricingUrl ? (
+                      <a
+                        href={item.pricingUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-primary hover:underline"
+                      >
+                        {itemDetailContent.sections.viewPricing}
+                        <ExternalLink className="h-4 w-4" />
+                      </a>
+                    ) : null}
+                  </CardContent>
+                </Card>
+              </CardContent>
+            </Card>
+
+            {item.modelEntries?.length ? (
+              <Card className="rounded-[3rem] border-none bg-secondary/10 shadow-none">
+                <CardHeader>
+                  <CardTitle className="text-3xl font-black tracking-tight">
+                    {itemDetailContent.sections.modelsBenchmarks}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {item.modelEntries.map((model) => (
+                    <div
+                      key={`${item.id}-${model.name}`}
+                      className="rounded-[2rem] border border-border/50 bg-white p-6"
+                    >
+                      <div className="space-y-4">
+                        <div>
+                          <div className="text-2xl font-black tracking-tight">
+                            {model.name}
+                          </div>
+                          <div className="mt-2 text-sm font-medium text-muted-foreground">
+                            {model.summary}
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {model.vendorLink ? (
+                            <a
+                              href={model.vendorLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 rounded-full border border-primary/20 px-4 py-2 text-sm font-semibold text-primary hover:bg-primary/5"
+                            >
+                              {itemDetailContent.sections.vendorLink}
+                              <ExternalLink className="h-4 w-4" />
+                            </a>
+                          ) : null}
+                          {model.benchmarkLinks?.map((link) => (
+                            <a
+                              key={`${model.name}-${link.url}`}
+                              href={link.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-semibold hover:border-primary/20"
+                            >
+                              {link.label}
+                              <ExternalLink className="h-4 w-4" />
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            ) : null}
+
+            {!item.modelEntries?.length && item.pricingTiers?.length ? (
+              <Card className="rounded-[3rem] border-none bg-secondary/10 shadow-none">
+                <CardHeader>
+                  <CardTitle className="text-3xl font-black tracking-tight">
+                    {itemDetailContent.sections.pricingDetails}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -374,20 +567,14 @@ export default function ItemDetailPage({
                             {tier.name}
                           </div>
                           <div className="text-sm font-medium text-muted-foreground">
-                            {tier.billing || "Flexible billing"}
+                            {tier.billing || itemDetailContent.fallbacks.flexibleBilling}
                           </div>
                         </div>
-                        <div className="text-2xl font-black text-primary">
-                          {tier.cost}
-                        </div>
+                        <div className="text-2xl font-black text-primary">{tier.cost}</div>
                       </div>
                       <ul className="mt-4 space-y-2">
                         {tier.features.map((feature) => (
-                          <li
-                            key={feature}
-                            className="flex items-center gap-3 text-sm font-medium"
-                          >
-                            <CheckCircle2 className="h-4 w-4 text-primary" />
+                          <li key={feature} className="flex items-center gap-3 text-sm font-medium">
                             {feature}
                           </li>
                         ))}
@@ -401,7 +588,7 @@ export default function ItemDetailPage({
             <Card className="rounded-[3rem] border-none bg-secondary/10 shadow-none">
               <CardHeader>
                 <CardTitle className="text-3xl font-black tracking-tight">
-                  Related Experiences
+                  {common.labels.relatedExperiences}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -427,7 +614,7 @@ export default function ItemDetailPage({
                   ))
                 ) : (
                   <div className="rounded-[2rem] border border-dashed border-border p-8 text-center text-sm font-medium text-muted-foreground">
-                    No published experiences are linked to this blip yet.
+                    {itemDetailContent.fallbacks.noExperiences}
                   </div>
                 )}
               </CardContent>
@@ -438,34 +625,20 @@ export default function ItemDetailPage({
             <Card className="rounded-[3rem] border-none bg-white shadow-xl shadow-primary/10">
               <CardHeader>
                 <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">
-                  Strategic Pulse
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-8">
-                <ScoreRow label="Tool Maturity" value={item.scores.maturity} />
-                <ScoreRow label="Potential Impact" value={item.scores.impact} />
-                <ScoreRow label="Effort to Build" value={item.scores.effort} />
-                <ScoreRow label="Risk Profile" value={item.scores.risk} />
-              </CardContent>
-            </Card>
-
-            <Card className="rounded-[3rem] border-none bg-white shadow-xl shadow-primary/10">
-              <CardHeader>
-                <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">
-                  Lifecycle Data
+                  {common.labels.lifecycleData}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-1">
                   <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
-                    Owner
+                    {common.labels.owner}
                   </div>
                   <div className="text-xl font-bold">{item.ownerName}</div>
                 </div>
                 {item.providerName ? (
                   <div className="space-y-1">
                     <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
-                      Provider
+                      {common.labels.provider}
                     </div>
                     <div className="text-xl font-bold">{item.providerName}</div>
                   </div>
@@ -473,34 +646,30 @@ export default function ItemDetailPage({
                 {item.familyName ? (
                   <div className="space-y-1">
                     <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
-                      Family
+                      {common.labels.family}
                     </div>
                     <div className="text-xl font-bold">{item.familyName}</div>
                   </div>
                 ) : null}
                 <div className="space-y-1">
                   <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
-                    Created
+                    {common.labels.created}
                   </div>
-                  <div className="text-xl font-bold">
-                    {new Date(item.createdAt).toLocaleDateString()}
-                  </div>
+                  <div className="text-xl font-bold">{formatDate(item.createdAt)}</div>
                 </div>
                 {item.submittedAt ? (
                   <div className="space-y-1">
                     <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
-                      Submitted
+                      {common.labels.submitted}
                     </div>
-                    <div className="text-xl font-bold">
-                      {new Date(item.submittedAt).toLocaleDateString()}
-                    </div>
+                    <div className="text-xl font-bold">{formatDate(item.submittedAt)}</div>
                   </div>
                 ) : null}
-                {item.links?.[0] ? (
+                {primaryLink ? (
                   <Button asChild variant="outline" className="w-full rounded-full">
-                    <a href={item.links[0]} target="_blank" rel="noopener noreferrer">
+                    <a href={primaryLink} target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="mr-2 h-4 w-4" />
-                      Open Vendor Link
+                      {itemDetailContent.fallbacks.openLink}
                     </a>
                   </Button>
                 ) : null}
@@ -510,7 +679,33 @@ export default function ItemDetailPage({
             <Card className="rounded-[3rem] border-none bg-white shadow-xl shadow-primary/10">
               <CardHeader>
                 <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">
-                  Activity
+                  {itemDetailContent.sections.responsibilityNotes}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-1">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                    {common.labels.sustainability}
+                  </div>
+                  <div className="text-sm font-medium text-foreground/90">
+                    {item.sustainabilityNotes || itemDetailContent.fallbacks.needsVerification}
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                    {common.labels.ethics}
+                  </div>
+                  <div className="text-sm font-medium text-foreground/90">
+                    {item.ethicsNotes || itemDetailContent.fallbacks.needsVerification}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="rounded-[3rem] border-none bg-white shadow-xl shadow-primary/10">
+              <CardHeader>
+                <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">
+                  {common.labels.activity}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -519,7 +714,7 @@ export default function ItemDetailPage({
                     <div key={entry.id} className="space-y-2">
                       <div className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-foreground">
                         <FileClock className="h-4 w-4 text-primary" />
-                        {entry.action}
+                        {getHistoryActionLabel(entry.action)}
                       </div>
                       {entry.note ? (
                         <p className="text-sm font-medium text-muted-foreground">
@@ -528,13 +723,13 @@ export default function ItemDetailPage({
                       ) : null}
                       <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
                         <Clock className="h-3 w-3" />
-                        {new Date(entry.createdAt).toLocaleDateString()}
+                        {formatDate(entry.createdAt)}
                       </div>
                     </div>
                   ))
                 ) : (
                   <div className="text-sm font-medium text-muted-foreground">
-                    No workflow history has been recorded yet.
+                    {itemDetailContent.fallbacks.noHistory}
                   </div>
                 )}
               </CardContent>

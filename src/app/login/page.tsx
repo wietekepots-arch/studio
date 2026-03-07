@@ -18,6 +18,7 @@ import { useAuth, useUser } from "@/firebase";
 import { useAppUser } from "@/components/app/AppUserProvider";
 import { initiateGoogleSignIn } from "@/firebase/non-blocking-login";
 import { isCompanyEmail } from "@/lib/company-auth";
+import loginContent from "@/content/pages/login.json";
 
 export default function LoginPage(): React.ReactElement {
   const auth = useAuth();
@@ -46,8 +47,8 @@ export default function LoginPage(): React.ReactElement {
 
     invalidUserHandledRef.current = true;
     toast({
-      title: "Access denied",
-      description: "Please sign in with your official @greenberry.nl account.",
+      title: loginContent.toasts.accessDenied.title,
+      description: loginContent.toasts.accessDenied.description,
       variant: "destructive",
     });
 
@@ -67,17 +68,13 @@ export default function LoginPage(): React.ReactElement {
         typeof error === "object" && error && "code" in error
           ? String(error.code)
           : null;
-      const currentHostname =
-        typeof window === "undefined" ? "this domain" : window.location.hostname;
       const description =
         code === "auth/operation-not-allowed"
-          ? "Enable Google sign-in in Firebase Authentication before continuing."
-          : code === "auth/unauthorized-domain"
-            ? `Add ${currentHostname} to Firebase Authentication -> Settings -> Authorized domains.`
-          : "Google sign-in could not be started. Please try again.";
+          ? loginContent.toasts.signInFailed.operationNotAllowed
+          : loginContent.toasts.signInFailed.fallback;
 
       toast({
-        title: "Sign-in failed",
+        title: loginContent.toasts.signInFailed.title,
         description,
         variant: "destructive",
       });
@@ -93,12 +90,11 @@ export default function LoginPage(): React.ReactElement {
         <div className="grid w-full max-w-6xl grid-cols-1 items-center gap-20 lg:grid-cols-2">
           <div className="space-y-10">
             <h1 className="text-8xl font-black uppercase leading-[0.85] tracking-tighter text-foreground">
-              Join the <br />
-              <span className="text-primary">Network</span>
+              {loginContent.heading} <br />
+              <span className="text-primary">{loginContent.headingHighlight}</span>
             </h1>
             <p className="text-3xl font-medium leading-tight text-muted-foreground">
-              Sign in with your Greenberry Google account to access the radar,
-              suggest tools, and review the latest pulses.
+              {loginContent.description}
             </p>
 
             <div className="space-y-6">
@@ -108,10 +104,10 @@ export default function LoginPage(): React.ReactElement {
                 </div>
                 <div>
                   <div className="text-xs font-black uppercase tracking-widest">
-                    Internal workflow
+                    {loginContent.features.internalWorkflow.label}
                   </div>
                   <div className="text-muted-foreground">
-                    Company-only access with role-based review queues.
+                    {loginContent.features.internalWorkflow.description}
                   </div>
                 </div>
               </div>
@@ -122,10 +118,10 @@ export default function LoginPage(): React.ReactElement {
                 </div>
                 <div>
                   <div className="text-xs font-black uppercase tracking-widest">
-                    Google only
+                    {loginContent.features.googleOnly.label}
                   </div>
                   <div className="text-muted-foreground">
-                    Access is limited to verified `@greenberry.nl` accounts.
+                    {loginContent.features.googleOnly.description}
                   </div>
                 </div>
               </div>
@@ -135,10 +131,10 @@ export default function LoginPage(): React.ReactElement {
           <Card className="border-none bg-white p-8 shadow-2xl shadow-primary/10">
             <CardHeader className="pb-10 text-center">
               <CardTitle className="text-4xl font-black tracking-tighter">
-                Sign in
+                {loginContent.signInCard.title}
               </CardTitle>
               <CardDescription className="text-lg font-medium">
-                Use your company Google account.
+                {loginContent.signInCard.description}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-8">
@@ -170,7 +166,7 @@ export default function LoginPage(): React.ReactElement {
                       />
                     </svg>
                     <LogIn className="h-5 w-5" />
-                    Continue with Google
+                    {loginContent.signInCard.button}
                   </>
                 )}
               </Button>
@@ -179,12 +175,11 @@ export default function LoginPage(): React.ReactElement {
                 <div className="mb-3 flex items-center justify-center gap-2 text-primary">
                   <Sparkles className="h-4 w-4" />
                   <span className="text-xs font-black uppercase tracking-[0.2em]">
-                    Access policy
+                    {loginContent.accessPolicy.label}
                   </span>
                 </div>
                 <p className="text-sm font-medium text-muted-foreground">
-                  Personal Gmail, guest access, and legacy password sign-in are
-                  disabled for this workflow.
+                  {loginContent.accessPolicy.description}
                 </p>
               </div>
             </CardContent>

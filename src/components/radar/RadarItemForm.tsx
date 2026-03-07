@@ -59,6 +59,8 @@ import {
   seedQuadrants,
   seedRings,
 } from "@/lib/radar-seed";
+import common from "@/content/common.json";
+import formContent from "@/content/pages/item-form.json";
 
 interface RadarItemFormProps {
   initialItem?: RadarItem | null;
@@ -71,6 +73,9 @@ interface RadarItemFormState {
   name: string;
   shortDesc: string;
   notes: string;
+  availabilitySummary: string;
+  accessNotes: string;
+  accessRequestUrl: string;
   quadrantId: string;
   ringId: string;
   providerId: string;
@@ -85,6 +90,28 @@ interface RadarItemFormState {
   primaryLink: string;
 }
 
+function formatTemplate(
+  template: string,
+  values: Record<string, string | number>,
+): string {
+  return Object.entries(values).reduce((result, [key, value]) => {
+    return result.replaceAll(`{${key}}`, String(value));
+  }, template);
+}
+
+function getOriginLabel(origin: RadarItem["origin"]): string {
+  switch (origin) {
+    case "European":
+      return formContent.origin.european;
+    case "American":
+      return formContent.origin.american;
+    case "Other":
+      return formContent.origin.other;
+    default:
+      return origin;
+  }
+}
+
 function getFormState(item?: RadarItem | null): RadarItemFormState {
   const usesSharedProfile = Boolean(item?.providerId || item?.familyId);
 
@@ -92,6 +119,9 @@ function getFormState(item?: RadarItem | null): RadarItemFormState {
     name: item?.name || "",
     shortDesc: item?.shortDesc || "",
     notes: item?.notes || "",
+    availabilitySummary: item?.availabilitySummary || "",
+    accessNotes: item?.accessNotes || "",
+    accessRequestUrl: item?.accessRequestUrl || "",
     quadrantId: String(item?.quadrantId ?? 0),
     ringId: String(item?.ringId ?? 2),
     providerId: item?.providerId || "",
@@ -234,7 +264,7 @@ export function RadarItemForm({
   }, [selectedFamily, selectedProvider]);
   const hasSharedProfile = Boolean(selectedProvider || selectedFamily);
   const sharedProfileLabel = selectedFamily
-    ? `${selectedProvider?.name || selectedFamily.providerName || "Provider"} / ${selectedFamily.name}`
+    ? `${selectedProvider?.name || selectedFamily.providerName || formContent.fields.provider} / ${selectedFamily.name}`
     : selectedProvider?.name || "";
   const config = buildRadarConfig(quadrants, rings);
   const isEditMode = Boolean(initialItem);
@@ -243,16 +273,16 @@ export function RadarItemForm({
     : false;
   const submitLabel = isEditMode
     ? isResubmittingForReview
-      ? "Save & Resubmit"
-      : "Save Changes"
-    : "Submit Suggestion";
+      ? formContent.edit.resubmitButton
+      : formContent.edit.submitButton
+    : formContent.create.submitButton;
   const helperText = !isEditMode
-    ? "Submit a new tool suggestion for review."
+    ? formContent.create.description
     : initialItem?.status === "Approved" && isResubmittingForReview
-      ? "Update the approved blip. Saving will send it back to the review queue."
+      ? formContent.edit.approvedResubmitDescription
       : isResubmittingForReview
-        ? "Update the blip and send it back for review."
-        : "Update the blip and keep the workflow moving.";
+        ? formContent.edit.resubmitDescription
+        : formContent.edit.description;
 
   useEffect(() => {
     setFormData(getFormState(initialItem));
@@ -328,8 +358,8 @@ export function RadarItemForm({
   async function handleAiCategorize(): Promise<void> {
     if (!formData.name || !formData.notes) {
       toast({
-        title: "Missing context",
-        description: "Name and strategic context are required for AI help.",
+        title: formContent.toasts.missingContextCategorize.title,
+        description: formContent.toasts.missingContextCategorize.description,
         variant: "destructive",
       });
       return;
@@ -355,13 +385,13 @@ export function RadarItemForm({
         tags: result.suggestedTags.join(", "),
       }));
       toast({
-        title: "AI updated the suggestion",
-        description: "Quadrant and tags were refreshed.",
+        title: formContent.toasts.aiCategorized.title,
+        description: formContent.toasts.aiCategorized.description,
       });
-    } catch (error) {
+    } catch {
       toast({
-        title: "AI categorization failed",
-        description: "The tool could not be categorized right now.",
+        title: formContent.toasts.aiCategorizeFailed.title,
+        description: formContent.toasts.aiCategorizeFailed.description,
         variant: "destructive",
       });
     } finally {
@@ -372,8 +402,8 @@ export function RadarItemForm({
   async function handleAiSummarize(): Promise<void> {
     if (!formData.notes) {
       toast({
-        title: "Missing context",
-        description: "Add strategic context first so the summary can be drafted.",
+        title: formContent.toasts.missingContextSummarize.title,
+        description: formContent.toasts.missingContextSummarize.description,
         variant: "destructive",
       });
       return;
@@ -392,13 +422,13 @@ export function RadarItemForm({
         shortDesc: result,
       }));
       toast({
-        title: "AI summary ready",
-        description: "The concise summary was drafted.",
+        title: formContent.toasts.aiSummaryReady.title,
+        description: formContent.toasts.aiSummaryReady.description,
       });
-    } catch (error) {
+    } catch {
       toast({
-        title: "AI summary failed",
-        description: "The summary could not be generated.",
+        title: formContent.toasts.aiSummaryFailed.title,
+        description: formContent.toasts.aiSummaryFailed.description,
         variant: "destructive",
       });
     } finally {
@@ -411,8 +441,8 @@ export function RadarItemForm({
 
     if (!authUser || !profile || !hasCompanyAccess) {
       toast({
-        title: "Sign-in required",
-        description: "You must be signed in with a company account.",
+        title: common.auth.signInRequired,
+        description: common.auth.signInRequiredDescription,
         variant: "destructive",
       });
       return;
@@ -420,8 +450,8 @@ export function RadarItemForm({
 
     if (initialItem && !canEditRadarItem(initialItem, authUser.uid, role)) {
       toast({
-        title: "Editing not allowed",
-        description: "You do not have access to change this blip.",
+        title: formContent.toasts.editingNotAllowed.title,
+        description: formContent.toasts.editingNotAllowed.description,
         variant: "destructive",
       });
       return;
@@ -431,11 +461,6 @@ export function RadarItemForm({
 
     const now = Date.now();
     const nextStatus = getNextRadarItemStatus(initialItem, authUser.uid, role);
-    const isResubmittingForReview = isRadarItemEditResubmission(
-      initialItem,
-      authUser.uid,
-      role,
-    );
     const nextRingId = Number(formData.ringId);
     const providerId = selectedFamily?.providerId || formData.providerId;
     const providerName = selectedProvider?.name || selectedFamily?.providerName;
@@ -460,6 +485,9 @@ export function RadarItemForm({
     const ethicsOverride = hasSharedProfile && formData.ethicsNotes
       ? formData.ethicsNotes
       : undefined;
+    const availabilitySummary = formData.availabilitySummary.trim();
+    const accessNotes = formData.accessNotes.trim();
+    const accessRequestUrl = formData.accessRequestUrl.trim();
     const basePayload: WithFieldValue<DocumentData> = {
       name: formData.name,
       shortDesc: formData.shortDesc,
@@ -473,12 +501,6 @@ export function RadarItemForm({
       team: formData.team,
       ownerId: initialItem?.ownerId || authUser.uid,
       ownerName: initialItem?.ownerName || profile.displayName,
-      scores: initialItem?.scores || {
-        maturity: 3,
-        impact: 3,
-        effort: 2,
-        risk: 2,
-      },
       costRange: formData.costRange,
       origin: effectiveOrigin,
       sustainabilityNotes: effectiveSustainability,
@@ -486,14 +508,8 @@ export function RadarItemForm({
       ethicsNotes: effectiveEthics,
       links: formData.primaryLink ? [formData.primaryLink] : [],
       status: nextStatus,
-      submittedAt:
-        isResubmittingForReview || !initialItem?.submittedAt
-          ? now
-          : initialItem.submittedAt,
-      submittedBy:
-        isResubmittingForReview || !initialItem?.submittedBy
-          ? authUser.uid
-          : initialItem.submittedBy,
+      submittedAt: !initialItem?.submittedAt || isResubmittingForReview ? now : initialItem.submittedAt,
+      submittedBy: !initialItem?.submittedBy || isResubmittingForReview ? authUser.uid : initialItem.submittedBy,
       lastReviewedAt: initialItem?.lastReviewedAt || now,
       createdAt: initialItem?.createdAt || now,
       createdBy: initialItem?.createdBy || authUser.uid,
@@ -501,14 +517,15 @@ export function RadarItemForm({
       updatedBy: authUser.uid,
       pricingTiers: initialItem?.pricingTiers || [],
       history: initialItem?.history || [],
+      ...(availabilitySummary ? { availabilitySummary } : {}),
+      ...(accessNotes ? { accessNotes } : {}),
+      ...(accessRequestUrl ? { accessRequestUrl } : {}),
       ...(providerId ? { providerId } : {}),
       ...(providerName ? { providerName } : {}),
       ...(familyId ? { familyId } : {}),
       ...(familyName ? { familyName } : {}),
       ...(originOverride ? { originOverride } : {}),
-      ...(sustainabilityOverride
-        ? { sustainabilityNotesOverride: sustainabilityOverride }
-        : {}),
+      ...(sustainabilityOverride ? { sustainabilityNotesOverride: sustainabilityOverride } : {}),
       ...(securityOverride ? { securityNotesOverride: securityOverride } : {}),
       ...(ethicsOverride ? { ethicsNotesOverride: ethicsOverride } : {}),
     };
@@ -523,36 +540,11 @@ export function RadarItemForm({
           payload.previousRingId = initialItem.previousRingId;
         }
 
-        setOptionalUpdateField(
-          payload,
-          "providerId",
-          providerId || undefined,
-          initialItem.providerId,
-        );
-        setOptionalUpdateField(
-          payload,
-          "providerName",
-          providerName,
-          initialItem.providerName,
-        );
-        setOptionalUpdateField(
-          payload,
-          "familyId",
-          familyId,
-          initialItem.familyId,
-        );
-        setOptionalUpdateField(
-          payload,
-          "familyName",
-          familyName,
-          initialItem.familyName,
-        );
-        setOptionalUpdateField(
-          payload,
-          "originOverride",
-          originOverride,
-          initialItem.originOverride,
-        );
+        setOptionalUpdateField(payload, "providerId", providerId || undefined, initialItem.providerId);
+        setOptionalUpdateField(payload, "providerName", providerName, initialItem.providerName);
+        setOptionalUpdateField(payload, "familyId", familyId, initialItem.familyId);
+        setOptionalUpdateField(payload, "familyName", familyName, initialItem.familyName);
+        setOptionalUpdateField(payload, "originOverride", originOverride, initialItem.originOverride);
         setOptionalUpdateField(
           payload,
           "sustainabilityNotesOverride",
@@ -571,6 +563,24 @@ export function RadarItemForm({
           ethicsOverride,
           initialItem.ethicsNotesOverride,
         );
+        setOptionalUpdateField(
+          payload,
+          "availabilitySummary",
+          availabilitySummary || undefined,
+          initialItem.availabilitySummary,
+        );
+        setOptionalUpdateField(
+          payload,
+          "accessNotes",
+          accessNotes || undefined,
+          initialItem.accessNotes,
+        );
+        setOptionalUpdateField(
+          payload,
+          "accessRequestUrl",
+          accessRequestUrl || undefined,
+          initialItem.accessRequestUrl,
+        );
 
         if (isResubmittingForReview) {
           payload.reviewComment = "";
@@ -580,11 +590,9 @@ export function RadarItemForm({
           if (initialItem.reviewComment) {
             payload.reviewComment = initialItem.reviewComment;
           }
-
           if (typeof initialItem.reviewedAt === "number") {
             payload.reviewedAt = initialItem.reviewedAt;
           }
-
           if (initialItem.reviewedBy) {
             payload.reviewedBy = initialItem.reviewedBy;
           }
@@ -593,50 +601,46 @@ export function RadarItemForm({
         await updateDoc(doc(db, "radarItems", initialItem.id), payload);
         await addDoc(collection(db, "radarItems", initialItem.id, "itemHistory"), {
           itemId: initialItem.id,
-          action: isResubmittingForReview ? "resubmitted" : "updated",
+          action: isResubmittingForReview ? formContent.history.resubmitted : formContent.history.updated,
           note: isResubmittingForReview
             ? initialItem.status === "Approved"
-              ? "Updated after approval and sent back for review."
-              : "Reworked and sent back for review."
-            : "Details updated.",
+              ? formContent.history.resubmittedApprovedNote
+              : formContent.history.resubmittedNote
+            : formContent.history.updatedNote,
           before: initialItem.status,
           after: nextStatus,
           createdAt: now,
           createdBy: authUser.uid,
         });
         toast({
-          title: isResubmittingForReview ? "Blip resubmitted" : "Changes saved",
+          title: isResubmittingForReview
+            ? formContent.toasts.blipResubmitted.title
+            : formContent.toasts.changesSaved.title,
           description: isResubmittingForReview
-            ? "The updated blip is now pending reviewer approval."
-            : "The blip details were updated.",
+            ? formContent.toasts.blipResubmitted.description
+            : formContent.toasts.changesSaved.description,
         });
         router.push(`/items/${initialItem.id}`);
       } else {
-        const documentReference = await addDoc(
-          collection(db, "radarItems"),
-          basePayload,
-        );
-        await addDoc(
-          collection(db, "radarItems", documentReference.id, "itemHistory"),
-          {
-            itemId: documentReference.id,
-            action: "submitted",
-            note: "Submitted for power user review.",
-            after: "Pending",
-            createdAt: now,
-            createdBy: authUser.uid,
-          },
-        );
+        const documentReference = await addDoc(collection(db, "radarItems"), basePayload);
+        await addDoc(collection(db, "radarItems", documentReference.id, "itemHistory"), {
+          itemId: documentReference.id,
+          action: formContent.history.submitted,
+          note: formContent.history.submittedNote,
+          after: "Pending",
+          createdAt: now,
+          createdBy: authUser.uid,
+        });
         toast({
-          title: "Suggestion submitted",
-          description: "Your blip is now pending review.",
+          title: formContent.toasts.suggestionSubmitted.title,
+          description: formContent.toasts.suggestionSubmitted.description,
         });
         router.push("/dashboard");
       }
-    } catch (error) {
+    } catch {
       toast({
-        title: "Save failed",
-        description: "The blip could not be saved to Firestore.",
+        title: formContent.toasts.saveFailed.title,
+        description: formContent.toasts.saveFailed.description,
         variant: "destructive",
       });
     } finally {
@@ -654,7 +658,7 @@ export function RadarItemForm({
         >
           <Link href={initialItem ? `/items/${initialItem.id}` : "/dashboard"}>
             <ArrowLeft className="h-5 w-5" />
-            Return
+            {common.common.return}
           </Link>
         </Button>
       </div>
@@ -662,8 +666,8 @@ export function RadarItemForm({
       <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
         <div className="space-y-2">
           <h1 className="text-6xl font-black uppercase leading-none tracking-tighter text-foreground">
-            {isEditMode ? "Edit" : "Propose"} <br />
-            <span className="text-primary">Tool Blip</span>
+            {isEditMode ? formContent.edit.heading : formContent.create.heading} <br />
+            <span className="text-primary">{formContent.headingHighlight}</span>
           </h1>
           <p className="text-xl font-medium text-muted-foreground">{helperText}</p>
         </div>
@@ -682,13 +686,13 @@ export function RadarItemForm({
           <Card className="overflow-hidden rounded-[3rem] border-none bg-secondary/20 shadow-none">
             <CardHeader className="p-10 pb-2">
               <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
-                Identity & Context
+                {formContent.sections.identityContext}
               </div>
             </CardHeader>
             <CardContent className="space-y-8 p-10">
               <div className="space-y-3">
                 <Label htmlFor="name" className="font-bold text-sm text-foreground/70">
-                  Tool Name
+                  {formContent.fields.toolName}
                 </Label>
                 <Input
                   id="name"
@@ -707,7 +711,7 @@ export function RadarItemForm({
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="notes" className="font-bold text-sm text-foreground/70">
-                    Strategic Context
+                    {formContent.fields.strategicContext}
                   </Label>
                   <Button
                     type="button"
@@ -718,7 +722,7 @@ export function RadarItemForm({
                     disabled={isAiLoading}
                   >
                     <Sparkles className="h-4 w-4" />
-                    AI Pulse
+                    {formContent.ai.pulse}
                   </Button>
                 </div>
                 <Textarea
@@ -741,7 +745,7 @@ export function RadarItemForm({
                     htmlFor="shortDesc"
                     className="font-bold text-sm text-foreground/70"
                   >
-                    Concise Summary
+                    {formContent.fields.conciseSummary}
                   </Label>
                   <Button
                     type="button"
@@ -752,7 +756,7 @@ export function RadarItemForm({
                     disabled={isAiLoading}
                   >
                     <Wand2 className="h-4 w-4" />
-                    AI Draft
+                    {formContent.ai.draft}
                   </Button>
                 </div>
                 <Input
@@ -774,35 +778,93 @@ export function RadarItemForm({
           <Card className="overflow-hidden rounded-[3rem] border-none bg-secondary/20 shadow-none">
             <CardHeader className="p-10 pb-2">
               <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
-                Responsibility Review
+                {formContent.sections.availabilityAccess}
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-8 p-10">
+              <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+                <div className="space-y-3">
+                  <Label htmlFor="availabilitySummary" className="font-bold text-sm text-foreground/70">
+                    {formContent.fields.availabilitySummary}
+                  </Label>
+                  <Textarea
+                    id="availabilitySummary"
+                    value={formData.availabilitySummary}
+                    placeholder={formContent.fields.availabilityPlaceholder}
+                    className="h-32 rounded-2xl border-2 border-border bg-white/50"
+                    onChange={(event) =>
+                      setFormData((currentState) => ({
+                        ...currentState,
+                        availabilitySummary: event.target.value,
+                      }))
+                    }
+                  />
+                </div>
+                <div className="space-y-3">
+                  <Label htmlFor="accessNotes" className="font-bold text-sm text-foreground/70">
+                    {formContent.fields.accessNotes}
+                  </Label>
+                  <Textarea
+                    id="accessNotes"
+                    value={formData.accessNotes}
+                    placeholder={formContent.fields.accessPlaceholder}
+                    className="h-32 rounded-2xl border-2 border-border bg-white/50"
+                    onChange={(event) =>
+                      setFormData((currentState) => ({
+                        ...currentState,
+                        accessNotes: event.target.value,
+                      }))
+                    }
+                  />
+                </div>
+              </div>
+              <div className="space-y-3">
+                <Label htmlFor="accessRequestUrl" className="font-bold text-sm text-foreground/70">
+                  {formContent.fields.accessRequestUrl}
+                </Label>
+                <Input
+                  id="accessRequestUrl"
+                  value={formData.accessRequestUrl}
+                  className="h-14 rounded-2xl border-2 border-border bg-white/50"
+                  onChange={(event) =>
+                    setFormData((currentState) => ({
+                      ...currentState,
+                      accessRequestUrl: event.target.value,
+                    }))
+                  }
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="overflow-hidden rounded-[3rem] border-none bg-secondary/20 shadow-none">
+            <CardHeader className="p-10 pb-2">
+              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
+                {formContent.sections.responsibilityReview}
               </div>
             </CardHeader>
             <CardContent className="space-y-8 p-10">
               {hasSharedProfile ? (
                 <div className="rounded-[2rem] border border-primary/10 bg-white/70 p-5 text-sm font-medium text-muted-foreground">
-                  Shared profile:{" "}
-                  <span className="font-black text-foreground">
-                    {sharedProfileLabel}
-                  </span>
-                  . Leave a note blank, or set origin to{" "}
-                  <span className="font-black text-foreground">
-                    Match Shared Profile
-                  </span>{" "}
-                  to inherit the shared default.
+                  {formContent.inheritance.sharedProfile}:{" "}
+                  <span className="font-black text-foreground">{sharedProfileLabel}</span>.{" "}
+                  {formatTemplate(formContent.inheritance.description, {
+                    label: formContent.inheritance.followSharedProfile,
+                  })}
                 </div>
               ) : null}
               <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
                 <div className="space-y-3">
                   <Label className="flex items-center gap-2 font-bold text-sm text-foreground/70">
                     <Leaf className="h-4 w-4 text-primary" />
-                    Sustainability
+                    {common.labels.sustainability}
                   </Label>
                   <Textarea
                     value={formData.sustainabilityNotes}
                     placeholder={
                       hasSharedProfile
                         ? sharedDefaults.sustainabilityNotes ||
-                          "No shared sustainability default."
+                          formContent.inheritance.noSharedSustainability
                         : ""
                     }
                     className="h-32 rounded-2xl border-2 border-border bg-white/50"
@@ -817,14 +879,14 @@ export function RadarItemForm({
                 <div className="space-y-3">
                   <Label className="flex items-center gap-2 font-bold text-sm text-foreground/70">
                     <Shield className="h-4 w-4 text-primary" />
-                    Security & GDPR
+                    {common.labels.securityGdpr}
                   </Label>
                   <Textarea
                     value={formData.securityNotes}
                     placeholder={
                       hasSharedProfile
                         ? sharedDefaults.securityNotes ||
-                          "No shared security default."
+                          formContent.inheritance.noSharedSecurity
                         : ""
                     }
                     className="h-32 rounded-2xl border-2 border-border bg-white/50"
@@ -840,13 +902,13 @@ export function RadarItemForm({
               <div className="space-y-3">
                 <Label className="flex items-center gap-2 font-bold text-sm text-foreground/70">
                   <Scale className="h-4 w-4 text-primary" />
-                  Ethics
+                  {common.labels.ethics}
                 </Label>
                 <Textarea
                   value={formData.ethicsNotes}
                   placeholder={
                     hasSharedProfile
-                      ? sharedDefaults.ethicsNotes || "No shared ethics default."
+                      ? sharedDefaults.ethicsNotes || formContent.inheritance.noSharedEthics
                       : ""
                   }
                   className="h-32 rounded-2xl border-2 border-border bg-white/50"
@@ -866,13 +928,13 @@ export function RadarItemForm({
           <Card className="rounded-[3rem] border-none bg-white p-4 shadow-xl shadow-primary/5">
             <CardHeader>
               <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                Pulse Placement
+                {formContent.sections.pulsePlacement}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-8">
               <div className="space-y-2">
                 <Label className="text-xs font-bold uppercase tracking-widest opacity-50">
-                  Strategic Focus
+                  {formContent.fields.strategicFocus}
                 </Label>
                 <Select
                   value={formData.quadrantId}
@@ -910,7 +972,7 @@ export function RadarItemForm({
 
               <div className="space-y-2">
                 <Label className="text-xs font-bold uppercase tracking-widest opacity-50">
-                  Maturity Trial
+                  {formContent.fields.maturityTrial}
                 </Label>
                 <Select
                   value={formData.ringId}
@@ -926,11 +988,7 @@ export function RadarItemForm({
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl">
                     {rings.map((ring) => (
-                      <SelectItem
-                        key={ring.id}
-                        value={String(ring.order)}
-                        className="p-3 font-bold"
-                      >
+                      <SelectItem key={ring.id} value={String(ring.order)} className="p-3 font-bold">
                         {ring.name}
                       </SelectItem>
                     ))}
@@ -941,12 +999,10 @@ export function RadarItemForm({
               <div className="space-y-2">
                 <Label className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest opacity-50">
                   <Globe className="h-4 w-4" />
-                  Origin
+                  {formContent.origin.label}
                 </Label>
                 <Select
-                  value={
-                    formData.origin || (hasSharedProfile ? INHERIT_SELECT_VALUE : "European")
-                  }
+                  value={formData.origin || (hasSharedProfile ? INHERIT_SELECT_VALUE : "European")}
                   onValueChange={handleOriginChange}
                 >
                   <SelectTrigger className="h-14 rounded-xl border-2 border-transparent bg-secondary/30 font-bold">
@@ -954,21 +1010,18 @@ export function RadarItemForm({
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl">
                     {hasSharedProfile ? (
-                      <SelectItem
-                        value={INHERIT_SELECT_VALUE}
-                        className="p-3 font-bold"
-                      >
-                        Match Shared Profile ({sharedDefaults.origin})
+                      <SelectItem value={INHERIT_SELECT_VALUE} className="p-3 font-bold">
+                        {formContent.inheritance.followSharedProfile} ({getOriginLabel(sharedDefaults.origin)})
                       </SelectItem>
                     ) : null}
                     <SelectItem value="European" className="p-3 font-bold">
-                      European
+                      {formContent.origin.european}
                     </SelectItem>
                     <SelectItem value="American" className="p-3 font-bold">
-                      American
+                      {formContent.origin.american}
                     </SelectItem>
                     <SelectItem value="Other" className="p-3 font-bold">
-                      Other
+                      {formContent.origin.other}
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -979,14 +1032,14 @@ export function RadarItemForm({
           <Card className="rounded-[3rem] border-none bg-white p-4 shadow-xl shadow-primary/5">
             <CardHeader>
               <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                Metadata
+                {formContent.sections.metadata}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-8">
               <div className="space-y-2">
                 <Label className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest opacity-50">
                   <Layers3 className="h-4 w-4" />
-                  Provider
+                  {formContent.fields.provider}
                 </Label>
                 <Select
                   value={formData.providerId || NONE_SELECT_VALUE}
@@ -997,14 +1050,10 @@ export function RadarItemForm({
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl">
                     <SelectItem value={NONE_SELECT_VALUE} className="p-3 font-bold">
-                      No Shared Provider
+                      {formContent.inheritance.providerNone}
                     </SelectItem>
                     {providers.map((provider) => (
-                      <SelectItem
-                        key={provider.id}
-                        value={provider.id}
-                        className="p-3"
-                      >
+                      <SelectItem key={provider.id} value={provider.id} className="p-3">
                         <span className="flex flex-col">
                           <span className="font-bold">{provider.name}</span>
                           {provider.description ? (
@@ -1018,9 +1067,10 @@ export function RadarItemForm({
                   </SelectContent>
                 </Select>
               </div>
+
               <div className="space-y-2">
                 <Label className="text-xs font-bold uppercase tracking-widest opacity-50">
-                  Model Family
+                  {formContent.fields.family}
                 </Label>
                 <Select
                   value={formData.familyId || NONE_SELECT_VALUE}
@@ -1031,7 +1081,7 @@ export function RadarItemForm({
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl">
                     <SelectItem value={NONE_SELECT_VALUE} className="p-3 font-bold">
-                      No Family
+                      {formContent.inheritance.familyNone}
                     </SelectItem>
                     {filteredFamilies.map((family) => (
                       <SelectItem key={family.id} value={family.id} className="p-3">
@@ -1049,13 +1099,16 @@ export function RadarItemForm({
                 </Select>
                 {hasSharedProfile ? (
                   <p className="text-xs font-medium text-muted-foreground">
-                    Shared governance defaults resolve from {sharedProfileLabel}.
+                    {formatTemplate(formContent.inheritance.governanceFrom, {
+                      label: sharedProfileLabel,
+                    })}
                   </p>
                 ) : null}
               </div>
+
               <div className="space-y-2">
                 <Label className="text-xs font-bold uppercase tracking-widest opacity-50">
-                  Team
+                  {formContent.fields.team}
                 </Label>
                 <Input
                   value={formData.team}
@@ -1068,9 +1121,10 @@ export function RadarItemForm({
                   }
                 />
               </div>
+
               <div className="space-y-2">
                 <Label className="text-xs font-bold uppercase tracking-widest opacity-50">
-                  Cost Range
+                  {formContent.fields.costRange}
                 </Label>
                 <Select
                   value={formData.costRange}
@@ -1086,23 +1140,24 @@ export function RadarItemForm({
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl">
                     <SelectItem value="Free" className="p-3 font-bold">
-                      Free
+                      {formContent.costOptions.free}
                     </SelectItem>
                     <SelectItem value="Low" className="p-3 font-bold">
-                      Low
+                      {formContent.costOptions.low}
                     </SelectItem>
                     <SelectItem value="Medium" className="p-3 font-bold">
-                      Medium
+                      {formContent.costOptions.medium}
                     </SelectItem>
                     <SelectItem value="High" className="p-3 font-bold">
-                      High
+                      {formContent.costOptions.high}
                     </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+
               <div className="space-y-2">
                 <Label className="text-xs font-bold uppercase tracking-widest opacity-50">
-                  Tags
+                  {formContent.fields.tags}
                 </Label>
                 <Input
                   value={formData.tags}
@@ -1115,9 +1170,10 @@ export function RadarItemForm({
                   }
                 />
               </div>
+
               <div className="space-y-2">
                 <Label className="text-xs font-bold uppercase tracking-widest opacity-50">
-                  Primary Link
+                  {formContent.fields.primaryLink}
                 </Label>
                 <Input
                   value={formData.primaryLink}

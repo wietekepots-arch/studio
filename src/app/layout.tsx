@@ -3,10 +3,11 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { FirebaseClientProvider } from '@/firebase';
 import { AppUserProvider } from "@/components/app/AppUserProvider";
+import common from "@/content/common.json";
 
 export const metadata: Metadata = {
-  title: 'AI Tooling Radar | Agency Knowledge',
-  description: 'Internal tech radar for tracking AI models, coding assistants, and generative agents.',
+  title: common.meta.title,
+  description: common.meta.description,
 };
 
 export default function RootLayout({

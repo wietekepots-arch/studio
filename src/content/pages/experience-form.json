@@ -1,0 +1,89 @@
+{
+  "heading": "Deel",
+  "headingHighlight": "je ervaring",
+  "description": "Hoe gebruik jij AI in je dagelijkse werk?",
+  "returnToExperiences": "Terug naar ervaringen",
+  "discard": "Annuleren",
+  "submitButton": "Ervaring opslaan",
+  "submittingButton": "Opslaan...",
+  "sections": {
+    "strategicContext": "Context",
+    "theProcess": "Proces",
+    "pulseMetadata": "Metadata",
+    "governanceImpact": "Governance & impact"
+  },
+  "fields": {
+    "experienceTitle": {
+      "label": "Titel van de ervaring",
+      "placeholder": "Bijvoorbeeld: Creatieve ideatie versnellen met Claude"
+    },
+    "conciseSummary": {
+      "label": "Korte samenvatting",
+      "placeholder": "De kern in een duidelijke zin..."
+    },
+    "linkedTools": {
+      "label": "Gekoppelde tools",
+      "emptyState": "Nog geen tools gekoppeld. Zoek hieronder.",
+      "searchPlaceholder": "Zoek goedgekeurde tools..."
+    },
+    "workflowSteps": {
+      "label": "Workflow & stappen",
+      "placeholder": "Beschrijf de stappen die je hebt gezet. Wees zo concreet als nodig."
+    },
+    "promptsTemplates": {
+      "label": "Prompts of templates (optioneel)",
+      "placeholder": "Plak hier prompts die anderen kunnen hergebruiken."
+    },
+    "keyFindings": {
+      "label": "Belangrijkste bevindingen & uitkomsten",
+      "placeholder": "Wat werkte? Wat niet? Welke verrassingen waren er?"
+    },
+    "yourRole": {
+      "label": "Jouw rol",
+      "placeholder": "Bijvoorbeeld: Lead Designer"
+    },
+    "studioTeam": {
+      "label": "Studio / team",
+      "placeholder": "Bijvoorbeeld: Amsterdam Studio"
+    },
+    "outcomeRating": {
+      "label": "Waardering van de uitkomst",
+      "gameChanger": "(Gamechanger)",
+      "caution": "(Let op)",
+      "starSingular": "ster",
+      "starPlural": "sterren"
+    },
+    "dataSensitivity": {
+      "label": "Gevoeligheid van data",
+      "public": "Publiek",
+      "internal": "Alleen intern",
+      "clientConfidential": "Vertrouwelijk voor klant"
+    },
+    "timeSaved": {
+      "label": "Bespaarde tijd (uren)",
+      "placeholder": "Bijvoorbeeld: 4"
+    },
+    "tags": {
+      "label": "Tags",
+      "placeholder": "Tags, gescheiden door komma's..."
+    }
+  },
+  "toasts": {
+    "validationError": {
+      "title": "Validatiefout",
+      "description": "Koppel ten minste een tool."
+    },
+    "experienceLogged": {
+      "title": "Ervaring opgeslagen",
+      "description": "Je praktijkervaring is toegevoegd aan het collectieve geheugen."
+    },
+    "saveFailed": {
+      "title": "Opslaan mislukt",
+      "description": "De ervaring kon niet worden opgeslagen. Probeer het opnieuw."
+    }
+  },
+  "authError": {
+    "heading": "Inloggen vereist",
+    "description": "Gebruik je Greenberry Google-account voordat je een ervaring deelt."
+  }
+}

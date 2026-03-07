@@ -1,0 +1,127 @@
+{
+  "create": {
+    "heading": "Stel voor",
+    "description": "Dien een nieuwe toolblip in voor review.",
+    "submitButton": "Blip indienen"
+  },
+  "edit": {
+    "heading": "Bewerk",
+    "description": "Werk de blip bij zonder de workflow te onderbreken.",
+    "resubmitDescription": "Werk de blip bij en stuur hem opnieuw ter review.",
+    "approvedResubmitDescription": "Werk de goedgekeurde blip bij. Na opslaan gaat hij terug naar de reviewqueue.",
+    "submitButton": "Wijzigingen opslaan",
+    "resubmitButton": "Opslaan en opnieuw indienen"
+  },
+  "headingHighlight": "Toolblip",
+  "sections": {
+    "identityContext": "Identiteit & context",
+    "availabilityAccess": "Beschikbaarheid & toegang",
+    "responsibilityReview": "Verantwoord gebruik",
+    "pulsePlacement": "Plaatsing op de radar",
+    "metadata": "Metadata"
+  },
+  "fields": {
+    "toolName": "Naam van de tool",
+    "strategicContext": "Beschrijving",
+    "conciseSummary": "Korte omschrijving",
+    "availabilitySummary": "Beschikbaarheid binnen Greenberry",
+    "availabilityPlaceholder": "Bijvoorbeeld: beschikbaar voor alle collega's met een Google-account.",
+    "accessNotes": "Hoe krijg je toegang?",
+    "accessPlaceholder": "Bijvoorbeeld: vraag een seat aan via je tech lead of het AI-team.",
+    "accessRequestUrl": "Link om toegang aan te vragen",
+    "strategicFocus": "Kwadrant",
+    "maturityTrial": "Radarstatus",
+    "provider": "Provider",
+    "family": "Modelfamilie",
+    "team": "Team",
+    "costRange": "Kostenindicatie",
+    "tags": "Tags",
+    "primaryLink": "Primaire link"
+  },
+  "ai": {
+    "pulse": "AI categoriseer",
+    "draft": "AI voorstel"
+  },
+  "inheritance": {
+    "sharedProfile": "Gedeeld profiel",
+    "followSharedProfile": "Gedeeld profiel volgen",
+    "providerNone": "Geen gedeelde provider",
+    "familyNone": "Geen familie",
+    "description": "Laat een veld leeg of kies '{label}' om de gedeelde standaardwaarden over te nemen.",
+    "noSharedSustainability": "Geen gedeelde standaard voor duurzaamheid.",
+    "noSharedSecurity": "Geen gedeelde standaard voor security.",
+    "noSharedEthics": "Geen gedeelde standaard voor ethiek.",
+    "governanceFrom": "Gedeelde governance-standaarden komen uit {label}."
+  },
+  "origin": {
+    "label": "Herkomst",
+    "european": "Europees",
+    "american": "Amerikaans",
+    "other": "Overig"
+  },
+  "costOptions": {
+    "free": "Gratis",
+    "low": "Laag",
+    "medium": "Midden",
+    "high": "Hoog"
+  },
+  "toasts": {
+    "missingContextCategorize": {
+      "title": "Context ontbreekt",
+      "description": "Naam en context zijn nodig voor AI-hulp."
+    },
+    "aiCategorized": {
+      "title": "AI-suggestie bijgewerkt",
+      "description": "Kwadrant en tags zijn opnieuw ingevuld."
+    },
+    "aiCategorizeFailed": {
+      "title": "AI-categorisatie mislukt",
+      "description": "De tool kon nu niet worden gecategoriseerd."
+    },
+    "missingContextSummarize": {
+      "title": "Context ontbreekt",
+      "description": "Voeg eerst context toe zodat de samenvatting kan worden opgesteld."
+    },
+    "aiSummaryReady": {
+      "title": "AI-samenvatting klaar",
+      "description": "De korte omschrijving is voorgesteld."
+    },
+    "aiSummaryFailed": {
+      "title": "AI-samenvatting mislukt",
+      "description": "De korte omschrijving kon niet worden gegenereerd."
+    },
+    "editingNotAllowed": {
+      "title": "Bewerken niet toegestaan",
+      "description": "Je hebt geen toegang om deze blip aan te passen."
+    },
+    "changesSaved": {
+      "title": "Wijzigingen opgeslagen",
+      "description": "De blip is bijgewerkt."
+    },
+    "blipResubmitted": {
+      "title": "Blip opnieuw ingediend",
+      "description": "De bijgewerkte blip wacht nu op goedkeuring."
+    },
+    "suggestionSubmitted": {
+      "title": "Blip ingediend",
+      "description": "Je blip wacht nu op review."
+    },
+    "saveFailed": {
+      "title": "Opslaan mislukt",
+      "description": "De blip kon niet worden opgeslagen in Firestore."
+    }
+  },
+  "history": {
+    "resubmitted": "resubmitted",
+    "updated": "updated",
+    "submitted": "submitted",
+    "resubmittedApprovedNote": "Bijgewerkt na goedkeuring en opnieuw ter review gestuurd.",
+    "resubmittedNote": "Bijgewerkt en opnieuw ter review gestuurd.",
+    "updatedNote": "Details bijgewerkt.",
+    "submittedNote": "Ingediend voor review."
+  },
+  "authError": {
+    "heading": "Inloggen vereist",
+    "description": "Je hebt je Greenberry Google-account nodig voordat je een tool kunt voorstellen."
+  }
+}

@@ -28,20 +28,21 @@ const prompt = ai.definePrompt({
   name: 'aiShortDescriptionDraftingPrompt',
   input: { schema: AiShortDescriptionDraftingInputSchema },
   output: { schema: AiShortDescriptionDraftingOutputSchema },
-  prompt: `You are an AI assistant specialized in summarizing technical information for a "Tech Radar" application.
-Your goal is to generate a concise short description (around 1-2 sentences) for a radar item, based on the provided detailed notes and any relevant information from the given links.
-The short description should capture the essence of the item, highlighting its purpose, key features, or impact, in a way that is easily understandable for a technical audience.
+  prompt: `Je schrijft korte Nederlandstalige samenvattingen voor een Tech Radar-applicatie.
+Genereer een beknopte korte omschrijving van circa 1 a 2 zinnen op basis van de uitgebreide notities en eventuele links.
+De omschrijving moet duidelijk maken wat het item is, waar het voor dient en waarom het relevant is.
+Schrijf in helder Nederlands, zonder marketingtaal en zonder opsommingen.
 
-Detailed Notes:
+Uitgebreide notities:
 {{{detailedNotes}}}
 
 {{#if links}}
-External Links (Please prioritize information from notes if links are not easily parsable or directly relevant):
+Externe links (gebruik vooral de notities als links niet goed leesbaar of niet direct relevant zijn):
 {{#each links}}- {{{this}}}
 {{/each}}
 {{/if}}
 
-Please provide only the concise short description.`,
+Geef alleen de korte omschrijving terug.`,
 });
 
 const aiShortDescriptionDraftingFlow = ai.defineFlow(

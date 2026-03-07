@@ -599,17 +599,47 @@ export default function ItemDetailPage({
                       href={`/experiences/${experience.id}`}
                       className="block rounded-[2rem] border border-border/50 bg-white p-6 transition-all hover:border-primary/20"
                     >
-                      <div className="flex items-center justify-between gap-6">
-                        <div className="space-y-2">
-                          <div className="text-xl font-black tracking-tight">
-                            {experience.title}
+                      {(() => {
+                        const matchingContext = experience.toolContexts?.find(
+                          (context) => context.itemId === item.id,
+                        );
+                        const contextFamilyName = matchingContext?.familyId
+                          ? families.find((family) => family.id === matchingContext.familyId)?.name
+                          : null;
+
+                        return (
+                          <div className="flex items-center justify-between gap-6">
+                            <div className="space-y-2">
+                              <div className="text-xl font-black tracking-tight">
+                                {experience.title}
+                              </div>
+                              <div className="text-sm font-medium text-muted-foreground">
+                                {experience.summary}
+                              </div>
+                              {matchingContext ? (
+                                <div className="flex flex-wrap gap-2 pt-1">
+                                  {contextFamilyName ? (
+                                    <Badge variant="outline" className="rounded-full">
+                                      {contextFamilyName}
+                                    </Badge>
+                                  ) : null}
+                                  {matchingContext.modelName ? (
+                                    <Badge variant="outline" className="rounded-full">
+                                      {matchingContext.modelName}
+                                    </Badge>
+                                  ) : null}
+                                  {matchingContext.modelVersion ? (
+                                    <Badge variant="outline" className="rounded-full">
+                                      v{matchingContext.modelVersion}
+                                    </Badge>
+                                  ) : null}
+                                </div>
+                              ) : null}
+                            </div>
+                            <Sparkles className="h-5 w-5 text-primary" />
                           </div>
-                          <div className="text-sm font-medium text-muted-foreground">
-                            {experience.summary}
-                          </div>
-                        </div>
-                        <Sparkles className="h-5 w-5 text-primary" />
-                      </div>
+                        );
+                      })()}
                     </Link>
                   ))
                 ) : (

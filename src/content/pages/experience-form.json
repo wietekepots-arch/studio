@@ -26,6 +26,17 @@
       "emptyState": "Nog geen tools gekoppeld. Zoek hieronder.",
       "searchPlaceholder": "Zoek goedgekeurde tools..."
     },
+    "toolContext": {
+      "label": "Provider- en modelcontext",
+      "description": "De ervaring blijft gekoppeld aan de top-level blip. Gebruik de velden hieronder om vast te leggen welke familie of welk model je echt hebt gebruikt.",
+      "family": "Familie",
+      "noFamily": "Geen specifieke familie",
+      "modelName": "Model of modelnaam",
+      "modelNamePlaceholder": "Bijvoorbeeld: Claude Sonnet",
+      "modelVersion": "Modelversie (optioneel)",
+      "modelVersionPlaceholder": "Bijvoorbeeld: 3.7",
+      "familyResolved": "Geselecteerde familie: {family}"
+    },
     "workflowSteps": {
       "label": "Workflow & stappen",
       "placeholder": "Beschrijf de stappen die je hebt gezet. Wees zo concreet als nodig."

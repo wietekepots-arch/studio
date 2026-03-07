@@ -15,8 +15,11 @@
   "headingHighlight": "Toolblip",
   "sections": {
     "identityContext": "Identiteit & context",
+    "pricingSources": "Prijs & bronnen",
     "availabilityAccess": "Beschikbaarheid & toegang",
     "responsibilityReview": "Verantwoord gebruik",
+    "secondaryMetadata": "Secundaire metadata",
+    "modelsBenchmarks": "Modellen & benchmarks",
     "pulsePlacement": "Plaatsing op de radar",
     "metadata": "Metadata"
   },
@@ -24,23 +27,50 @@
     "toolName": "Naam van de tool",
     "strategicContext": "Beschrijving",
     "conciseSummary": "Korte omschrijving",
+    "entityType": "Type blip",
     "availabilitySummary": "Beschikbaarheid binnen Greenberry",
     "availabilityPlaceholder": "Bijvoorbeeld: beschikbaar voor alle collega's met een Google-account.",
     "accessNotes": "Hoe krijg je toegang?",
     "accessPlaceholder": "Bijvoorbeeld: vraag een seat aan via je tech lead of het AI-team.",
     "accessRequestUrl": "Link om toegang aan te vragen",
+    "pricingSummary": "Prijs samenvatting",
+    "pricingUrl": "Prijslink",
     "strategicFocus": "Kwadrant",
     "maturityTrial": "Radarstatus",
     "provider": "Provider",
     "family": "Modelfamilie",
     "team": "Team",
-    "costRange": "Kostenindicatie",
+    "securityCertifications": "Security-certificeringen",
+    "securityCertificationLabel": "Certificering of compliance-label",
+    "securityCertificationUrl": "Bronlink (optioneel)",
+    "securityCertificationDetails": "Korte toelichting (optioneel)",
+    "modelEntryLabel": "Modelregel",
+    "modelName": "Model of familie",
+    "modelFamily": "Familie",
+    "modelSummary": "Korte fit-notitie",
+    "modelVendorLink": "Vendor/model-link",
+    "benchmarkLinks": "Benchmarklinks",
+    "benchmarkLabel": "Benchmarklabel",
+    "benchmarkUrl": "Benchmark URL",
+    "needsVerification": "Nog te verifieren",
     "tags": "Tags",
     "primaryLink": "Primaire link"
   },
+  "entityTypes": {
+    "provider": "Provider",
+    "product": "Product",
+    "workflow": "Workflow",
+    "governance": "Governance"
+  },
+  "actions": {
+    "addCertification": "Certificering toevoegen",
+    "addModel": "Model toevoegen",
+    "addBenchmark": "Benchmark toevoegen"
+  },
   "ai": {
     "pulse": "AI categoriseer",
-    "draft": "AI voorstel"
+    "draft": "AI voorstel",
+    "prefill": "AI prefill"
   },
   "inheritance": {
     "sharedProfile": "Gedeeld profiel",
@@ -52,6 +82,11 @@
     "noSharedSecurity": "Geen gedeelde standaard voor security.",
     "noSharedEthics": "Geen gedeelde standaard voor ethiek.",
     "governanceFrom": "Gedeelde governance-standaarden komen uit {label}."
+  },
+  "emptyStates": {
+    "noCertifications": "Nog geen certificeringen of compliance-verwijzingen toegevoegd.",
+    "noModels": "Voeg alleen modellen toe die binnen deze providerblip relevant zijn voor vergelijking.",
+    "noBenchmarks": "Voeg benchmark- of vendorlinks toe om deze modelregel bruikbaar te maken."
   },
   "origin": {
     "label": "Herkomst",
@@ -78,6 +113,18 @@
       "title": "AI-categorisatie mislukt",
       "description": "De tool kon nu niet worden gecategoriseerd."
     },
+    "missingContextPrefill": {
+      "title": "Context ontbreekt",
+      "description": "Voeg minimaal een naam en beschrijving of bronlink toe voor AI-prefill."
+    },
+    "aiPrefillReady": {
+      "title": "AI-prefill klaar",
+      "description": "Conceptvelden zijn ingevuld. Controleer claims, prijzen en certificeringen handmatig."
+    },
+    "aiPrefillFailed": {
+      "title": "AI-prefill mislukt",
+      "description": "De conceptvelden konden nu niet worden gegenereerd."
+    },
     "missingContextSummarize": {
       "title": "Context ontbreekt",
       "description": "Voeg eerst context toe zodat de samenvatting kan worden opgesteld."
@@ -93,6 +140,10 @@
     "editingNotAllowed": {
       "title": "Bewerken niet toegestaan",
       "description": "Je hebt geen toegang om deze blip aan te passen."
+    },
+    "modelEntriesInvalid": {
+      "title": "Modelregels zijn incompleet",
+      "description": "Elke modelregel heeft minimaal een vendorlink of benchmarklink nodig."
     },
     "changesSaved": {
       "title": "Wijzigingen opgeslagen",

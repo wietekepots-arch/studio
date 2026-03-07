@@ -128,7 +128,7 @@ export interface RadarItem {
   providerName?: string;
   familyId?: string;
   familyName?: string;
-  costRange: CostRange;
+  costRange?: CostRange;
   origin: Origin;
   originOverride?: Origin;
   sustainabilityNotes: string;

@@ -22,7 +22,9 @@ import { useCollection, useDoc, useFirestore, useMemoFirebase } from "@/firebase
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Experience, RadarItem } from "@/app/lib/radar-types";
+import { Experience, RadarFamily, RadarItem } from "@/app/lib/radar-types";
+import { mergeRadarFamilies } from "@/lib/radar-firestore";
+import { seedFamilies } from "@/lib/radar-seed";
 
 interface ExperienceDetailPageProps {
   params: Promise<{ id: string }>;
@@ -53,22 +55,51 @@ export default function ExperienceDetailPage({
   }, [authUser, db, hasCompanyAccess, id]);
   const { data: experience, isLoading: isExperienceLoading } =
     useDoc<Experience>(experienceRef);
+  const familiesQuery = useMemoFirebase(() => {
+    if (!db || !authUser || !hasCompanyAccess) {
+      return null;
+    }
+
+    return collection(db, "radarFamilies");
+  }, [authUser, db, hasCompanyAccess]);
+  const { data: familyDocs } = useCollection<RadarFamily>(familiesQuery);
+  const families = React.useMemo(() => {
+    return mergeRadarFamilies(familyDocs, seedFamilies);
+  }, [familyDocs]);
+  const familyMap = React.useMemo(() => {
+    return new Map(families.map((family) => [family.id, family]));
+  }, [families]);
+  const effectiveToolIds = React.useMemo(() => {
+    const ids =
+      experience?.toolContexts?.map((context) => context.itemId) ||
+      experience?.toolLinks ||
+      [];
+
+    return Array.from(new Set(ids));
+  }, [experience?.toolContexts, experience?.toolLinks]);
+  const toolContextMap = React.useMemo(() => {
+    const entries =
+      experience?.toolContexts?.map((context) => [context.itemId, context] as const) ||
+      [];
+
+    return new Map(entries);
+  }, [experience?.toolContexts]);
 
   const linkedToolsQuery = useMemoFirebase(() => {
     if (
       !db ||
       !authUser ||
       !hasCompanyAccess ||
-      !experience?.toolLinks?.length
+      !effectiveToolIds.length
     ) {
       return null;
     }
 
     return query(
       collection(db, "radarItems"),
-      where(documentId(), "in", experience.toolLinks),
+      where(documentId(), "in", effectiveToolIds),
     );
-  }, [authUser, db, experience?.toolLinks, hasCompanyAccess]);
+  }, [authUser, db, effectiveToolIds, hasCompanyAccess]);
   const { data: linkedTools, isLoading: isLinkedToolsLoading } =
     useCollection<RadarItem>(linkedToolsQuery);
 
@@ -333,6 +364,26 @@ export default function ExperienceDetailPage({
                             <div className="text-xs font-bold uppercase text-muted-foreground">
                               {tool.team}
                             </div>
+                            {toolContextMap.get(tool.id) ? (
+                              <div className="flex flex-wrap gap-2 pt-2">
+                                {toolContextMap.get(tool.id)?.familyId ? (
+                                  <Badge variant="outline" className="rounded-full">
+                                    {familyMap.get(toolContextMap.get(tool.id)!.familyId || "")
+                                      ?.name || toolContextMap.get(tool.id)!.familyId}
+                                  </Badge>
+                                ) : null}
+                                {toolContextMap.get(tool.id)?.modelName ? (
+                                  <Badge variant="outline" className="rounded-full">
+                                    {toolContextMap.get(tool.id)?.modelName}
+                                  </Badge>
+                                ) : null}
+                                {toolContextMap.get(tool.id)?.modelVersion ? (
+                                  <Badge variant="outline" className="rounded-full">
+                                    v{toolContextMap.get(tool.id)?.modelVersion}
+                                  </Badge>
+                                ) : null}
+                              </div>
+                            ) : null}
                           </div>
                           <ChevronRight className="h-6 w-6 text-muted-foreground transition-transform group-hover:translate-x-1" />
                         </div>

@@ -20,12 +20,22 @@ export type ItemCategorizationInput = z.infer<typeof ItemCategorizationInputSche
 
 const ItemCategorizationOutputSchema = z.object({
   suggestedQuadrant: z.string().describe("The most appropriate quadrant for the item, chosen from the availableQuadrants list."),
-  suggestedTags: z.array(z.string()).describe("A list of suggested tags for the item, based on its name and description. These can be from the availableTags list or new relevant tags.")
+  suggestedTags: z.array(z.string()).max(6).describe("A list of suggested tags for the item, based on its name and description. These can be from the availableTags list or new relevant tags.")
 });
 export type ItemCategorizationOutput = z.infer<typeof ItemCategorizationOutputSchema>;
 
 export async function aiItemCategorization(input: ItemCategorizationInput): Promise<ItemCategorizationOutput> {
   return itemCategorizationFlow(input);
+}
+
+function normalizeTags(tags: string[]): string[] {
+  return Array.from(
+    new Set(
+      tags
+        .map((tag) => tag.trim())
+        .filter(Boolean),
+    ),
+  ).slice(0, 6);
 }
 
 const prompt = ai.definePrompt({
@@ -53,6 +63,7 @@ Gebruik onderstaande tags als inspiratie, maar voeg gerust nieuwe relevante tags
 
 Kies exact een kwadrant uit de lijst 'availableQuadrants' en stel een lijst relevante tags voor.
 Het gekozen kwadrant MOET exact een van de opgegeven waarden zijn.
+Geef maximaal 6 tags terug. Tags moeten kort, opgeschoond en ontdubbeld zijn.
 Houd de output strikt aan het opgegeven JSON-schema.`
 });
 
@@ -64,6 +75,15 @@ const itemCategorizationFlow = ai.defineFlow(
   },
   async (input) => {
     const {output} = await prompt(input);
-    return output!;
+    const suggestedQuadrant = input.availableQuadrants.includes(
+      output?.suggestedQuadrant || '',
+    )
+      ? output!.suggestedQuadrant
+      : input.availableQuadrants[0] || '';
+
+    return {
+      suggestedQuadrant,
+      suggestedTags: normalizeTags(output?.suggestedTags || []),
+    };
   }
 );

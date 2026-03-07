@@ -17,7 +17,9 @@ const AiShortDescriptionDraftingInputSchema = z.object({
 });
 export type AiShortDescriptionDraftingInput = z.infer<typeof AiShortDescriptionDraftingInputSchema>;
 
-const AiShortDescriptionDraftingOutputSchema = z.string().describe('A concise short description for the radar item.');
+const AiShortDescriptionDraftingOutputSchema = z.object({
+  shortDescription: z.string().trim().max(160).describe('A concise short description for the radar item.'),
+});
 export type AiShortDescriptionDraftingOutput = z.infer<typeof AiShortDescriptionDraftingOutputSchema>;
 
 export async function aiShortDescriptionDrafting(input: AiShortDescriptionDraftingInput): Promise<AiShortDescriptionDraftingOutput> {
@@ -29,9 +31,10 @@ const prompt = ai.definePrompt({
   input: { schema: AiShortDescriptionDraftingInputSchema },
   output: { schema: AiShortDescriptionDraftingOutputSchema },
   prompt: `Je schrijft korte Nederlandstalige samenvattingen voor een Tech Radar-applicatie.
-Genereer een beknopte korte omschrijving van circa 1 a 2 zinnen op basis van de uitgebreide notities en eventuele links.
+Genereer exact 1 beknopte zin op basis van de uitgebreide notities en eventuele links.
 De omschrijving moet duidelijk maken wat het item is, waar het voor dient en waarom het relevant is.
 Schrijf in helder Nederlands, zonder marketingtaal en zonder opsommingen.
+De zin moet maximaal 160 tekens hebben.
 
 Uitgebreide notities:
 {{{detailedNotes}}}
@@ -42,7 +45,7 @@ Externe links (gebruik vooral de notities als links niet goed leesbaar of niet d
 {{/each}}
 {{/if}}
 
-Geef alleen de korte omschrijving terug.`,
+Houd de output strikt aan het JSON-schema.`,
 });
 
 const aiShortDescriptionDraftingFlow = ai.defineFlow(
@@ -53,6 +56,11 @@ const aiShortDescriptionDraftingFlow = ai.defineFlow(
   },
   async (input) => {
     const { output } = await prompt(input);
-    return output!;
+    return {
+      shortDescription: output?.shortDescription
+        ?.replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 160) || '',
+    };
   }
 );

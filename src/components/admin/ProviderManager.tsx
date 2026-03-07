@@ -3,7 +3,11 @@
 import React, { useEffect, useState } from "react";
 import { doc, setDoc, type Firestore } from "firebase/firestore";
 import { PlusCircle, Save } from "lucide-react";
-import { Origin, RadarProvider } from "@/app/lib/radar-types";
+import {
+  Origin,
+  RadarProvider,
+  RadarSecurityReference,
+} from "@/app/lib/radar-types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -34,6 +38,7 @@ interface ProviderDraft {
   origin: Origin | "";
   sustainabilityNotes: string;
   securityNotes: string;
+  securityCertifications: string;
   ethicsNotes: string;
 }
 
@@ -43,6 +48,47 @@ function toSlug(value: string): string {
     .trim()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+}
+
+function serializeSecurityReferences(
+  references?: RadarSecurityReference[],
+): string {
+  if (!references?.length) {
+    return "";
+  }
+
+  return references
+    .map((reference) =>
+      [reference.label, reference.url || "", reference.details || ""].join(" | "),
+    )
+    .join("\n");
+}
+
+function parseSecurityReferences(
+  value: string,
+): RadarSecurityReference[] | undefined {
+  const references = value
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const [label = "", url = "", details = ""] = line
+        .split("|")
+        .map((part) => part.trim());
+
+      if (!label) {
+        return null;
+      }
+
+      return {
+        label,
+        ...(url ? { url } : {}),
+        ...(details ? { details } : {}),
+      };
+    })
+    .filter((reference): reference is RadarSecurityReference => Boolean(reference));
+
+  return references.length ? references : undefined;
 }
 
 function getProviderDraft(
@@ -58,6 +104,9 @@ function getProviderDraft(
     origin: provider?.origin || "",
     sustainabilityNotes: provider?.sustainabilityNotes || "",
     securityNotes: provider?.securityNotes || "",
+    securityCertifications: serializeSecurityReferences(
+      provider?.securityCertifications,
+    ),
     ethicsNotes: provider?.ethicsNotes || "",
   };
 }
@@ -110,6 +159,13 @@ export function ProviderManager({
         : {}),
       ...(draft.securityNotes.trim()
         ? { securityNotes: draft.securityNotes.trim() }
+        : {}),
+      ...(parseSecurityReferences(draft.securityCertifications)
+        ? {
+            securityCertifications: parseSecurityReferences(
+              draft.securityCertifications,
+            ),
+          }
         : {}),
       ...(draft.ethicsNotes.trim()
         ? { ethicsNotes: draft.ethicsNotes.trim() }
@@ -279,6 +335,23 @@ export function ProviderManager({
                 setDraft((current) => ({
                   ...current,
                   securityNotes: event.target.value,
+                }))
+              }
+            />
+          </div>
+          <div className="space-y-2 md:col-span-2">
+            <Label htmlFor="provider-security-certifications">
+              Security Certifications
+            </Label>
+            <Textarea
+              id="provider-security-certifications"
+              value={draft.securityCertifications}
+              className="min-h-28"
+              placeholder="ISO 27001 | https://example.com | Optional note"
+              onChange={(event) =>
+                setDraft((current) => ({
+                  ...current,
+                  securityCertifications: event.target.value,
                 }))
               }
             />

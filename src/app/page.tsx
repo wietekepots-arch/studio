@@ -134,6 +134,9 @@ export default function HomePage(): React.ReactElement {
   const latestExperiencesWidthClass = isLatestExperiencesOpen
     ? "w-full lg:w-[24rem]"
     : "w-full lg:w-20";
+  const latestExperiencesCardClass = isLatestExperiencesOpen
+    ? `${latestExperiencesWidthClass} overflow-hidden rounded-[1.75rem] border border-border/50 bg-background/80 shadow-none backdrop-blur-sm`
+    : `${latestExperiencesWidthClass} overflow-visible border-transparent bg-transparent shadow-none backdrop-blur-none lg:flex lg:size-20 lg:items-center lg:justify-center lg:rounded-none`;
   const latestExperiencesContentMotionClass = `transition-[opacity,transform] duration-200 ease-out ${
     isLatestExperiencesOpen
       ? "translate-x-0 opacity-100 delay-75"
@@ -433,122 +436,120 @@ export default function HomePage(): React.ReactElement {
             isLatestExperiencesOpen ? "lg:col-span-3" : "lg:col-span-1"
           }`}
         >
-          <div className={`overflow-hidden text-right ${latestExperiencesWidthClass}`}>
+          <div className={`relative ${latestExperiencesWidthClass}`}>
             {isLatestExperiencesContentVisible ? (
-              <div className={latestExperiencesContentMotionClass}>
-                <button
-                  type="button"
-                  className="inline-flex text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:text-primary"
-                  onClick={() => setLatestExperiencesOpenOverride(false)}
+              <div className="pointer-events-none absolute right-0 top-0 z-20">
+                <div
+                  className={`flex justify-end -translate-y-[calc(100%+0.75rem)] ${latestExperiencesContentMotionClass}`}
                 >
-                  {homeContent.latestExperiences.close}
-                </button>
+                  <button
+                    type="button"
+                    className="pointer-events-auto inline-flex text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:text-primary"
+                    onClick={() => setLatestExperiencesOpenOverride(false)}
+                  >
+                    {homeContent.latestExperiences.close}
+                  </button>
+                </div>
               </div>
             ) : null}
-          </div>
 
-          <Card
-            className={`overflow-hidden border border-border/50 bg-background/80 shadow-none backdrop-blur-sm transition-[width,height,border-radius] duration-200 ${
-              isLatestExperiencesOpen
-                ? `${latestExperiencesWidthClass} rounded-[1.75rem]`
-                : `${latestExperiencesWidthClass} rounded-[1.75rem] lg:size-20 lg:rounded-full`
-            }`}
-          >
-            <Collapsible
-              open={isLatestExperiencesOpen}
-              onOpenChange={setLatestExperiencesOpenOverride}
+            <Card
+              className={`${latestExperiencesCardClass} transition-[width,height,border-radius,background-color,border-color] duration-200`}
             >
-              <CardHeader
-                className={`${
-                  isLatestExperiencesOpen
-                    ? "p-6"
-                    : "flex h-full items-center justify-center p-0"
-                }`}
+              <Collapsible
+                open={isLatestExperiencesOpen}
+                onOpenChange={setLatestExperiencesOpenOverride}
               >
-                {isLatestExperiencesOpen ? (
-                  <div className="flex items-start gap-4">
-                    <CardTitle className="flex items-center gap-3 text-base font-black uppercase tracking-tighter">
-                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-primary shadow-sm">
-                        <Sparkles className="h-6 w-6" />
-                      </span>
-                      <span>{homeContent.latestExperiences.title}</span>
-                    </CardTitle>
-                  </div>
-                ) : (
-                  <CollapsibleTrigger
-                    title={homeContent.latestExperiences.title}
-                    aria-label={homeContent.latestExperiences.title}
-                    className="flex h-full w-full cursor-pointer items-center justify-center rounded-full"
-                  >
-                    <CardTitle className="flex items-center justify-center">
-                      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white text-primary shadow-sm">
-                        <Sparkles className="h-6 w-6" />
-                      </span>
-                      <span className="sr-only">
-                        {homeContent.latestExperiences.title}
-                      </span>
-                    </CardTitle>
-                  </CollapsibleTrigger>
-                )}
-              </CardHeader>
-              {isLatestExperiencesContentVisible ? (
-                <div
-                  className={`overflow-hidden ${latestExperiencesContentMotionClass}`}
+                <CardHeader
+                  className={`${
+                    isLatestExperiencesOpen
+                      ? "p-6"
+                      : "flex h-full items-center justify-center p-0"
+                  }`}
                 >
-                  <CardContent className="w-full p-0 lg:w-[24rem]">
-                    <div className="divide-y divide-border/50">
-                      {recentExperiences.length ? (
-                        recentExperiences.map((experience) => (
-                          <Link
-                            key={experience.id}
-                            href={`/experiences/${experience.id}`}
-                            className="group block p-8 transition-all hover:bg-white/50"
-                          >
-                            <div className="space-y-4">
-                              <div className="space-y-2">
-                                <div className="flex items-center justify-between gap-3">
-                                  {experience.outcomeRating ? (
-                                    <OutcomeStars
-                                      outcomeRating={experience.outcomeRating}
-                                    />
-                                  ) : (
-                                    <span />
-                                  )}
-                                  <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground transition-all group-hover:translate-x-1 group-hover:text-primary" />
-                                </div>
-                                <span className="text-xl font-bold tracking-tight transition-colors group-hover:text-primary">
-                                  {experience.title}
-                                </span>
-                                <p className="line-clamp-2 text-sm font-medium text-muted-foreground">
-                                  {experience.summary}
-                                </p>
-                              </div>
-                              <div className="flex flex-wrap items-center gap-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                                <span className="flex items-center gap-1.5">
-                                  <UserIcon className="h-3 w-3" />
-                                  {experience.creatorName ||
-                                    common.auth.memberFallback}
-                                </span>
-                                <div className="h-1 w-1 rounded-full bg-border" />
-                                <span className="flex items-center gap-1.5">
-                                  <Clock className="h-3 w-3" />
-                                  {formatDate(experience.createdAt)}
-                                </span>
-                              </div>
-                            </div>
-                          </Link>
-                        ))
-                      ) : (
-                        <div className="p-12 text-center text-sm font-medium italic text-muted-foreground">
-                          {homeContent.latestExperiences.emptyState}
-                        </div>
-                      )}
+                  {isLatestExperiencesOpen ? (
+                    <div className="flex items-start gap-4">
+                      <CardTitle className="flex items-center gap-3 text-base font-black uppercase tracking-tighter">
+                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-primary shadow-sm">
+                          <Sparkles className="h-6 w-6" />
+                        </span>
+                        <span>{homeContent.latestExperiences.title}</span>
+                      </CardTitle>
                     </div>
-                  </CardContent>
-                </div>
-              ) : null}
-            </Collapsible>
-          </Card>
+                  ) : (
+                    <CollapsibleTrigger
+                      title={homeContent.latestExperiences.title}
+                      aria-label={homeContent.latestExperiences.title}
+                      className="flex h-14 w-14 cursor-pointer items-center justify-center rounded-full border border-border/60 bg-background shadow-sm transition-all duration-200 hover:border-border hover:bg-white"
+                    >
+                      <CardTitle className="flex items-center justify-center">
+                        <Sparkles className="h-6 w-6 text-primary" />
+                        <span className="sr-only">
+                          {homeContent.latestExperiences.title}
+                        </span>
+                      </CardTitle>
+                    </CollapsibleTrigger>
+                  )}
+                </CardHeader>
+                {isLatestExperiencesContentVisible ? (
+                  <div
+                    className={`overflow-hidden ${latestExperiencesContentMotionClass}`}
+                  >
+                    <CardContent className="w-full p-0 lg:w-[24rem]">
+                      <div className="divide-y divide-border/50">
+                        {recentExperiences.length ? (
+                          recentExperiences.map((experience) => (
+                            <Link
+                              key={experience.id}
+                              href={`/experiences/${experience.id}`}
+                              className="group block p-8 transition-all hover:bg-white/50"
+                            >
+                              <div className="space-y-4">
+                                <div className="space-y-2">
+                                  <div className="flex items-center justify-between gap-3">
+                                    {experience.outcomeRating ? (
+                                      <OutcomeStars
+                                        outcomeRating={experience.outcomeRating}
+                                      />
+                                    ) : (
+                                      <span />
+                                    )}
+                                    <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground transition-all group-hover:translate-x-1 group-hover:text-primary" />
+                                  </div>
+                                  <span className="text-xl font-bold tracking-tight transition-colors group-hover:text-primary">
+                                    {experience.title}
+                                  </span>
+                                  <p className="line-clamp-2 text-sm font-medium text-muted-foreground">
+                                    {experience.summary}
+                                  </p>
+                                </div>
+                                <div className="flex flex-wrap items-center gap-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                                  <span className="flex items-center gap-1.5">
+                                    <UserIcon className="h-3 w-3" />
+                                    {experience.creatorName ||
+                                      common.auth.memberFallback}
+                                  </span>
+                                  <div className="h-1 w-1 rounded-full bg-border" />
+                                  <span className="flex items-center gap-1.5">
+                                    <Clock className="h-3 w-3" />
+                                    {formatDate(experience.createdAt)}
+                                  </span>
+                                </div>
+                              </div>
+                            </Link>
+                          ))
+                        ) : (
+                          <div className="p-12 text-center text-sm font-medium italic text-muted-foreground">
+                            {homeContent.latestExperiences.emptyState}
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </div>
+                ) : null}
+              </Collapsible>
+            </Card>
+          </div>
 
           <div className={`overflow-hidden text-right ${latestExperiencesWidthClass}`}>
             {isLatestExperiencesContentVisible ? (

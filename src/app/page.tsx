@@ -44,6 +44,10 @@ export default function HomePage(): React.ReactElement {
     isLatestExperiencesContentVisible,
     setIsLatestExperiencesContentVisible,
   ] = useState(false);
+  const [
+    isLatestExperiencesContentActive,
+    setIsLatestExperiencesContentActive,
+  ] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -138,15 +142,27 @@ export default function HomePage(): React.ReactElement {
     ? `${latestExperiencesWidthClass} overflow-hidden rounded-[1.75rem] border border-border/50 bg-background/80 shadow-none backdrop-blur-sm`
     : `${latestExperiencesWidthClass} overflow-visible border-transparent bg-transparent shadow-none backdrop-blur-none lg:flex lg:size-20 lg:items-center lg:justify-center lg:rounded-none`;
   const latestExperiencesContentMotionClass = `transition-[opacity,transform] duration-200 ease-out ${
-    isLatestExperiencesOpen
-      ? "translate-x-0 opacity-100 delay-75"
+    isLatestExperiencesContentActive
+      ? "translate-x-0 opacity-100"
       : "pointer-events-none translate-x-4 opacity-0"
   }`;
+
+  function handleLatestExperiencesOpenChange(nextOpen: boolean): void {
+    if (!nextOpen) {
+      setIsLatestExperiencesContentActive(false);
+    }
+
+    setLatestExperiencesOpenOverride(nextOpen);
+  }
 
   useEffect(() => {
     if (isLatestExperiencesOpen) {
       setIsLatestExperiencesContentVisible(true);
-      return;
+      const timeout = window.setTimeout(() => {
+        setIsLatestExperiencesContentActive(true);
+      }, 140);
+
+      return () => window.clearTimeout(timeout);
     }
 
     const timeout = window.setTimeout(() => {
@@ -445,7 +461,7 @@ export default function HomePage(): React.ReactElement {
                   <button
                     type="button"
                     className="pointer-events-auto inline-flex text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:text-primary"
-                    onClick={() => setLatestExperiencesOpenOverride(false)}
+                    onClick={() => handleLatestExperiencesOpenChange(false)}
                   >
                     {homeContent.latestExperiences.close}
                   </button>
@@ -458,7 +474,7 @@ export default function HomePage(): React.ReactElement {
             >
               <Collapsible
                 open={isLatestExperiencesOpen}
-                onOpenChange={setLatestExperiencesOpenOverride}
+                onOpenChange={handleLatestExperiencesOpenChange}
               >
                 <CardHeader
                   className={`${

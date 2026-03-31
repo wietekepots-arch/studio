@@ -1,438 +1,674 @@
 [
   {
-    "id": "anthropic-platform",
-    "name": "Anthropic Platform",
-    "shortDesc": "Anthropic is een providerplatform voor schrijven, redeneren en coderen met Claude.",
-    "notes": "Anthropic is een providerkeuze voor teams die een platform zoeken voor schrijfwerk, analyse en engineering support. Gebruik deze blip om Anthropic als platform te beoordelen; vergelijk specifieke modellen in de modelsectie in plaats van voor elk model een aparte blip te maken.",
-    "entityType": "provider",
+    "id": "human-review-gates",
+    "name": "Human Review Gates",
+    "subtitle": "AI-output gaat pas live na menselijke controle.",
+    "overview": "Gebruik deze werkwijze wanneer AI versnelt, maar een collega eindverantwoordelijk blijft voor juistheid, nuance en toon.",
     "useCases": [
-      { "role": "Ontwikkelaar", "summary": "Codehulp, technische analyse en agentische development-workflows." },
-      { "role": "Designer", "summary": "Conceptontwikkeling, copy-iteratie en gestructureerde exploratie." },
-      { "role": "Projectmanager", "summary": "Samenvattingen, briefing-teksten en planvorming." }
-    ],
-    "quadrantId": 1,
-    "ringId": 0,
-    "tags": ["Provider", "LLM", "Anthropic"],
-    "team": "Organisatiebreed",
-    "providerId": "anthropic",
-    "costRange": "Medium",
-    "origin": "American",
-    "availabilitySummary": "Niet standaard organisatiebreed beschikbaar; inzet loopt nu vooral via specifieke teams en pilots.",
-    "accessNotes": "Vraag toegang of API-gebruik aan via Creative Tech of de AI-verantwoordelijke.",
-    "pricingSummary": "Prijs hangt af van workspace- en usage-plan; controleer de actuele commerciele opties voor je use case.",
-    "pricingUrl": "https://www.anthropic.com/pricing",
-    "modelEntries": [
       {
-        "name": "Claude Sonnet",
-        "familyId": "claude",
-        "summary": "Gebalanceerde standaard voor schrijven, redeneren en coderen.",
-        "vendorLink": "https://www.anthropic.com",
-        "benchmarkLinks": [
-          { "label": "LMArena", "url": "https://lmarena.ai/" },
-          { "label": "Artificial Analysis", "url": "https://artificialanalysis.ai/" }
-        ]
+        "role": "Content",
+        "summary": "Conceptteksten en samenvattingen redigeren voordat ze gedeeld worden."
       },
       {
-        "name": "Claude Opus",
-        "familyId": "claude",
-        "summary": "Zwaardere optie voor dieper redeneren en complexere opdrachten.",
-        "vendorLink": "https://www.anthropic.com",
-        "benchmarkLinks": [
-          { "label": "LMArena", "url": "https://lmarena.ai/" },
-          { "label": "Artificial Analysis", "url": "https://artificialanalysis.ai/" }
-        ]
+        "role": "Projectmanagement",
+        "summary": "Klantupdates en interne besluitnotities nalopen op context en risico."
       }
     ],
-    "links": ["https://www.anthropic.com"]
+    "quadrantId": 0,
+    "ringId": 0,
+    "tags": ["Governance", "Quality", "Review"],
+    "dateAdded": "2025-11-03",
+    "link": "https://www.nist.gov/itl/ai-risk-management-framework"
   },
   {
-    "id": "openai-platform",
-    "name": "OpenAI Platform",
-    "shortDesc": "OpenAI is een breed AI-platform voor schrijven, redeneren, automatiseren en coderen.",
-    "notes": "OpenAI is relevant als verschillende teams een bekend AI-platform willen gebruiken terwijl de modelkeuze per taak kan verschillen. Gebruik deze blip om OpenAI als platform te beoordelen; modelvergelijking hoort binnen deze blip thuis.",
-    "entityType": "provider",
+    "id": "shared-prompt-library",
+    "name": "Shared Prompt Library",
+    "subtitle": "Herbruikbare prompts maken AI-werk consistenter tussen teams.",
+    "overview": "Leg prompts vast met doel, context en kwaliteitschecks zodat teams sneller kunnen starten en minder dubbel werk doen.",
     "useCases": [
-      { "role": "Ontwikkelaar", "summary": "Code, automatisering en technische verkenning." },
-      { "role": "Designer", "summary": "Ideeontwikkeling, copy-iteratie en onderzoekssynthese." },
-      { "role": "Projectmanager", "summary": "Plannen, samenvatten en gestructureerd uitwerken." }
-    ],
-    "quadrantId": 1,
-    "ringId": 0,
-    "tags": ["Provider", "LLM", "OpenAI"],
-    "team": "Organisatiebreed",
-    "providerId": "openai",
-    "costRange": "Medium",
-    "origin": "American",
-    "availabilitySummary": "Niet standaard voor iedereen beschikbaar; gebruik wordt meestal per team of use case geregeld.",
-    "accessNotes": "Stem betaalde toegang of API-gebruik af met Creative Tech of de AI-verantwoordelijke.",
-    "pricingSummary": "Prijs hangt af van workspace- en usage-plan; controleer actuele commerciele opties voordat je een teamkeuze maakt.",
-    "pricingUrl": "https://openai.com/pricing",
-    "modelEntries": [
       {
-        "name": "GPT",
-        "familyId": "gpt",
-        "summary": "Algemene modelreeks voor schrijven, redeneren en synthese.",
-        "vendorLink": "https://openai.com",
-        "benchmarkLinks": [
-          { "label": "LMArena", "url": "https://lmarena.ai/" },
-          { "label": "Artificial Analysis", "url": "https://artificialanalysis.ai/" }
-        ]
+        "role": "Strategie",
+        "summary": "Terugkerende briefing-, research- en synthese-opdrachten standaardiseren."
       },
       {
-        "name": "Codex",
-        "familyId": "codex",
-        "summary": "OpenAI-reeks die is gericht op development- en automatiseringswerk.",
-        "vendorLink": "https://openai.com",
-        "benchmarkLinks": [
-          { "label": "LMArena", "url": "https://lmarena.ai/" },
-          { "label": "Artificial Analysis", "url": "https://artificialanalysis.ai/" }
-        ]
+        "role": "Operations",
+        "summary": "Veelgebruikte interne prompts centraal beheren en verbeteren."
       }
     ],
-    "links": ["https://openai.com"]
+    "quadrantId": 0,
+    "ringId": 0,
+    "tags": ["Prompting", "Knowledge Sharing", "Efficiency"],
+    "dateAdded": "2025-11-03",
+    "link": "https://platform.openai.com/docs/guides/prompt-engineering"
   },
   {
-    "id": "google-gemini-platform",
-    "name": "Google Gemini Platform",
-    "shortDesc": "Google Gemini is een multimodaal AI-platform dat goed past bij Google-verbonden workflows.",
-    "notes": "Deze blip is relevant voor teams die al sterk in het Google-ecosysteem werken en snel toegang willen tot multimodale assistentie. Gebruik hem voor onderzoek, samenvattingen en prototypewerk waar snelheid en Google-integratie belangrijk zijn.",
-    "entityType": "provider",
+    "id": "ai-workshop-prep",
+    "name": "AI Workshop Prep",
+    "subtitle": "AI helpt om workshops sneller voor te bereiden en samen te vatten.",
+    "overview": "Gebruik AI voor agenda-opzetten, intakevragen, recap-structuren en eerste syntheses rond bestaande facilitatie.",
     "useCases": [
-      { "role": "Ontwikkelaar", "summary": "Prototypes, multimodale flows en Google-verbonden automatisering." },
-      { "role": "Designer", "summary": "Beeld- en tekstondersteunde exploratie." },
-      { "role": "Projectmanager", "summary": "Samenvattingen en conceptteksten in Google-zware workflows." }
+      {
+        "role": "Strategie",
+        "summary": "Workshops en discovery-sessies sneller voorbereiden."
+      },
+      {
+        "role": "Projectmanagement",
+        "summary": "Recaps en vervolgstappen na sessies sneller structureren."
+      }
+    ],
+    "quadrantId": 0,
+    "ringId": 1,
+    "tags": ["Facilitation", "Preparation", "Synthesis"],
+    "dateAdded": "2025-11-10",
+    "link": "https://www.designkit.org/methods"
+  },
+  {
+    "id": "retrieval-backed-internal-qa",
+    "name": "Retrieval-Backed Internal Q&A",
+    "subtitle": "Antwoorden worden gebaseerd op geselecteerde interne bronnen.",
+    "overview": "Deze aanpak is bruikbaar voor beleid, onboarding en herhaalbare kennisvragen zolang de output herleidbaar blijft naar goedgekeurde documenten.",
+    "useCases": [
+      {
+        "role": "Operations",
+        "summary": "Interne kennisvragen beantwoorden vanuit bestaande documentatie."
+      },
+      {
+        "role": "People Ops",
+        "summary": "Onboardinginformatie sneller vindbaar en bruikbaar maken."
+      }
+    ],
+    "quadrantId": 0,
+    "ringId": 1,
+    "tags": ["RAG", "Knowledge", "Internal Docs"],
+    "dateAdded": "2025-11-10",
+    "link": "https://platform.openai.com/docs/guides/embeddings"
+  },
+  {
+    "id": "ai-sustainability-review",
+    "name": "AI Sustainability Review",
+    "subtitle": "Beoordeel energie, kosten en noodzaak voordat je AI toevoegt.",
+    "overview": "Gebruik deze review om te bepalen of een AI-feature of tool de extra impact waard is en of een lichtere aanpak ook volstaat.",
+    "useCases": [
+      {
+        "role": "Product",
+        "summary": "Nieuwe AI-features toetsen op businesswaarde versus impact."
+      },
+      {
+        "role": "Tech Lead",
+        "summary": "Modelkeuze en call-volume expliciet meewegen in ontwerpbesluiten."
+      }
+    ],
+    "quadrantId": 0,
+    "ringId": 2,
+    "tags": ["Sustainability", "Governance", "Decision Making"],
+    "dateAdded": "2025-11-17",
+    "link": "https://www.w3.org/TR/web-sustainability-guidelines/"
+  },
+  {
+    "id": "w3c-web-sustainability-guidelines",
+    "name": "W3C Web Sustainability Guidelines",
+    "subtitle": "Gebruik web sustainability-richtlijnen om AI-features kritischer te ontwerpen.",
+    "overview": "De WSG helpen teams om performance, energiegebruik en digitale duurzaamheid mee te nemen zodra AI extra calls, media of interface-complexiteit toevoegt.",
+    "useCases": [
+      {
+        "role": "Design",
+        "summary": "AI-ervaringen ontwerpen met minder verspilling en meer duidelijkheid."
+      },
+      {
+        "role": "Development",
+        "summary": "Front-end en inference-keuzes toetsen op duurzame impact."
+      }
+    ],
+    "quadrantId": 0,
+    "ringId": 2,
+    "tags": ["W3C", "Sustainability", "Web"],
+    "dateAdded": "2025-11-17",
+    "link": "https://www.w3.org/TR/web-sustainability-guidelines/"
+  },
+  {
+    "id": "autonomous-client-communication",
+    "name": "Autonomous Client Communication",
+    "subtitle": "Geen automatische klantcommunicatie zonder mens in de lus.",
+    "overview": "Laat AI niet zelfstandig antwoorden sturen naar klanten of stakeholders zonder review; het risico op verkeerde toon en toezeggingen is te groot.",
+    "useCases": [
+      {
+        "role": "Account",
+        "summary": "Klantcommunicatie expliciet laten controleren voordat iets verstuurd wordt."
+      },
+      {
+        "role": "Projectmanagement",
+        "summary": "Statusupdates en voorstellen niet volledig automatiseren."
+      }
+    ],
+    "quadrantId": 0,
+    "ringId": 3,
+    "tags": ["Client Work", "Risk", "Governance"],
+    "dateAdded": "2025-11-24",
+    "link": "https://www.nist.gov/itl/ai-risk-management-framework"
+  },
+  {
+    "id": "strategy-without-source-verification",
+    "name": "Strategy Without Source Verification",
+    "subtitle": "Gebruik AI niet als eindautoriteit voor strategie of research.",
+    "overview": "AI kan helpen verkennen en samenvatten, maar strategische keuzes zonder broncheck blijven te riskant voor standaardgebruik.",
+    "useCases": [
+      {
+        "role": "Strategie",
+        "summary": "Research en marktinzichten altijd langs bronnen en menselijke interpretatie leggen."
+      },
+      {
+        "role": "Leadership",
+        "summary": "Geen besluitvorming baseren op onbevestigde AI-samenvattingen."
+      }
+    ],
+    "quadrantId": 0,
+    "ringId": 3,
+    "tags": ["Research", "Strategy", "Source Checking"],
+    "dateAdded": "2025-11-24",
+    "link": "https://www.nist.gov/itl/ai-risk-management-framework"
+  },
+  {
+    "id": "chatgpt-business",
+    "name": "ChatGPT Business",
+    "subtitle": "Breed inzetbare AI-werkruimte voor schrijven, redeneren en analyse.",
+    "overview": "Sterke algemene keuze voor teams die een toegankelijke assistent willen voor dagelijkse kennis- en taalintensieve taken.",
+    "useCases": [
+      {
+        "role": "Strategie",
+        "summary": "Briefings, analyses en eerste denkrichtingen sneller uitwerken."
+      },
+      {
+        "role": "Projectmanagement",
+        "summary": "Samenvattingen, planningen en interne afstemming versnellen."
+      }
     ],
     "quadrantId": 1,
     "ringId": 0,
-    "tags": ["Provider", "LLM", "Google", "Multimodaal"],
-    "team": "Organisatiebreed",
-    "providerId": "google",
-    "costRange": "Medium",
-    "origin": "American",
-    "availabilitySummary": "Beschikbaar via Greenberry Google-accounts; Gemini Pro is standaard onderdeel van de Google-omgeving.",
-    "accessNotes": "Voor uitgebreider gebruik via API of extra adminfeatures stem je af met IT of Creative Tech.",
-    "pricingSummary": "Verpakking en prijs hangen af van product en gebruikssituatie; controleer de actuele commerciele opties per use case.",
-    "pricingUrl": "https://ai.google",
-    "modelEntries": [
+    "tags": ["LLM", "Workspace", "Generalist"],
+    "dateAdded": "2025-12-01",
+    "link": "https://openai.com/chatgpt/pricing/"
+  },
+  {
+    "id": "gemini-for-workspace",
+    "name": "Gemini for Workspace",
+    "subtitle": "Logische keuze voor teams die al sterk in Google Workspace werken.",
+    "overview": "Past goed bij dagelijkse documenten-, mail- en meetingworkflows als Google de centrale werkomgeving is.",
+    "useCases": [
       {
-        "name": "Gemini Flash",
-        "familyId": "gemini",
-        "summary": "Snelle optie voor hoge volumes en lage latency.",
-        "vendorLink": "https://ai.google",
-        "benchmarkLinks": [
-          { "label": "LMArena", "url": "https://lmarena.ai/" },
-          { "label": "Artificial Analysis", "url": "https://artificialanalysis.ai/" }
-        ]
+        "role": "Projectmanagement",
+        "summary": "Docs, mail en samenvattingen direct in de Google-omgeving versnellen."
       },
       {
-        "name": "Gemini Pro",
-        "familyId": "gemini",
-        "summary": "Breder redeneermodel voor complexere multimodale taken.",
-        "vendorLink": "https://ai.google",
-        "benchmarkLinks": [
-          { "label": "LMArena", "url": "https://lmarena.ai/" },
-          { "label": "Artificial Analysis", "url": "https://artificialanalysis.ai/" }
-        ]
+        "role": "Operations",
+        "summary": "Kenniswerk versnellen zonder van suite of accountcontext te wisselen."
       }
     ],
-    "links": ["https://ai.google"]
+    "quadrantId": 1,
+    "ringId": 0,
+    "tags": ["Google", "Workspace", "LLM"],
+    "dateAdded": "2025-12-01",
+    "link": "https://workspace.google.com/gemini/"
+  },
+  {
+    "id": "claude",
+    "name": "Claude",
+    "subtitle": "Sterke optie voor lang redeneren, schrijven en code-ondersteuning.",
+    "overview": "Voor teams die een alternatief willen met veel kwaliteit in langvormig werk, structurering en analyse.",
+    "useCases": [
+      {
+        "role": "Strategie",
+        "summary": "Complexe documenten en analyses structureren en aanscherpen."
+      },
+      {
+        "role": "Development",
+        "summary": "Code, technische uitleg en meerstaps denkwerk ondersteunen."
+      }
+    ],
+    "quadrantId": 1,
+    "ringId": 1,
+    "tags": ["Anthropic", "LLM", "Reasoning"],
+    "dateAdded": "2025-12-08",
+    "link": "https://www.anthropic.com/pricing"
   },
   {
     "id": "mistral-platform",
     "name": "Mistral Platform",
-    "shortDesc": "Mistral is een Europees AI-platform dat interessant is voor regionaal gevoelige workflows.",
-    "notes": "Mistral is relevant wanneer Europese context, deploymentflexibiliteit of alternatieve inkooproutes meewegen in de keuze. Gebruik deze blip om het platform te beoordelen op privacy, contracten en regionale inzetbaarheid.",
-    "entityType": "provider",
+    "subtitle": "Europese AI-optie voor teams die regionale en privacyafwegingen willen toetsen.",
+    "overview": "Interessant wanneer Europese positionering, inkooproutes of governance-zwaarte zwaarder meewegen in de platformkeuze.",
     "useCases": [
-      { "role": "Projectmanager", "summary": "Conceptteksten en samenvattingen waarbij regionale afwegingen belangrijk zijn." },
-      { "role": "Strateeg", "summary": "Onderzoek en marktwerk met Europese gevoeligheid." },
-      { "role": "Operations", "summary": "Governance-evaluatie van alternatieve providers." }
-    ],
-    "quadrantId": 3,
-    "ringId": 2,
-    "tags": ["Provider", "LLM", "Europees", "Privacy"],
-    "team": "Organisatiebreed",
-    "providerId": "mistral",
-    "costRange": "Low",
-    "origin": "European",
-    "availabilitySummary": "Nog niet standaard beschikbaar binnen Greenberry; inzet is vooral relevant voor evaluatie en privacygevoelige trajecten.",
-    "accessNotes": "Vraag een pilot of beoordeling aan via Creative Tech of de AI-verantwoordelijke.",
-    "pricingSummary": "Vergelijk commerciele opties direct met regionale, juridische en deployment-eisen voordat je een keuze maakt.",
-    "pricingUrl": "https://mistral.ai",
-    "modelEntries": [
       {
-        "name": "Le Chat",
-        "summary": "Chatervaring voor dagelijkse evaluatie en workflowtests.",
-        "vendorLink": "https://mistral.ai",
-        "benchmarkLinks": [
-          { "label": "LMArena", "url": "https://lmarena.ai/" },
-          { "label": "Artificial Analysis", "url": "https://artificialanalysis.ai/" }
-        ]
+        "role": "Operations",
+        "summary": "Alternatieve providerkeuzes toetsen voor privacy- en contractafwegingen."
       },
       {
-        "name": "Mistral Platform Models",
-        "summary": "Modellenreeks om te beoordelen voor enterprise- of API-workflows.",
-        "vendorLink": "https://mistral.ai",
-        "benchmarkLinks": [
-          { "label": "LMArena", "url": "https://lmarena.ai/" },
-          { "label": "Artificial Analysis", "url": "https://artificialanalysis.ai/" }
-        ]
+        "role": "Leadership",
+        "summary": "Europese opties vergelijken met dominante platformaanbieders."
       }
     ],
-    "links": ["https://mistral.ai"]
+    "quadrantId": 1,
+    "ringId": 1,
+    "tags": ["European", "LLM", "Platform"],
+    "dateAdded": "2025-12-08",
+    "link": "https://docs.mistral.ai/deployment/laplateforme/overview/"
   },
   {
-    "id": "firebase-studio",
-    "name": "Firebase Studio",
-    "shortDesc": "Firebase Studio is geschikt voor het bouwen van interne tools en snelle MVP-prototypes.",
-    "notes": "Gebruik Firebase Studio als je snel van idee naar werkend prototype wilt gaan. Het is vooral sterk voor interne tools, kleine MVP's en proof-of-concepts waarbij snelheid belangrijker is dan volledige productafwerking.",
-    "entityType": "product",
+    "id": "local-llm-usage",
+    "name": "Local LLM Usage",
+    "subtitle": "Lokale modellen zijn interessant voor vertrouwelijke en offline experimenten.",
+    "overview": "Deze richting is relevant zodra teams kleine interne taken willen testen zonder directe afhankelijkheid van een cloudprovider.",
     "useCases": [
-      { "role": "Ontwikkelaar", "summary": "Interne tools, MVP's en snelle experimenten bouwen." },
-      { "role": "Designer", "summary": "Concepten valideren met werkende interfaces." },
-      { "role": "Projectmanager", "summary": "Testbare concepten maken voor afstemming met stakeholders." }
+      {
+        "role": "Development",
+        "summary": "Lichte interne helpers en lokale workflows uitproberen."
+      },
+      {
+        "role": "Operations",
+        "summary": "Privacygevoelige concepttaken verkennen zonder externe API-call."
+      }
     ],
-    "quadrantId": 0,
-    "ringId": 0,
-    "tags": ["Prototyping", "Interne tools", "Google"],
-    "team": "Engineering",
-    "costRange": "Medium",
-    "origin": "American",
-    "sustainabilityNotes": "Publieke duurzaamheidsinformatie moet nog worden geverifieerd.",
-    "securityNotes": "Gebruik alleen goedgekeurde workspace- en projectinstellingen voor interne of klantgerichte prototypes.",
-    "ethicsNotes": "Controleer gegenereerde logica en gekoppelde datastromen altijd voor productiegebruik.",
-    "availabilitySummary": "Beschikbaar voor collega's met een Google-account en toegang tot de relevante Firebase-projecten.",
-    "accessNotes": "Vraag projecttoegang of een nieuwe workspace aan via je tech lead.",
-    "pricingSummary": "Kosten hangen af van de gekoppelde Firebase- en cloudservices die je prototype gebruikt.",
-    "pricingUrl": "https://firebase.google.com/docs/studio",
-    "links": ["https://firebase.google.com/docs/studio"]
+    "quadrantId": 1,
+    "ringId": 2,
+    "tags": ["Local", "Privacy", "Experiment"],
+    "dateAdded": "2025-12-15",
+    "link": "https://ollama.com/"
+  },
+  {
+    "id": "open-weight-model-evaluation",
+    "name": "Open-Weight Model Evaluation",
+    "subtitle": "Open-weight modellen zijn het waard om gericht te vergelijken.",
+    "overview": "Nuttig als we lichtere, goedkopere of meer controleerbare modellen willen beoordelen voor specifieke interne use cases.",
+    "useCases": [
+      {
+        "role": "Development",
+        "summary": "Kleine classificatie- of samenvattingstaken goedkoper toetsen."
+      },
+      {
+        "role": "Tech Lead",
+        "summary": "Gerichte modelvergelijking doen voor afgebakende workloads."
+      }
+    ],
+    "quadrantId": 1,
+    "ringId": 2,
+    "tags": ["Open Weights", "Evaluation", "Models"],
+    "dateAdded": "2025-12-15",
+    "link": "https://huggingface.co/models"
+  },
+  {
+    "id": "self-hosted-open-weight-stack",
+    "name": "Self-Hosted Open-Weight Stack",
+    "subtitle": "Volledig self-hosten is nu te zwaar voor onze standaardrichting.",
+    "overview": "De operationele last van hosting, security, updates en evaluatie is op dit moment groter dan de structurele winst voor de meeste teams.",
+    "useCases": [
+      {
+        "role": "Infrastructure",
+        "summary": "Alleen verkennen wanneer er een uitzonderlijk sterke reden voor is."
+      },
+      {
+        "role": "Leadership",
+        "summary": "Niet als standaardpad kiezen voor brede organisatie-adoptie."
+      }
+    ],
+    "quadrantId": 1,
+    "ringId": 3,
+    "tags": ["Self-hosted", "Operations", "Complexity"],
+    "dateAdded": "2025-12-22",
+    "link": "https://ollama.com/"
+  },
+  {
+    "id": "consumer-ai-companions",
+    "name": "Consumer AI Companions",
+    "subtitle": "Consumenten-chatbots passen niet goed bij werk en klantlevering.",
+    "overview": "Deze categorie is te zwak op governance, beheer en werkcontext om nu als professionele standaardrichting te zien.",
+    "useCases": [
+      {
+        "role": "Operations",
+        "summary": "Niet inzetten voor teamstandaarden of klantwerk."
+      },
+      {
+        "role": "Leadership",
+        "summary": "Duidelijk afbakenen wat wel en niet past in de werkstack."
+      }
+    ],
+    "quadrantId": 1,
+    "ringId": 3,
+    "tags": ["Consumer", "Governance", "Hold"],
+    "dateAdded": "2025-12-22",
+    "link": "https://character.ai/"
   },
   {
     "id": "cursor",
     "name": "Cursor",
-    "shortDesc": "Cursor is een AI-first code-editor voor dagelijks ontwikkelwerk.",
-    "notes": "Cursor is relevant voor engineeringteams die een editor willen voor coderen, refactoren, debuggen en codebase-onderzoek. Gebruik deze blip als operationele keuze voor dagelijks ontwikkelwerk, niet als modelvergelijking.",
-    "entityType": "product",
+    "subtitle": "AI-native editor voor dagelijks ontwikkelwerk.",
+    "overview": "Sterke keuze voor teams die coderen, refactoren en codebases verkennen vanuit een editor-centrische workflow.",
     "useCases": [
-      { "role": "Ontwikkelaar", "summary": "Dagelijks coderen, refactoren, debuggen en navigeren door de codebase." },
-      { "role": "Tech lead", "summary": "Sneller implementaties beoordelen en codebases verkennen." }
+      {
+        "role": "Development",
+        "summary": "Dagelijks coderen, refactoren en debuggen versnellen."
+      },
+      {
+        "role": "Tech Lead",
+        "summary": "Sneller context opbouwen in grotere codebases."
+      }
     ],
     "quadrantId": 2,
     "ringId": 0,
-    "tags": ["IDE", "Coding", "Ontwikkeltool"],
-    "team": "Engineering",
-    "costRange": "Low",
-    "origin": "American",
-    "sustainabilityNotes": "Publieke duurzaamheidsinformatie moet nog worden geverifieerd.",
-    "securityNotes": "Controleer privacy-instellingen, adminbeheer en gebruiksafspraken voordat je Cursor inzet op gevoelig werk.",
-    "ethicsNotes": "Menselijke review blijft nodig voor productiecode en klantwerk.",
-    "availabilitySummary": "Ontwikkelaars beschikken over Cursor-accounts voor dagelijks ontwikkelwerk.",
-    "accessNotes": "Heb je nog geen seat, vraag die dan aan via je tech lead of het verantwoordelijke engineeringteam.",
-    "pricingSummary": "Prijs is seat-gebaseerd; controleer actuele teamopties en privacyinstellingen voordat je uitbreidt.",
-    "pricingUrl": "https://cursor.com/pricing",
-    "links": ["https://cursor.com"]
+    "tags": ["IDE", "Coding", "AI Editor"],
+    "dateAdded": "2026-01-05",
+    "link": "https://cursor.com/pricing"
   },
   {
-    "id": "gitlab-duo",
-    "name": "GitLab Duo",
-    "shortDesc": "GitLab Duo biedt AI-ondersteuning binnen de GitLab-workflow van developers.",
-    "notes": "GitLab Duo is vooral relevant wanneer teams AI-hulp willen binnen hun bestaande GitLab-processen. Gebruik het voor codehulp, merge request-ondersteuning en workflowtaken zonder van editor of platform te wisselen.",
-    "entityType": "product",
+    "id": "github-copilot",
+    "name": "GitHub Copilot",
+    "subtitle": "Breed inzetbare code-assistent in IDE en GitHub-workflow.",
+    "overview": "Goede standaardoptie voor teams die AI-hulp in bestaande developmentflows willen zonder zware procesverandering.",
     "useCases": [
-      { "role": "Ontwikkelaar", "summary": "Ondersteuning bij coderen, uitleg en merge request-werk binnen GitLab." },
-      { "role": "Engineering manager", "summary": "Brede inzet in een bestaande GitLab-omgeving met beheersbare adoptie." }
-    ],
-    "quadrantId": 2,
-    "ringId": 1,
-    "tags": ["IDE", "Coding", "GitLab"],
-    "team": "Engineering",
-    "costRange": "Low",
-    "origin": "American",
-    "sustainabilityNotes": "Publieke duurzaamheidsinformatie moet nog worden geverifieerd.",
-    "securityNotes": "Controleer licentie-, admin- en data-instellingen binnen GitLab voordat je Duo breed uitrolt.",
-    "ethicsNotes": "Menselijke review blijft nodig voor productiecode en klantwerk.",
-    "availabilitySummary": "Ontwikkelaars met toegang tot onze GitLab-omgeving kunnen GitLab Duo gebruiken waar het project- of licentieniveau dat ondersteunt.",
-    "accessNotes": "Vraag activering of extra licenties aan via je tech lead of beheerder van de GitLab-omgeving.",
-    "pricingSummary": "Prijs is licentie-gebaseerd; stem uitbreiding af op teamgrootte en gewenste features.",
-    "pricingUrl": "https://about.gitlab.com/gitlab-duo/",
-    "links": ["https://about.gitlab.com/gitlab-duo/"]
-  },
-  {
-    "id": "claude-code",
-    "name": "Claude Code",
-    "shortDesc": "Claude Code is een terminal-native AI-product voor meerstaps engineeringwerk.",
-    "notes": "Claude Code is een aparte productkeuze omdat het verandert hoe engineeringwerk in de terminal wordt uitgevoerd. Gebruik het voor codebasebrede wijzigingen, CLI-workflows en meerstaps implementaties.",
-    "entityType": "product",
-    "useCases": [
-      { "role": "Ontwikkelaar", "summary": "Codebasewijzigingen, CLI-workflows en meerstaps engineeringtaken." },
-      { "role": "Tech lead", "summary": "Gecontroleerde agentische uitvoering voor grotere technische wijzigingen." }
+      {
+        "role": "Development",
+        "summary": "Sneller boilerplate, tests en code-aanzetten maken."
+      },
+      {
+        "role": "Engineering Management",
+        "summary": "Brede adoptie mogelijk maken binnen bestaande GitHub-processen."
+      }
     ],
     "quadrantId": 2,
     "ringId": 0,
-    "tags": ["CLI", "Coding", "Agentisch", "Anthropic"],
-    "team": "Engineering",
-    "providerId": "anthropic",
-    "familyId": "claude",
-    "costRange": "Medium",
-    "origin": "American",
-    "availabilitySummary": "Niet standaard voor iedere developer beschikbaar; inzet is vooral logisch voor terminal-zware workflows.",
-    "accessNotes": "Vraag toegang aan via je tech lead als jouw project baat heeft bij terminal-native agentische ondersteuning.",
-    "pricingSummary": "Commerciele voorwaarden hangen samen met het omliggende Anthropic-product en gebruikspatroon.",
-    "pricingUrl": "https://www.anthropic.com/claude-code",
-    "links": ["https://www.anthropic.com/claude-code"]
+    "tags": ["GitHub", "Coding", "Assistant"],
+    "dateAdded": "2026-01-05",
+    "link": "https://github.com/features/copilot"
   },
   {
-    "id": "warp",
-    "name": "Warp",
-    "shortDesc": "Warp is een terminal met AI-ondersteuning voor command-line productiviteit.",
-    "notes": "Warp is vooral relevant voor engineering- en operations-teams die een meer begeleide terminalervaring willen. Gebruik het voor command discovery, herhaalbare shell-workflows en productiviteitswinst in de terminal.",
-    "entityType": "product",
+    "id": "notion-ai",
+    "name": "Notion AI",
+    "subtitle": "Interessant voor samenvatten, zoeken en licht kenniswerk in Notion.",
+    "overview": "Past vooral wanneer teams hun werk en documentatie al centraal in Notion organiseren en AI daar direct op willen laten aansluiten.",
     "useCases": [
-      { "role": "Ontwikkelaar", "summary": "Command-line productiviteit en herhaalbare shell-workflows." },
-      { "role": "Operations", "summary": "Sneller terminalwerk en beter gedeelde command-habits." }
+      {
+        "role": "Operations",
+        "summary": "Besluiten, notities en documentatie sneller doorzoekbaar maken."
+      },
+      {
+        "role": "Projectmanagement",
+        "summary": "Actielijsten en samenvattingen uit bestaande workspace-content halen."
+      }
     ],
     "quadrantId": 2,
     "ringId": 1,
-    "tags": ["CLI", "Terminal", "Productiviteit"],
-    "team": "Engineering",
-    "costRange": "Low",
-    "origin": "American",
-    "sustainabilityNotes": "Publieke duurzaamheidsinformatie moet nog worden geverifieerd.",
-    "securityNotes": "Controleer cloudfeatures en teaminstellingen voordat je Warp inzet in gevoelige workflows.",
-    "ethicsNotes": "De directe ethische impact is beperkt, maar menselijke controle blijft nodig bij commando-uitvoering.",
-    "availabilitySummary": "Nog geen standaardtooling; inzet is nu vooral relevant voor teams die veel in de terminal werken.",
-    "accessNotes": "Vraag een proeflicentie aan via je tech lead als Warp waardevol lijkt voor jouw workflow.",
-    "pricingSummary": "Prijs hangt af van plan en teamfeatures; controleer de actuele opties voordat je standaardiseert.",
-    "pricingUrl": "https://www.warp.dev/pricing",
-    "links": ["https://www.warp.dev"]
-  },
-  {
-    "id": "windsurf",
-    "name": "Windsurf",
-    "shortDesc": "Windsurf is een AI-IDE die interessant is als alternatief voor huidige editor-workflows.",
-    "notes": "Gebruik Windsurf vooral als vergelijkingsblip: niet als standaard, maar om AI-native editorervaringen en agentische flows naast bestaande tools te leggen.",
-    "entityType": "product",
-    "useCases": [
-      { "role": "Ontwikkelaar", "summary": "Alternatieve AI-IDE testen in dagelijks ontwikkelwerk." },
-      { "role": "Engineering lead", "summary": "Vergelijken van editorstandaarden en agentische flows." }
-    ],
-    "quadrantId": 2,
-    "ringId": 2,
-    "tags": ["IDE", "Coding", "Agentisch"],
-    "team": "Engineering",
-    "costRange": "Low",
-    "origin": "American",
-    "sustainabilityNotes": "Publieke duurzaamheidsinformatie moet nog worden geverifieerd.",
-    "securityNotes": "Controleer actuele adminfuncties, privacyinstellingen en enterprise-praktijken voordat je een pilot start.",
-    "ethicsNotes": "Menselijke review blijft nodig voor productiecode en klantwerk.",
-    "availabilitySummary": "Nog geen standaardtool; op dit moment vooral relevant voor gerichte vergelijkingstrajecten.",
-    "accessNotes": "Vraag een pilot aan via je tech lead als je Windsurf expliciet wilt vergelijken met bestaande editors.",
-    "pricingSummary": "Prijs hoort mee te lopen in de bredere editorvergelijking en is geen los besluitpunt.",
-    "pricingUrl": "https://windsurf.com",
-    "links": ["https://windsurf.com"]
-  },
-  {
-    "id": "v0",
-    "name": "v0 by Vercel",
-    "shortDesc": "v0 versnelt front-end prototyping en design-to-code verkenning.",
-    "notes": "Gebruik v0 wanneer snelheid van visuele iteratie belangrijker is dan perfect handwerk in de eerste stap. Het werkt goed voor front-end prototypes, interfaceverkenning en snellere afstemming tussen design en development.",
-    "entityType": "product",
-    "useCases": [
-      { "role": "Designer", "summary": "Concepten valideren, copy verkennen en UI-richtingen testen." },
-      { "role": "Ontwikkelaar", "summary": "Snelle startpunten maken voor front-end werk." },
-      { "role": "Projectmanager", "summary": "Sneller reviewbare prototypes met stakeholders delen." }
-    ],
-    "quadrantId": 0,
-    "ringId": 1,
-    "tags": ["UI", "Prototyping", "Design", "React"],
-    "team": "Creative Tech",
-    "costRange": "Low",
-    "origin": "American",
-    "sustainabilityNotes": "Publieke duurzaamheidsinformatie moet nog worden geverifieerd.",
-    "securityNotes": "Plaats geen gevoelige data in gehoste prototypeflows tenzij de instellingen expliciet zijn goedgekeurd.",
-    "ethicsNotes": "Menselijke review is nodig voordat gegenereerde UI of copy als definitief wordt beschouwd.",
-    "availabilitySummary": "Nog geen standaardlicentie voor iedereen; inzet is vooral relevant voor prototyping en verkenning.",
-    "accessNotes": "Vraag toegang aan via Creative Tech wanneer v0 direct waarde toevoegt aan een prototype- of ontwerptraject.",
-    "pricingSummary": "Prijs hangt af van plan en verbruik; controleer actuele limieten en teamopties voordat je uitbreidt.",
-    "pricingUrl": "https://v0.dev",
-    "links": ["https://v0.dev"]
-  },
-  {
-    "id": "perplexity",
-    "name": "Perplexity",
-    "shortDesc": "Perplexity ondersteunt snel onderzoek, bronverwijzingen en vroege synthese.",
-    "notes": "Perplexity is vooral relevant als onderzoeksondersteuning in de vroege fase. Gebruik het voor briefing, eerste verkenning, concurrentiescans en snelle samenvattingen, maar niet als eindautoriteit voor belangrijke besluiten.",
-    "entityType": "product",
-    "useCases": [
-      { "role": "Strateeg", "summary": "Concurrentiescans en snelle onderzoekssynthese." },
-      { "role": "Projectmanager", "summary": "Briefing, samenvatting en context verzamelen." },
-      { "role": "Designer", "summary": "Referenties en trendonderzoek ophalen." }
-    ],
-    "quadrantId": 1,
-    "ringId": 1,
-    "tags": ["Onderzoek", "Zoeken", "Productiviteit"],
-    "team": "Creative Tech",
-    "costRange": "Low",
-    "origin": "American",
-    "sustainabilityNotes": "Publieke duurzaamheidsinformatie moet nog worden geverifieerd.",
-    "securityNotes": "Gebruik Perplexity terughoudend bij vertrouwelijk werk en controleer altijd de kwaliteit van bronnen.",
-    "ethicsNotes": "Behandel gegenereerde antwoorden niet als feiten zonder broncontrole.",
-    "availabilitySummary": "Nog geen standaardlicentie voor alle collega's; inzet is vooral relevant voor research use cases.",
-    "accessNotes": "Vraag toegang aan wanneer je team aantoonbaar baat heeft bij snelle brongebaseerde research.",
-    "pricingSummary": "Prijs is plan-gebaseerd met gebruikslimieten; controleer actuele opties voordat je structureel inzet.",
-    "pricingUrl": "https://www.perplexity.ai",
-    "links": ["https://www.perplexity.ai"]
+    "tags": ["Knowledge Work", "Workspace", "Documentation"],
+    "dateAdded": "2026-01-12",
+    "link": "https://www.notion.com/ai"
   },
   {
     "id": "transcriptor",
     "name": "Transcriptor",
-    "shortDesc": "Transcriptor ondersteunt meeting capture, samenvattingen en doorzoekbare gesprekshistorie.",
-    "notes": "Gebruik Transcriptor wanneer teams een gestructureerd verslag willen van meetings, interviews of workshops. Het helpt vooral wanneer doorzoekbare meetinghistorie meer waarde heeft dan losse notities.",
-    "entityType": "product",
+    "subtitle": "Meeting capture en transcriptzoekwerk die we gericht willen uitproberen.",
+    "overview": "Relevant wanneer teams interview-, workshop- of meetinghistorie beter vindbaar en bruikbaar willen maken.",
     "useCases": [
-      { "role": "Projectmanager", "summary": "Acties, samenvattingen en opvolging uit meetings vastleggen." },
-      { "role": "Operations", "summary": "Doorzoekbaar geheugen opbouwen van interne gesprekken." },
-      { "role": "Strateeg", "summary": "Interviews en workshops goed vastleggen." }
+      {
+        "role": "Research",
+        "summary": "Interviews en sessies sneller terugvinden en samenvatten."
+      },
+      {
+        "role": "Projectmanagement",
+        "summary": "Meetingnotes en besluiten beter documenteren."
+      }
     ],
     "quadrantId": 2,
     "ringId": 1,
-    "tags": ["Meetings", "Transcriptie", "Operations"],
-    "team": "Operations",
-    "costRange": "Low",
-    "origin": "European",
-    "sustainabilityNotes": "Publieke duurzaamheidsinformatie moet nog worden geverifieerd.",
-    "securityNotes": "Controleer toestemming voor opname, retentie en regionale data-instellingen voordat je breder uitrolt.",
-    "ethicsNotes": "Gebruik heldere toestemmings- en reviewafspraken voor opgenomen gesprekken.",
-    "availabilitySummary": "Beschikbaar voor teams die meetings structureel opnemen en samenvatten; niet standaard voor iedereen uitgerold.",
-    "accessNotes": "Vraag een seat of pilot aan via Operations wanneer meeting capture een duidelijke meerwaarde heeft.",
-    "pricingSummary": "Prijs moet worden afgewogen tegen verwacht vergadervolume en het aantal benodigde seats.",
-    "pricingUrl": "https://transcriptor.ai",
-    "links": ["https://transcriptor.ai"]
+    "tags": ["Transcription", "Meetings", "Search"],
+    "dateAdded": "2026-01-12",
+    "link": "https://transcriptor.ai/"
+  },
+  {
+    "id": "figma-ai",
+    "name": "Figma AI",
+    "subtitle": "Handig voor eerste conceptversnelling, maar nog niet ons standaardpad.",
+    "overview": "Interessant voor vroege layout- en copy-iteraties, mits het echte ontwerp- en productiewerk daarna bewust wordt uitgewerkt.",
+    "useCases": [
+      {
+        "role": "Design",
+        "summary": "Snel visuele varianten en eerste richtingen genereren."
+      },
+      {
+        "role": "Product",
+        "summary": "Concepten sneller tastbaar maken voor interne afstemming."
+      }
+    ],
+    "quadrantId": 2,
+    "ringId": 2,
+    "tags": ["Design", "UI", "Concepting"],
+    "dateAdded": "2026-01-19",
+    "link": "https://www.figma.com/ai/"
+  },
+  {
+    "id": "gamma",
+    "name": "Gamma",
+    "subtitle": "Snelle tool voor interne decks, verhaallijnen en eerste presentaties.",
+    "overview": "Sterk voor eerste structuur en snelheid, maar nog te vroeg om als standaardpresentatieworkflow te bestempelen.",
+    "useCases": [
+      {
+        "role": "Strategie",
+        "summary": "Interne storyline en eerste deck-opzet sneller maken."
+      },
+      {
+        "role": "Projectmanagement",
+        "summary": "Conceptpresentaties en statusverhalen snel structureren."
+      }
+    ],
+    "quadrantId": 2,
+    "ringId": 2,
+    "tags": ["Presentations", "Storytelling", "Internal"],
+    "dateAdded": "2026-01-19",
+    "link": "https://gamma.app/"
+  },
+  {
+    "id": "fireflies",
+    "name": "Fireflies",
+    "subtitle": "Always-on meeting bots zijn nu geen standaardrichting voor ons.",
+    "overview": "Deze categorie levert niet automatisch genoeg extra waarde op om standaard in elke workflow mee te laten draaien.",
+    "useCases": [
+      {
+        "role": "Operations",
+        "summary": "Alleen gebruiken als een team een duidelijke, terugkerende noodzaak heeft."
+      },
+      {
+        "role": "Leadership",
+        "summary": "Niet als default voor elke meeting of elk account invoeren."
+      }
+    ],
+    "quadrantId": 2,
+    "ringId": 3,
+    "tags": ["Meetings", "Bots", "Hold"],
+    "dateAdded": "2026-01-26",
+    "link": "https://fireflies.ai/"
+  },
+  {
+    "id": "shortwave",
+    "name": "Shortwave",
+    "subtitle": "Standalone AI-inbox tooling is nu geen prioritaire workflowkeuze.",
+    "overview": "Interessant als nicheproduct, maar nog niet overtuigend genoeg als standaardtool naast onze bestaande suite en werkafspraken.",
+    "useCases": [
+      {
+        "role": "Operations",
+        "summary": "Mailboxoptimalisatie alleen overwegen bij een duidelijke teambehoefte."
+      },
+      {
+        "role": "Projectmanagement",
+        "summary": "Niet breed uitrollen zonder sterk bewijs van tijdswinst."
+      }
+    ],
+    "quadrantId": 2,
+    "ringId": 3,
+    "tags": ["Email", "Workflow", "Hold"],
+    "dateAdded": "2026-01-26",
+    "link": "https://www.shortwave.com/"
+  },
+  {
+    "id": "v0",
+    "name": "v0",
+    "subtitle": "Snelle route naar web-UI-prototypes en productconcepten.",
+    "overview": "Goede standaardkeuze wanneer snelheid van interfaceverkenning belangrijker is dan perfecte handmatige uitwerking in de eerste stap.",
+    "useCases": [
+      {
+        "role": "Design",
+        "summary": "UI-richtingen en flows snel visueel maken."
+      },
+      {
+        "role": "Development",
+        "summary": "Front-end concepten sneller toetsen en bespreken."
+      }
+    ],
+    "quadrantId": 3,
+    "ringId": 0,
+    "tags": ["Prototyping", "Web", "UI"],
+    "dateAdded": "2026-02-02",
+    "link": "https://v0.dev/docs/faqs"
   },
   {
     "id": "lovable",
     "name": "Lovable",
-    "shortDesc": "Lovable helpt om ideeen snel om te zetten in appconcepten en vroege MVP's.",
-    "notes": "Gebruik Lovable als speed tool voor conceptvalidatie en snelle MVP-verkenning. Het is vooral nuttig in de vroege fase van productgesprekken, niet als vervanging voor engineering review.",
-    "entityType": "product",
+    "subtitle": "Sterke speed tool voor appconcepten en vroege MVP-richtingen.",
+    "overview": "Handig om productideeën snel tastbaar te maken voordat engineering-investering of detailuitwerking start.",
     "useCases": [
-      { "role": "Designer", "summary": "Concepten en interacties snel verkennen." },
-      { "role": "Ontwikkelaar", "summary": "Snelle startpunten maken voor MVP-richtingen." },
-      { "role": "Projectmanager", "summary": "Appconcepten snel tastbaar maken voor stakeholders." }
+      {
+        "role": "Product",
+        "summary": "Vroege productideeën snel omzetten in klikbare concepten."
+      },
+      {
+        "role": "Strategie",
+        "summary": "Conceptvalidatie versnellen in een vroege fase."
+      }
     ],
-    "quadrantId": 0,
+    "quadrantId": 3,
+    "ringId": 0,
+    "tags": ["MVP", "App Builder", "Concept"],
+    "dateAdded": "2026-02-02",
+    "link": "https://lovable.dev/"
+  },
+  {
+    "id": "replit-agent",
+    "name": "Replit Agent",
+    "subtitle": "Interessant voor snelle agentische app-experimenten in de browser.",
+    "overview": "Nuttig om te testen waar prompt-to-app flows genoeg opleveren, maar nog niet onze standaardroute voor prototypes.",
+    "useCases": [
+      {
+        "role": "Development",
+        "summary": "Snel browser-based experimenten en proof-of-concepts opzetten."
+      },
+      {
+        "role": "Product",
+        "summary": "Eerste werkende concepten maken om aannames te bespreken."
+      }
+    ],
+    "quadrantId": 3,
+    "ringId": 1,
+    "tags": ["Agentic", "Prototype", "Browser IDE"],
+    "dateAdded": "2026-02-09",
+    "link": "https://replit.com/products/agent"
+  },
+  {
+    "id": "figma-make",
+    "name": "Figma Make",
+    "subtitle": "Prompt-to-prototype vanuit Figma is veelbelovend, maar nog in verkenning.",
+    "overview": "Interessant als brug tussen design en functionele prototypes, vooral wanneer teams al zwaar op Figma leunen.",
+    "useCases": [
+      {
+        "role": "Design",
+        "summary": "Van ontwerp naar functioneel prototype sneller bewegen."
+      },
+      {
+        "role": "Product",
+        "summary": "Interactieconcepten tastbaar maken voor interne review."
+      }
+    ],
+    "quadrantId": 3,
+    "ringId": 1,
+    "tags": ["Figma", "Prototype", "Prompt to Code"],
+    "dateAdded": "2026-02-09",
+    "link": "https://developers.figma.com/docs/code/intro-to-figma-make/"
+  },
+  {
+    "id": "bolt",
+    "name": "Bolt",
+    "subtitle": "Veelbelovend voor snelle appgeneratie, maar nog geen standaardpad.",
+    "overview": "Sterk genoeg om te blijven testen voor snelle web-appconcepten, maar nog niet bewezen als standaardtool in ons prototypeproces.",
+    "useCases": [
+      {
+        "role": "Development",
+        "summary": "Snelle web-appconcepten vergelijken met andere generators."
+      },
+      {
+        "role": "Product",
+        "summary": "Eerste werkende flows bouwen voor interne discussie."
+      }
+    ],
+    "quadrantId": 3,
     "ringId": 2,
-    "tags": ["Appbouwer", "Prototyping", "MVP"],
-    "team": "Engineering",
-    "costRange": "Low",
-    "origin": "European",
-    "sustainabilityNotes": "Publieke duurzaamheidsinformatie moet nog worden geverifieerd.",
-    "securityNotes": "Controleer gegenereerde code, hostingkeuzes en datastromen voordat je iets richting productie beweegt.",
-    "ethicsNotes": "Menselijke review is nodig voordat gegenereerd gedrag of copy als definitief wordt gezien.",
-    "availabilitySummary": "Nog geen standaardlicentie; inzet is vooral relevant voor snelle prototype- en MVP-verkenning.",
-    "accessNotes": "Vraag toegang aan via Engineering of Creative Tech wanneer snelheid van validatie doorslaggevend is.",
-    "pricingSummary": "Prijs is plan-gebaseerd; controleer actuele limieten voordat je een teamafspraak maakt.",
-    "pricingUrl": "https://lovable.dev",
-    "links": ["https://lovable.dev"]
+    "tags": ["App Builder", "Web", "Assess"],
+    "dateAdded": "2026-02-16",
+    "link": "https://bolt.new/"
+  },
+  {
+    "id": "builder-visual-copilot",
+    "name": "Builder Visual Copilot",
+    "subtitle": "Design-to-code automation is relevant, maar nog niet overtuigend als standaardroute.",
+    "overview": "Interessant wanneer teams bestaande componenten en designsystemen slimmer willen benutten, maar eerst is meer bewijs nodig in onze context.",
+    "useCases": [
+      {
+        "role": "Development",
+        "summary": "Designs sneller omzetten naar code binnen bestaande componentstructuren."
+      },
+      {
+        "role": "Design",
+        "summary": "Onderzoeken waar design-to-code echt tijdswinst oplevert."
+      }
+    ],
+    "quadrantId": 3,
+    "ringId": 2,
+    "tags": ["Design to Code", "Automation", "Components"],
+    "dateAdded": "2026-02-16",
+    "link": "https://www.builder.io/ai"
+  },
+  {
+    "id": "firebase-studio",
+    "name": "Firebase Studio",
+    "subtitle": "Geen richting meer waar we verder op willen bouwen.",
+    "overview": "We behandelen Firebase Studio voorlopig niet als forward path voor onze starter radar, ook al kan het nog waarde hebben in specifieke gevallen.",
+    "useCases": [
+      {
+        "role": "Development",
+        "summary": "Alleen gebruiken als er al bestaand werk of context aan hangt."
+      },
+      {
+        "role": "Leadership",
+        "summary": "Niet kiezen als standaardtool om nieuwe prototypeflows op te zetten."
+      }
+    ],
+    "quadrantId": 3,
+    "ringId": 3,
+    "tags": ["Prototype", "Legacy", "Hold"],
+    "dateAdded": "2026-02-23",
+    "link": "https://firebase.google.com/docs/studio"
+  },
+  {
+    "id": "autonomous-backend-generation",
+    "name": "Autonomous Backend Generation",
+    "subtitle": "Volledig backendwerk genereren zonder review is nu te risicovol.",
+    "overview": "Deze richting blijft buiten onze standaardaanpak zolang betrouwbaarheid, security en onderhoudbaarheid onvoldoende beheersbaar zijn.",
+    "useCases": [
+      {
+        "role": "Development",
+        "summary": "Niet inzetten zonder duidelijke review- en testlaag."
+      },
+      {
+        "role": "Tech Lead",
+        "summary": "Geen standaardroute maken voor productiegericht backendwerk."
+      }
+    ],
+    "quadrantId": 3,
+    "ringId": 3,
+    "tags": ["Backend", "Risk", "Hold"],
+    "dateAdded": "2026-02-23",
+    "link": "https://replit.com/products/agent"
   }
 ]

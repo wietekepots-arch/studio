@@ -422,22 +422,6 @@ export async function reviewBlip(
     updatedAt: now,
     updatedBy: reviewer.uid,
   });
-
-  await appendBlipHistory(db, blip.id, {
-    blipId: blip.id,
-    itemId: blip.id,
-    action:
-      nextStatus === "Approved"
-        ? "approved"
-        : nextStatus === "Archived"
-          ? "archived"
-          : "sent back to draft",
-    note: trimmedNote,
-    before: blip.status,
-    after: nextStatus,
-    createdAt: now,
-    createdBy: reviewer.uid,
-  });
 }
 
 function shouldResetSeedDoc(

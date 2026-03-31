@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   addDoc,
@@ -81,6 +81,7 @@ import {
 import { TEAM_OPTIONS } from "@/lib/team-options";
 import common from "@/content/common.json";
 import formContent from "@/content/pages/blip-form.json";
+import { cn } from "@/lib/utils";
 
 interface RadarBlipFormProps {
   initialBlip?: Blip | null;
@@ -392,6 +393,8 @@ export function RadarBlipForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiNeedsVerification, setAiNeedsVerification] = useState<string[]>([]);
+  const [ringChangeReasonError, setRingChangeReasonError] = useState(false);
+  const ringChangeReasonRef = useRef<HTMLTextAreaElement | null>(null);
 
   const quadrantsQuery = useMemoFirebase(() => {
     if (!hasCompanyAccess) {
@@ -511,7 +514,28 @@ export function RadarBlipForm({
   useEffect(() => {
     setFormData(getFormState(initialBlip));
     setAiNeedsVerification([]);
+    setRingChangeReasonError(false);
   }, [initialBlip]);
+
+  useEffect(() => {
+    if (!hasRingChanged) {
+      setRingChangeReasonError(false);
+    }
+  }, [hasRingChanged]);
+
+  function focusRingChangeReasonField(): void {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    window.requestAnimationFrame(() => {
+      ringChangeReasonRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+      ringChangeReasonRef.current?.focus();
+    });
+  }
 
   function handleProviderChange(value: string): void {
     if (value === NONE_SELECT_VALUE) {
@@ -931,11 +955,13 @@ export function RadarBlipForm({
     const normalizedTags = normalizeTags(formData.tags.split(","));
 
     if (initialBlip && initialBlip.ringId !== nextRingId && !ringChangeReason) {
+      setRingChangeReasonError(true);
       toast({
         title: formContent.fields.ringChangeReason,
         description: formContent.fields.ringChangeReasonPlaceholder,
         variant: "destructive",
       });
+      focusRingChangeReasonField();
       setIsSubmitting(false);
       return;
     }
@@ -1125,32 +1151,6 @@ export function RadarBlipForm({
             },
           );
         }
-        if (isResubmittingForReview || initialBlip.ringId === nextRingId) {
-          await addDoc(
-            collection(
-              db,
-              RADAR_BLIPS_COLLECTION,
-              initialBlip.id,
-              BLIP_HISTORY_COLLECTION,
-            ),
-            {
-              blipId: initialBlip.id,
-              itemId: initialBlip.id,
-              action: isResubmittingForReview
-                ? formContent.history.resubmitted
-                : formContent.history.updated,
-              note: isResubmittingForReview
-                ? initialBlip.status === "Approved"
-                  ? formContent.history.resubmittedApprovedNote
-                  : formContent.history.resubmittedNote
-                : formContent.history.updatedNote,
-              before: initialBlip.status,
-              after: nextStatus,
-              createdAt: now,
-              createdBy: authUser.uid,
-            },
-          );
-        }
         toast({
           title: isResubmittingForReview
             ? formContent.toasts.blipResubmitted.title
@@ -1161,27 +1161,7 @@ export function RadarBlipForm({
         });
         router.push(`/blips/${initialBlip.id}`);
       } else {
-        const documentReference = await addDoc(
-          collection(db, RADAR_BLIPS_COLLECTION),
-          basePayload,
-        );
-        await addDoc(
-          collection(
-            db,
-            RADAR_BLIPS_COLLECTION,
-            documentReference.id,
-            BLIP_HISTORY_COLLECTION,
-          ),
-          {
-            blipId: documentReference.id,
-            itemId: documentReference.id,
-            action: formContent.history.submitted,
-            note: formContent.history.submittedNote,
-            after: "Pending",
-            createdAt: now,
-            createdBy: authUser.uid,
-          },
-        );
+        await addDoc(collection(db, RADAR_BLIPS_COLLECTION), basePayload);
         toast({
           title: formContent.toasts.suggestionSubmitted.title,
           description: formContent.toasts.suggestionSubmitted.description,
@@ -1924,16 +1904,37 @@ export function RadarBlipForm({
                     {formContent.fields.ringChangeReason}
                   </Label>
                   <Textarea
+                    ref={ringChangeReasonRef}
                     value={formData.ringChangeReason}
-                    onChange={(event) =>
+                    onChange={(event) => {
+                      const nextValue = event.target.value;
+
                       setFormData((currentState) => ({
                         ...currentState,
-                        ringChangeReason: event.target.value,
-                      }))
-                    }
+                        ringChangeReason: nextValue,
+                      }));
+                      setRingChangeReasonError(!nextValue.trim());
+                    }}
                     placeholder={formContent.fields.ringChangeReasonPlaceholder}
-                    className="min-h-[120px] rounded-2xl border-2 border-transparent bg-secondary/30 font-medium"
+                    aria-describedby="ring-change-reason-help"
+                    aria-invalid={ringChangeReasonError}
+                    className={cn(
+                      "min-h-[120px] rounded-2xl border-2 border-transparent bg-secondary/30 font-medium",
+                      ringChangeReasonError &&
+                        "border-destructive bg-destructive/5 focus-visible:ring-destructive",
+                    )}
                   />
+                  <p
+                    id="ring-change-reason-help"
+                    className={cn(
+                      "text-sm font-medium",
+                      ringChangeReasonError
+                        ? "text-destructive"
+                        : "text-muted-foreground",
+                    )}
+                  >
+                    {formContent.fields.ringChangeReasonPlaceholder}
+                  </p>
                 </div>
               ) : null}
 

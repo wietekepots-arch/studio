@@ -5,6 +5,8 @@ import {
   type RadarFamily,
   type Blip,
   type RadarProvider,
+  type RadarEntityType,
+  type RadarUseCase,
   type SeedMetadata,
 } from "@/app/lib/radar-types";
 import seedFamiliesData from "@/content/seed/families.json";
@@ -13,7 +15,7 @@ import seedProvidersData from "@/content/seed/providers.json";
 import seedQuadrantsData from "@/content/seed/quadrants.json";
 import seedRingsData from "@/content/seed/rings.json";
 
-export const STARTER_SEED_VERSION = "v2";
+export const STARTER_SEED_VERSION = "v3";
 
 function withSeedMetadata<T extends object>(entity: T): T & SeedMetadata {
   return {
@@ -30,31 +32,19 @@ function slugifyTag(tag: string): string {
 type SeedConfigOptionData = Omit<RadarConfigOption, "seedManaged" | "seedVersion">;
 type SeedProviderData = Omit<RadarProvider, "seedManaged" | "seedVersion">;
 type SeedFamilyData = Omit<RadarFamily, "seedManaged" | "seedVersion">;
-type SeedBlipInput = Omit<
-  Blip,
-  | "ownerId"
-  | "ownerName"
-  | "status"
-  | "submittedAt"
-  | "submittedBy"
-  | "reviewedAt"
-  | "reviewedBy"
-  | "reviewComment"
-  | "lastReviewedAt"
-  | "createdAt"
-  | "createdBy"
-  | "updatedAt"
-  | "updatedBy"
-  | "history"
-  | "providerName"
-  | "familyName"
-  | "originOverride"
-  | "sustainabilityNotesOverride"
-  | "securityNotesOverride"
-  | "ethicsNotesOverride"
-  | "seedManaged"
-  | "seedVersion"
->;
+type SeedBlipInput = {
+  id: string;
+  name: string;
+  subtitle: string;
+  overview: string;
+  useCases: RadarUseCase[];
+  quadrantId: number;
+  ringId: number;
+  tags: string[];
+  dateAdded: string;
+  link: string;
+  entityType?: RadarEntityType;
+};
 
 type SeedResolvedBlip = Omit<
   Blip,
@@ -158,59 +148,38 @@ export const seedBlipIds = (seedBlipsData as SeedBlipInput[]).map(
   (item) => item.id,
 );
 
-const seedProvidersById = new Map(seedProviders.map((item) => [item.id, item]));
-const seedFamiliesById = new Map(seedFamilies.map((item) => [item.id, item]));
+function getDefaultEntityType(quadrantId: number): RadarEntityType {
+  if (quadrantId === 0 || quadrantId === 3) {
+    return "workflow";
+  }
+
+  return "product";
+}
+
+function parseSeedDate(dateAdded: string, fallback: number): number {
+  const parsed = Date.parse(`${dateAdded}T12:00:00Z`);
+
+  return Number.isNaN(parsed) ? fallback : parsed;
+}
 
 function buildSeedBlip(input: SeedBlipInput): SeedResolvedBlip {
-  const family = input.familyId ? seedFamiliesById.get(input.familyId) : undefined;
-  const providerId = input.providerId || family?.providerId;
-  const provider = providerId ? seedProvidersById.get(providerId) : undefined;
-  const inheritedOrigin = family?.origin ?? provider?.origin;
-  const inheritedSustainability =
-    family?.sustainabilityNotes ?? provider?.sustainabilityNotes;
-  const inheritedSecurity = family?.securityNotes ?? provider?.securityNotes;
-  const inheritedEthics = family?.ethicsNotes ?? provider?.ethicsNotes;
-  const inheritedSecurityReferences =
-    family?.securityCertifications ?? provider?.securityCertifications;
-  const origin = input.origin ?? inheritedOrigin ?? "Other";
-  const sustainabilityNotes =
-    input.sustainabilityNotes ?? inheritedSustainability ?? "";
-  const securityNotes = input.securityNotes ?? inheritedSecurity ?? "";
-  const ethicsNotes = input.ethicsNotes ?? inheritedEthics ?? "";
-  const securityCertifications =
-    input.securityCertifications ?? inheritedSecurityReferences ?? [];
-  const providerName = provider?.name;
-  const familyName = family?.name;
-
   return withSeedMetadata({
-    ...input,
-    ...(providerId ? { providerId } : {}),
-    ...(providerName ? { providerName } : {}),
-    ...(family?.id ? { familyId: family.id } : {}),
-    ...(familyName ? { familyName } : {}),
-    origin,
-    sustainabilityNotes,
-    securityNotes,
-    ethicsNotes,
-    securityCertifications,
-    ...(providerId && input.origin !== undefined && input.origin !== inheritedOrigin
-      ? { originOverride: input.origin }
-      : {}),
-    ...(providerId &&
-    input.sustainabilityNotes !== undefined &&
-    input.sustainabilityNotes !== inheritedSustainability
-      ? { sustainabilityNotesOverride: input.sustainabilityNotes }
-      : {}),
-    ...(providerId &&
-    input.securityNotes !== undefined &&
-    input.securityNotes !== inheritedSecurity
-      ? { securityNotesOverride: input.securityNotes }
-      : {}),
-    ...(providerId &&
-    input.ethicsNotes !== undefined &&
-    input.ethicsNotes !== inheritedEthics
-      ? { ethicsNotesOverride: input.ethicsNotes }
-      : {}),
+    id: input.id,
+    name: input.name,
+    shortDesc: input.subtitle,
+    notes: input.overview,
+    entityType: input.entityType || getDefaultEntityType(input.quadrantId),
+    useCases: input.useCases,
+    quadrantId: input.quadrantId,
+    ringId: input.ringId,
+    tags: input.tags,
+    team: "",
+    origin: "Other",
+    sustainabilityNotes: "",
+    securityNotes: "",
+    ethicsNotes: "",
+    securityCertifications: [],
+    links: input.link ? [input.link] : [],
   });
 }
 
@@ -220,18 +189,19 @@ export function getSeedBlips(now = Date.now()): Blip[] {
 
   return blips.map((blip, index) => {
     const seededBlip = buildSeedBlip(blip);
-    const createdAt = now - (totalBlips - index) * 86_400_000;
+    const fallbackCreatedAt = now - (totalBlips - index) * 86_400_000;
+    const createdAt = parseSeedDate(blip.dateAdded, fallbackCreatedAt);
 
     return {
       ...seededBlip,
       ownerId: "seed-admin",
       ownerName: "Greenberry Admin",
       status: "Approved",
-      lastReviewedAt: now,
-      reviewedAt: now,
+      lastReviewedAt: createdAt,
+      reviewedAt: createdAt,
       reviewedBy: "seed-admin",
       createdAt,
-      updatedAt: now,
+      updatedAt: createdAt,
       createdBy: "seed-admin",
       updatedBy: "seed-admin",
       history: [],

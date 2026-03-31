@@ -17,9 +17,11 @@ import homeContent from "@/content/pages/home.json";
 import { Navbar } from "@/components/layout/Navbar";
 import { useAppUser } from "@/components/app/AppUserProvider";
 import { RadarChart } from "@/components/radar/RadarChart";
+import { RadarQuadrantLegend } from "@/components/radar/RadarQuadrantLegend";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Collapsible,
@@ -121,6 +123,14 @@ export default function HomePage(): React.ReactElement {
     return filteredBlips.filter((blip) => blip.quadrantId === activeQuadrant);
   }, [activeQuadrant, filteredBlips]);
 
+  const quadrantLegendBlips = useMemo(
+    () =>
+      config.quadrants.map((_, quadrantId) =>
+        sortedBlips.filter((blip) => blip.quadrantId === quadrantId)
+      ),
+    [config.quadrants, sortedBlips]
+  );
+
   function formatDate(timestamp: number): string {
     if (!mounted) {
       return "";
@@ -188,10 +198,18 @@ export default function HomePage(): React.ReactElement {
         onRadarSearchChange={setSearch}
       />
 
-      <main className="container mx-auto grid max-w-7xl grid-cols-1 gap-12 px-6 py-12 lg:grid-cols-12">
+      <main className="relative mx-auto grid w-full max-w-[1600px] grid-cols-1 gap-12 px-6 py-12 lg:grid-cols-12">
         <div
-          className={`space-y-8 transition-all duration-300 ${
-            isLatestExperiencesOpen ? "lg:col-span-8" : "lg:col-span-11"
+          aria-hidden="true"
+          className={`pointer-events-none absolute inset-y-0 right-0 hidden rounded-[2.75rem] bg-secondary/35 transition-all duration-200 lg:block ${
+            isLatestExperiencesOpen
+              ? "w-[calc(25%-0.75rem)] opacity-100"
+              : "w-20 opacity-100"
+          }`}
+        />
+        <div
+          className={`relative z-10 space-y-8 transition-all duration-200 ${
+            isLatestExperiencesOpen ? "lg:col-span-9" : "lg:col-span-11"
           }`}
         >
           <div className="flex flex-col gap-6 md:justify-between">
@@ -199,13 +217,13 @@ export default function HomePage(): React.ReactElement {
               <div className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">
                 {homeContent.sectionLabel}
               </div>
-              <h1 className="text-3xl font-black uppercase leading-none tracking-tighter">
+              <h1 className="text-2xl font-black uppercase leading-none tracking-tighter">
                 {homeContent.heading}{" "}
                 <span className="text-primary">
                   {homeContent.headingHighlight}
                 </span>
               </h1>
-              <p className="max-w-lg text-m font-medium text-muted-foreground">
+              <p className="max-w-lg text-sm font-medium text-muted-foreground">
                 {homeContent.description}
               </p>
             </div>
@@ -247,12 +265,61 @@ export default function HomePage(): React.ReactElement {
                 ))}
               </div>
 
-              <div className="rounded-[3rem] border-2 border-secondary/20 bg-white p-8 shadow-2xl shadow-primary/5 md:p-10">
-                <RadarChart
-                  blips={filteredBlips}
-                  config={config}
-                  activeFilters={{ quadrant: activeQuadrant }}
-                />
+              <div className="rounded-[3rem] border-2 border-secondary/20 bg-white p-4 shadow-2xl shadow-primary/5 lg:p-6 xl:p-8">
+                <div className="grid gap-6 lg:grid-cols-[minmax(180px,0.9fr)_minmax(0,2.5fr)_minmax(180px,0.9fr)] lg:grid-rows-[auto_auto] lg:items-start xl:gap-8 xl:grid-cols-[minmax(220px,1fr)_minmax(0,2.4fr)_minmax(220px,1fr)]">
+                  <div className="hidden lg:block">
+                    <RadarQuadrantLegend
+                      title={config.quadrants[2] ?? ""}
+                      blips={quadrantLegendBlips[2] ?? []}
+                      config={config}
+                    />
+                  </div>
+
+                  <div className="lg:row-span-2">
+                    <RadarChart
+                      blips={filteredBlips}
+                      config={config}
+                      activeFilters={{ quadrant: activeQuadrant }}
+                    />
+                  </div>
+
+                  <div className="hidden lg:block">
+                    <RadarQuadrantLegend
+                      title={config.quadrants[3] ?? ""}
+                      blips={quadrantLegendBlips[3] ?? []}
+                      config={config}
+                      align="right"
+                    />
+                  </div>
+
+                  <div className="hidden self-end lg:block">
+                    <RadarQuadrantLegend
+                      title={config.quadrants[1] ?? ""}
+                      blips={quadrantLegendBlips[1] ?? []}
+                      config={config}
+                    />
+                  </div>
+
+                  <div className="hidden self-end lg:block">
+                    <RadarQuadrantLegend
+                      title={config.quadrants[0] ?? ""}
+                      blips={quadrantLegendBlips[0] ?? []}
+                      config={config}
+                      align="right"
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-8 grid gap-6 md:grid-cols-2 lg:hidden">
+                  {[2, 3, 1, 0].map((quadrantId) => (
+                    <RadarQuadrantLegend
+                      key={config.quadrants[quadrantId] ?? quadrantId}
+                      title={config.quadrants[quadrantId] ?? ""}
+                      blips={quadrantLegendBlips[quadrantId] ?? []}
+                      config={config}
+                    />
+                  ))}
+                </div>
               </div>
 
               {activeQuadrant !== undefined ? (
@@ -307,13 +374,13 @@ export default function HomePage(): React.ReactElement {
         </div>
 
         <div
-          className={`space-y-8 lg:flex lg:flex-col lg:items-end transition-all duration-300 ${
-            isLatestExperiencesOpen ? "lg:col-span-4" : "lg:col-span-1"
+          className={`relative z-10 space-y-8 transition-all duration-200 lg:flex lg:min-h-full lg:flex-col lg:items-end ${
+            isLatestExperiencesOpen ? "lg:col-span-3" : "lg:col-span-1"
           }`}
         >
           <Card
-            className={`overflow-hidden rounded-[2.5rem] border-none bg-secondary/30 shadow-none transition-[width] duration-300 ${
-              isLatestExperiencesOpen ? "w-full lg:w-[24rem]" : "w-full lg:w-24"
+            className={`overflow-hidden rounded-[2.5rem] border border-border/40 bg-background/75 shadow-none backdrop-blur-sm transition-[width] duration-200 ${
+              isLatestExperiencesOpen ? "w-full lg:w-[24rem]" : "w-full lg:w-20"
             }`}
           >
             <Collapsible
@@ -321,21 +388,33 @@ export default function HomePage(): React.ReactElement {
               onOpenChange={setIsLatestExperiencesOpen}
             >
               <CardHeader
-                className={`p-8 ${isLatestExperiencesOpen ? "" : "items-center"}`}
+                className={`p-8 ${
+                  isLatestExperiencesOpen ? "" : "flex items-center justify-center px-3 py-6"
+                }`}
               >
                 <TooltipProvider delayDuration={100}>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <CollapsibleTrigger
                         title="Toggle experiences"
-                        className={`flex w-full items-center gap-4 text-left ${
+                        className={`flex w-full items-center text-left ${
                           isLatestExperiencesOpen
-                            ? "justify-between"
-                            : "justify-center"
+                            ? "justify-between gap-4"
+                            : "flex-col justify-center gap-3"
                         }`}
                       >
-                        <CardTitle className="flex items-center gap-3 text-lg font-black uppercase tracking-tighter">
-                          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/70 text-primary">
+                        <CardTitle
+                          className={`flex items-center text-lg font-black uppercase tracking-tighter ${
+                            isLatestExperiencesOpen
+                              ? "gap-3"
+                              : "flex-col justify-center gap-2 text-center"
+                          }`}
+                        >
+                          <span
+                            className={`flex shrink-0 items-center justify-center rounded-full bg-white/70 text-primary ${
+                              isLatestExperiencesOpen ? "h-12 w-12" : "h-11 w-11"
+                            }`}
+                          >
                             <Sparkles className="h-6 w-6" />
                           </span>
                           {isLatestExperiencesOpen ? (
@@ -346,11 +425,19 @@ export default function HomePage(): React.ReactElement {
                             </span>
                           )}
                         </CardTitle>
-                        {isLatestExperiencesOpen ? (
-                          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/70 text-muted-foreground transition-colors hover:text-primary">
-                            <ChevronLeft className="h-5 w-5" />
-                          </span>
-                        ) : null}
+                        <span
+                          className={`flex items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-primary ${
+                            isLatestExperiencesOpen
+                              ? "h-10 w-10 bg-white/70"
+                              : "h-8 w-8 bg-white/50"
+                          }`}
+                        >
+                          <ChevronLeft
+                            className={`${
+                              isLatestExperiencesOpen ? "h-5 w-5" : "h-4 w-4"
+                            }`}
+                          />
+                        </span>
                       </CollapsibleTrigger>
                     </TooltipTrigger>
                     <TooltipContent side="left">
@@ -361,7 +448,13 @@ export default function HomePage(): React.ReactElement {
                   </Tooltip>
                 </TooltipProvider>
               </CardHeader>
-              <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
+              <CollapsibleContent
+                className={`overflow-hidden transition-opacity duration-150 ${
+                  isLatestExperiencesOpen
+                    ? "opacity-100"
+                    : "pointer-events-none opacity-0"
+                }`}
+              >
                 <CardContent className="p-0">
                   <div className="divide-y divide-border/50">
                     {recentExperiences.length ? (
@@ -416,19 +509,21 @@ export default function HomePage(): React.ReactElement {
           </Card>
 
           <div
-            className={`space-y-3 transition-all duration-200 ${
+            className={`space-y-3 transition-opacity duration-150 ${
               isLatestExperiencesOpen
                 ? "w-full lg:w-[24rem] opacity-100"
-                : "pointer-events-none w-full lg:w-24 opacity-0"
+                : "pointer-events-none w-full lg:w-20 opacity-0"
             }`}
           >
-            <Button
-              asChild
-              variant="outline"
-              className="h-12 w-full rounded-full font-bold"
+            <Link
+              href="/experiences"
+              className={cn(
+                buttonVariants({ variant: "outline" }),
+                "h-12 w-full rounded-full font-bold"
+              )}
             >
-              <Link href="/experiences">{common.navigation.experiences}</Link>
-            </Button>
+              {common.navigation.experiences}
+            </Link>
             <Button
               asChild
               className="h-14 w-full gap-2 rounded-full text-base font-bold shadow-xl transition-all hover:shadow-primary/20"

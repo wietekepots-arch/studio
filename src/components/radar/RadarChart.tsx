@@ -13,13 +13,55 @@ interface RadarChartProps {
   };
 }
 
+const ringMarkerClasses = [
+  "fill-lime-500 stroke-lime-100",
+  "fill-sky-500 stroke-sky-100",
+  "fill-amber-500 stroke-amber-100",
+  "fill-rose-300 stroke-rose-100",
+];
+
+const ringPulseClasses = [
+  "fill-lime-500/20",
+  "fill-sky-500/20",
+  "fill-amber-500/20",
+  "fill-rose-300/20",
+];
+
+function getTrianglePoints(
+  x: number,
+  y: number,
+  size: number,
+  direction: "up" | "down"
+): string {
+  if (direction === "up") {
+    return `${x},${y - size} ${x + size},${y + size} ${x - size},${y + size}`;
+  }
+
+  return `${x},${y + size} ${x + size},${y - size} ${x - size},${y - size}`;
+}
+
+function getStarPoints(x: number, y: number, outerRadius: number): string {
+  const innerRadius = outerRadius * 0.5;
+  const points = [];
+
+  for (let index = 0; index < 10; index += 1) {
+    const angle = -Math.PI / 2 + (index * Math.PI) / 5;
+    const radius = index % 2 === 0 ? outerRadius : innerRadius;
+    points.push(
+      `${x + Math.cos(angle) * radius},${y + Math.sin(angle) * radius}`
+    );
+  }
+
+  return points.join(" ");
+}
+
 export const RadarChart: React.FC<RadarChartProps> = ({
   blips,
   config,
   activeFilters,
 }) => {
   const router = useRouter();
-  const size = 600;
+  const size = 960;
   const center = size / 2;
   const ringCount = config.rings.length;
   const quadrantCount = config.quadrants.length;
@@ -67,12 +109,11 @@ export const RadarChart: React.FC<RadarChartProps> = ({
   }, [blips, quadrantCount, ringRadii, center]);
 
   return (
-    <div className="relative flex justify-center items-center overflow-visible select-none">
+    <div className="relative flex items-center justify-center overflow-visible select-none">
       <svg
-        width={size}
-        height={size}
         viewBox={`0 0 ${size} ${size}`}
-        className="max-w-full h-auto overflow-visible touch-none"
+        preserveAspectRatio="xMidYMid meet"
+        className="aspect-square h-auto w-full max-w-[1100px] overflow-visible touch-none"
       >
         <defs>
           <radialGradient id="radarGlow" cx="50%" cy="50%" r="50%">
@@ -153,8 +194,18 @@ export const RadarChart: React.FC<RadarChartProps> = ({
               activeFilters.quadrant === blip.quadrantId) &&
             (activeFilters?.ring === undefined ||
               activeFilters.ring === blip.ringId);
-
           const textWidth = blip.name.length * 7;
+          const movementDirection =
+            hasMoved && blip.previousRingId !== undefined
+              ? blip.ringId < blip.previousRingId
+                ? "up"
+                : "down"
+              : undefined;
+          const ringMarkerClass =
+            ringMarkerClasses[blip.ringId] ?? "fill-primary stroke-white";
+          const ringPulseClass =
+            ringPulseClasses[blip.ringId] ?? "fill-primary/20";
+          const markerClasses = `transition-all duration-300 transform-gpu ${ringMarkerClass} stroke-2 group-hover:scale-[1.4] group-hover:fill-primary-foreground group-hover:stroke-primary`;
 
           return (
             <g
@@ -168,30 +219,31 @@ export const RadarChart: React.FC<RadarChartProps> = ({
                   cx={x}
                   cy={y}
                   r="14"
-                  className="fill-primary/20 animate-pulse pointer-events-none"
-                />
-              )}
-              
-              {/* Movement indicator */}
-              {hasMoved && (
-                <path
-                  d={`M ${x-12} ${y-12} L ${x-6} ${y-6} M ${x-12} ${y-6} L ${x-12} ${y-12} L ${x-6} ${y-12}`}
-                  className="stroke-blue-500 stroke-2 fill-none pointer-events-none"
+                  className={`${ringPulseClass} animate-pulse pointer-events-none`}
                 />
               )}
 
-              {/* The actual blip circle - isolated scaling with transform-box fix */}
-              <circle
-                cx={x}
-                cy={y}
-                r="8"
-                style={{ transformBox: "fill-box", transformOrigin: "center" }}
-                className={`transition-all duration-300 transform-gpu ${
-                  blip.ringId === 3
-                    ? "fill-muted stroke-muted-foreground"
-                    : "fill-primary stroke-white"
-                } stroke-2 group-hover:scale-[1.4] group-hover:fill-primary-foreground group-hover:stroke-primary`}
-              />
+              {isNew ? (
+                <polygon
+                  points={getStarPoints(x, y, 10)}
+                  style={{ transformBox: "fill-box", transformOrigin: "center" }}
+                  className={markerClasses}
+                />
+              ) : movementDirection ? (
+                <polygon
+                  points={getTrianglePoints(x, y, 9, movementDirection)}
+                  style={{ transformBox: "fill-box", transformOrigin: "center" }}
+                  className={markerClasses}
+                />
+              ) : (
+                <circle
+                  cx={x}
+                  cy={y}
+                  r="8"
+                  style={{ transformBox: "fill-box", transformOrigin: "center" }}
+                  className={markerClasses}
+                />
+              )}
 
               {/* Tool Name Tooltip */}
               <g className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">

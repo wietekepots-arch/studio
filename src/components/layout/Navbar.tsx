@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { signOut } from "firebase/auth";
 import { usePathname } from "next/navigation";
@@ -40,14 +41,30 @@ export function Navbar({
   radarSearchPlaceholder,
   onRadarSearchChange,
 }: NavbarProps = {}): React.ReactElement {
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const pathname = usePathname();
   const auth = useAuth();
   const { authUser, hasCompanyAccess, isLoading, profile, role } = useAppUser();
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const showRadarSearch =
     pathname === "/" &&
     radarSearchValue !== undefined &&
     radarSearchPlaceholder !== undefined &&
     onRadarSearchChange !== undefined;
+  const isSearchActive =
+    showRadarSearch && (isSearchExpanded || radarSearchValue.length > 0);
+
+  useEffect(() => {
+    if (!isSearchExpanded) {
+      return;
+    }
+
+    const frame = requestAnimationFrame(() => {
+      searchInputRef.current?.focus();
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, [isSearchExpanded]);
 
   const navItems = [
     { label: navigation.radar, href: "/", icon: Radar, requiresAuth: false },
@@ -91,32 +108,65 @@ export function Navbar({
           </Link>
 
           <div className="flex flex-1 flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            {visibleNavItems.map((item) => {
-              const isActive =
-                pathname === item.href ||
-                (item.href !== "/" && pathname.startsWith(item.href));
+            <div
+              className={`flex flex-wrap gap-3 overflow-hidden transition-all duration-300 ease-out md:flex-nowrap ${
+                isSearchActive
+                  ? "max-h-0 max-w-0 -translate-x-2 opacity-0 md:max-h-12"
+                  : "max-h-40 max-w-3xl translate-x-0 opacity-100 md:max-h-12"
+              }`}
+            >
+              {visibleNavItems.map((item) => {
+                const isActive =
+                  pathname === item.href ||
+                  (item.href !== "/" && pathname.startsWith(item.href));
 
-              return (
-                <Link key={item.href} href={item.href}>
-                  <Button
-                    variant={isActive ? "secondary" : "ghost"}
-                    className="h-10 gap-2 rounded-full px-5 text-sm font-bold transition-all hover:bg-secondary/80"
-                  >
-                    <item.icon className="h-4 w-4" />
-                    {item.label}
-                  </Button>
-                </Link>
-              );
-            })}
+                return (
+                  <Link key={item.href} href={item.href}>
+                    <Button
+                      variant={isActive ? "secondary" : "ghost"}
+                      className="h-10 gap-2 rounded-full px-5 text-sm font-bold transition-all hover:bg-secondary/80"
+                    >
+                      <item.icon className="h-4 w-4" />
+                      {item.label}
+                    </Button>
+                  </Link>
+                );
+              })}
+            </div>
 
             {showRadarSearch ? (
-              <div className="relative w-full md:max-w-sm">
-                <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <div
+                className={`relative overflow-hidden transition-all duration-300 ease-out ${
+                  isSearchActive ? "w-full md:w-80" : "w-12"
+                }`}
+              >
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className={`absolute left-0 top-0 z-10 h-12 w-12 rounded-full border-2 border-border bg-secondary/30 transition-all duration-300 ${
+                    isSearchActive ? "border-transparent bg-transparent" : ""
+                  }`}
+                  onClick={() => setIsSearchExpanded(true)}
+                >
+                  <Search className="h-4 w-4" />
+                </Button>
                 <Input
+                  ref={searchInputRef}
                   placeholder={radarSearchPlaceholder}
-                  className="h-12 rounded-full border-2 border-border bg-secondary/30 pl-12"
+                  className={`h-12 rounded-full border-2 border-border bg-secondary/30 pl-12 transition-all duration-300 ease-out ${
+                    isSearchActive
+                      ? "pointer-events-auto opacity-100"
+                      : "pointer-events-none opacity-0"
+                  }`}
                   value={radarSearchValue}
                   onChange={(event) => onRadarSearchChange(event.target.value)}
+                  onFocus={() => setIsSearchExpanded(true)}
+                  onBlur={() => {
+                    if (radarSearchValue.length === 0) {
+                      setIsSearchExpanded(false);
+                    }
+                  }}
                 />
               </div>
             ) : null}
@@ -126,16 +176,6 @@ export function Navbar({
         <div className="flex items-center gap-4">
           {!isLoading && hasCompanyAccess && authUser ? (
             <>
-              <div className="hidden text-right sm:flex sm:flex-col">
-                <span className="text-sm font-bold tracking-tight">
-                  {profile?.displayName ||
-                    authUser.displayName ||
-                    authContent.memberFallback}
-                </span>
-                <span className="text-[10px] font-black uppercase tracking-wider text-primary">
-                  {role}
-                </span>
-              </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button

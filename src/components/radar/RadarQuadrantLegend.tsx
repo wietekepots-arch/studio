@@ -37,8 +37,10 @@ export function RadarQuadrantLegend({
   }
 
   return (
-    <section className={align === "right" ? "text-left xl:text-right" : "text-left"}>
-      <h3 className="mb-5 text-2xl font-black tracking-tight text-foreground">
+    <section
+      className={align === "right" ? "text-left xl:text-right" : "text-left"}
+    >
+      <h3 className="mb-5 text-lg font-black tracking-tight text-foreground">
         {title}
       </h3>
       <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-1">
@@ -50,11 +52,11 @@ export function RadarQuadrantLegend({
           return (
             <div key={`${title}-${ring}`} className="space-y-2">
               <h4
-                className={`text-sm font-black uppercase tracking-[0.18em] ${ringHeadingClasses[ringId] ?? "text-primary"}`}
+                className={`text-[0.75rem] font-black uppercase  ${ringHeadingClasses[ringId] ?? "text-primary"}`}
               >
                 {ring}
               </h4>
-              <ol className="space-y-1 text-sm leading-5 text-foreground/85">
+              <ol className="space-y-1 text-[0.625rem] leading-5 text-foreground/85">
                 {ringBlips.map((blip, index) => (
                   <li key={blip.id}>
                     <Link

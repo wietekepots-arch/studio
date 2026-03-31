@@ -17,17 +17,14 @@ import { OutcomeStars } from "@/components/experiences";
 import { Navbar } from "@/components/layout/Navbar";
 import { PageTitle } from "@/components/layout/PageTitle";
 import { useAppUser } from "@/components/app/AppUserProvider";
+import { RadarBlipLegend } from "@/components/radar/RadarBlipLegend";
 import { RadarChart } from "@/components/radar/RadarChart";
 import { RadarQuadrantLegend } from "@/components/radar/RadarQuadrantLegend";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Blip, Experience, RadarConfigOption } from "@/app/lib/radar-types";
 import {
   buildRadarConfig,
@@ -43,6 +40,10 @@ export default function HomePage(): React.ReactElement {
   const [mounted, setMounted] = useState(false);
   const [latestExperiencesOpenOverride, setLatestExperiencesOpenOverride] =
     useState<boolean | null>(null);
+  const [
+    isLatestExperiencesContentVisible,
+    setIsLatestExperiencesContentVisible,
+  ] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -130,6 +131,27 @@ export default function HomePage(): React.ReactElement {
   }, [experienceDrawerBaselineAt, publishedExperiences]);
   const isLatestExperiencesOpen =
     latestExperiencesOpenOverride ?? shouldOpenLatestExperiencesByDefault;
+  const latestExperiencesWidthClass = isLatestExperiencesOpen
+    ? "w-full lg:w-[24rem]"
+    : "w-full lg:w-20";
+  const latestExperiencesContentMotionClass = `transition-[opacity,transform] duration-200 ease-out ${
+    isLatestExperiencesOpen
+      ? "translate-x-0 opacity-100 delay-75"
+      : "pointer-events-none translate-x-4 opacity-0"
+  }`;
+
+  useEffect(() => {
+    if (isLatestExperiencesOpen) {
+      setIsLatestExperiencesContentVisible(true);
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setIsLatestExperiencesContentVisible(false);
+    }, 200);
+
+    return () => window.clearTimeout(timeout);
+  }, [isLatestExperiencesOpen]);
 
   useEffect(() => {
     setLatestExperiencesOpenOverride(null);
@@ -233,7 +255,7 @@ export default function HomePage(): React.ReactElement {
       <main className="relative mx-auto grid w-full max-w-[1600px] grid-cols-1 gap-12 px-6 py-12 lg:grid-cols-12">
         <div
           aria-hidden="true"
-          className={`pointer-events-none absolute inset-y-0 right-0 hidden rounded-[2.75rem] bg-secondary/35 transition-all duration-200 lg:block ${
+          className={`pointer-events-none absolute inset-y-0 right-0 hidden bg-secondary/55 transition-all duration-200 lg:block ${
             isLatestExperiencesOpen
               ? "w-[calc(25%-0.75rem)] opacity-100"
               : "w-20 opacity-100"
@@ -272,24 +294,30 @@ export default function HomePage(): React.ReactElement {
             </Card>
           ) : (
             <>
-              <div className="flex flex-wrap gap-2">
-                <Badge
-                  variant={activeQuadrant === undefined ? "default" : "outline"}
-                  className="cursor-pointer rounded-full px-4 py-1.5 text-[9px] font-black uppercase tracking-[0.12em]"
-                  onClick={() => setActiveQuadrant(undefined)}
-                >
-                  {homeContent.entireNetwork}
-                </Badge>
-                {config.quadrants.map((quadrant, index) => (
+              <div className="flex flex-wrap items-center gap-3 md:flex-nowrap">
+                <div className="flex flex-wrap gap-2">
                   <Badge
-                    key={quadrant}
-                    variant={activeQuadrant === index ? "default" : "outline"}
+                    variant={activeQuadrant === undefined ? "default" : "outline"}
                     className="cursor-pointer rounded-full px-4 py-1.5 text-[9px] font-black uppercase tracking-[0.12em]"
-                    onClick={() => setActiveQuadrant(index)}
+                    onClick={() => setActiveQuadrant(undefined)}
                   >
-                    {quadrant}
+                    {homeContent.entireNetwork}
                   </Badge>
-                ))}
+                  {config.quadrants.map((quadrant, index) => (
+                    <Badge
+                      key={quadrant}
+                      variant={activeQuadrant === index ? "default" : "outline"}
+                      className="cursor-pointer rounded-full px-4 py-1.5 text-[9px] font-black uppercase tracking-[0.12em]"
+                      onClick={() => setActiveQuadrant(index)}
+                    >
+                      {quadrant}
+                    </Badge>
+                  ))}
+                </div>
+
+                <div className="ml-auto">
+                  <RadarBlipLegend />
+                </div>
               </div>
 
               <div className="rounded-[3rem] border-2 border-secondary/20 bg-white p-4 shadow-2xl shadow-primary/5 lg:p-6 xl:p-8">
@@ -405,9 +433,25 @@ export default function HomePage(): React.ReactElement {
             isLatestExperiencesOpen ? "lg:col-span-3" : "lg:col-span-1"
           }`}
         >
+          <div className={`overflow-hidden text-right ${latestExperiencesWidthClass}`}>
+            {isLatestExperiencesContentVisible ? (
+              <div className={latestExperiencesContentMotionClass}>
+                <button
+                  type="button"
+                  className="inline-flex text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:text-primary"
+                  onClick={() => setLatestExperiencesOpenOverride(false)}
+                >
+                  {homeContent.latestExperiences.close}
+                </button>
+              </div>
+            ) : null}
+          </div>
+
           <Card
-            className={`overflow-hidden rounded-[2.5rem] border border-border/40 bg-background/75 shadow-none backdrop-blur-sm transition-[width] duration-200 ${
-              isLatestExperiencesOpen ? "w-full lg:w-[24rem]" : "w-full lg:w-20"
+            className={`overflow-hidden border border-border/50 bg-background/80 shadow-none backdrop-blur-sm transition-[width,height,border-radius] duration-200 ${
+              isLatestExperiencesOpen
+                ? `${latestExperiencesWidthClass} rounded-[1.75rem]`
+                : `${latestExperiencesWidthClass} rounded-[1.75rem] lg:size-20 lg:rounded-full`
             }`}
           >
             <Collapsible
@@ -415,37 +459,29 @@ export default function HomePage(): React.ReactElement {
               onOpenChange={setLatestExperiencesOpenOverride}
             >
               <CardHeader
-                className={`p-8 ${
+                className={`${
                   isLatestExperiencesOpen
-                    ? ""
-                    : "flex items-center justify-center px-3 py-6"
+                    ? "p-6"
+                    : "flex h-full items-center justify-center p-0"
                 }`}
               >
                 {isLatestExperiencesOpen ? (
-                  <div className="flex items-start justify-between gap-4">
-                    <CardTitle className="flex items-center gap-3 text-lg font-black uppercase tracking-tighter">
-                      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/70 text-primary">
+                  <div className="flex items-start gap-4">
+                    <CardTitle className="flex items-center gap-3 text-base font-black uppercase tracking-tighter">
+                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-primary shadow-sm">
                         <Sparkles className="h-6 w-6" />
                       </span>
                       <span>{homeContent.latestExperiences.title}</span>
                     </CardTitle>
-                    <CollapsibleTrigger asChild>
-                      <button
-                        type="button"
-                        className="text-sm font-bold uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-primary"
-                      >
-                        {homeContent.latestExperiences.close}
-                      </button>
-                    </CollapsibleTrigger>
                   </div>
                 ) : (
                   <CollapsibleTrigger
                     title={homeContent.latestExperiences.title}
                     aria-label={homeContent.latestExperiences.title}
-                    className="flex w-full cursor-pointer flex-col items-center justify-center gap-3 text-left"
+                    className="flex h-full w-full cursor-pointer items-center justify-center rounded-full"
                   >
-                    <CardTitle className="flex flex-col justify-center gap-2 text-center text-lg font-black uppercase tracking-tighter">
-                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/70 text-primary">
+                    <CardTitle className="flex items-center justify-center">
+                      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white text-primary shadow-sm">
                         <Sparkles className="h-6 w-6" />
                       </span>
                       <span className="sr-only">
@@ -455,90 +491,86 @@ export default function HomePage(): React.ReactElement {
                   </CollapsibleTrigger>
                 )}
               </CardHeader>
-              <CollapsibleContent
-                className={`overflow-hidden transition-opacity duration-150 ${
-                  isLatestExperiencesOpen
-                    ? "opacity-100"
-                    : "pointer-events-none opacity-0"
-                }`}
-              >
-                <CardContent className="p-0">
-                  <div className="divide-y divide-border/50">
-                    {recentExperiences.length ? (
-                      recentExperiences.map((experience) => (
-                        <Link
-                          key={experience.id}
-                          href={`/experiences/${experience.id}`}
-                          className="group block p-8 transition-all hover:bg-white/50"
-                        >
-                          <div className="space-y-4">
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between gap-3">
-                                {experience.outcomeRating ? (
-                                  <OutcomeStars
-                                    outcomeRating={experience.outcomeRating}
-                                  />
-                                ) : (
-                                  <span />
-                                )}
-                                <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground transition-all group-hover:translate-x-1 group-hover:text-primary" />
+              {isLatestExperiencesContentVisible ? (
+                <div
+                  className={`overflow-hidden ${latestExperiencesContentMotionClass}`}
+                >
+                  <CardContent className="w-full p-0 lg:w-[24rem]">
+                    <div className="divide-y divide-border/50">
+                      {recentExperiences.length ? (
+                        recentExperiences.map((experience) => (
+                          <Link
+                            key={experience.id}
+                            href={`/experiences/${experience.id}`}
+                            className="group block p-8 transition-all hover:bg-white/50"
+                          >
+                            <div className="space-y-4">
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between gap-3">
+                                  {experience.outcomeRating ? (
+                                    <OutcomeStars
+                                      outcomeRating={experience.outcomeRating}
+                                    />
+                                  ) : (
+                                    <span />
+                                  )}
+                                  <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground transition-all group-hover:translate-x-1 group-hover:text-primary" />
+                                </div>
+                                <span className="text-xl font-bold tracking-tight transition-colors group-hover:text-primary">
+                                  {experience.title}
+                                </span>
+                                <p className="line-clamp-2 text-sm font-medium text-muted-foreground">
+                                  {experience.summary}
+                                </p>
                               </div>
-                              <span className="text-xl font-bold tracking-tight transition-colors group-hover:text-primary">
-                                {experience.title}
-                              </span>
-                              <p className="line-clamp-2 text-sm font-medium text-muted-foreground">
-                                {experience.summary}
-                              </p>
+                              <div className="flex flex-wrap items-center gap-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                                <span className="flex items-center gap-1.5">
+                                  <UserIcon className="h-3 w-3" />
+                                  {experience.creatorName ||
+                                    common.auth.memberFallback}
+                                </span>
+                                <div className="h-1 w-1 rounded-full bg-border" />
+                                <span className="flex items-center gap-1.5">
+                                  <Clock className="h-3 w-3" />
+                                  {formatDate(experience.createdAt)}
+                                </span>
+                              </div>
                             </div>
-                            <div className="flex flex-wrap items-center gap-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                              <span className="flex items-center gap-1.5">
-                                <UserIcon className="h-3 w-3" />
-                                {experience.creatorName ||
-                                  common.auth.memberFallback}
-                              </span>
-                              <div className="h-1 w-1 rounded-full bg-border" />
-                              <span className="flex items-center gap-1.5">
-                                <Clock className="h-3 w-3" />
-                                {formatDate(experience.createdAt)}
-                              </span>
-                            </div>
-                          </div>
-                        </Link>
-                      ))
-                    ) : (
-                      <div className="p-12 text-center text-sm font-medium italic text-muted-foreground">
-                        {homeContent.latestExperiences.emptyState}
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </CollapsibleContent>
+                          </Link>
+                        ))
+                      ) : (
+                        <div className="p-12 text-center text-sm font-medium italic text-muted-foreground">
+                          {homeContent.latestExperiences.emptyState}
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </div>
+              ) : null}
             </Collapsible>
           </Card>
 
-          <div
-            className={`space-y-3 transition-opacity duration-150  text-right ${
-              isLatestExperiencesOpen
-                ? "w-full lg:w-[24rem] opacity-100"
-                : "pointer-events-none w-full lg:w-20 opacity-0"
-            }`}
-          >
-            <Link
-              href="/experiences"
-              className="inline-flex h-12 items-center gap-2 text-foreground underline underline-offset-4 transition-colors hover:text-primary"
-            >
-              {common.navigation.experiences}
-              <ChevronRight className="h-4 w-4" />
-            </Link>
-            <Button
-              asChild
-              className="h-14 w-full gap-2 rounded-full text-base font-bold shadow-xl transition-all hover:shadow-primary/20"
-            >
-              <Link href="/experiences/new">
-                <Plus className="h-5 w-5" />
-                {homeContent.latestExperiences.button}
-              </Link>
-            </Button>
+          <div className={`overflow-hidden text-right ${latestExperiencesWidthClass}`}>
+            {isLatestExperiencesContentVisible ? (
+              <div className={`space-y-3 lg:w-[24rem] ${latestExperiencesContentMotionClass}`}>
+                <Link
+                  href="/experiences"
+                  className="inline-flex h-12 items-center gap-2 text-foreground underline underline-offset-4 transition-colors hover:text-primary"
+                >
+                  {common.navigation.experiences}
+                  <ChevronRight className="h-4 w-4" />
+                </Link>
+                <Button
+                  asChild
+                  className="h-14 w-full gap-2 rounded-full text-base font-bold shadow-xl transition-all hover:shadow-primary/20"
+                >
+                  <Link href="/experiences/new">
+                    <Plus className="h-5 w-5" />
+                    {homeContent.latestExperiences.button}
+                  </Link>
+                </Button>
+              </div>
+            ) : null}
           </div>
         </div>
       </main>

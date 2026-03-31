@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/select";
 import {
   type Blip,
-  type DataSensitivity,
   type Experience,
   type ExperienceToolContext,
   type RadarFamily,
@@ -23,10 +22,8 @@ import {
 import {
   ArrowLeft,
   CheckCircle2,
-  Clock,
   Save,
   Search,
-  ShieldAlert,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -38,6 +35,7 @@ import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { addDocumentNonBlocking } from "@/firebase";
 import { collection, query, where } from "firebase/firestore";
 import { useAppUser } from "@/components/app/AppUserProvider";
+import { PageTitle } from "@/components/layout/PageTitle";
 import { mergeRadarFamilies } from "@/lib/radar-firestore";
 import { seedFamilies } from "@/lib/radar-seed";
 import { TEAM_OPTIONS, isTeamOption } from "@/lib/team-options";
@@ -58,10 +56,9 @@ interface ExperienceFormState {
   roleTitle: string;
   team: string;
   projectContext: string;
-  dataSensitivity: DataSensitivity;
   outcomeRating: number;
-  timeSavedHours: number;
   tags: string;
+  links: string;
 }
 
 function trimToUndefined(value: string | undefined): string | undefined {
@@ -82,9 +79,9 @@ function buildToolContext(tool?: Blip | null): ExperienceToolContext {
 function isProviderContextTool(tool?: Blip | null): boolean {
   return Boolean(
     tool &&
-      (tool.entityType === "provider" ||
-        tool.providerId ||
-        tool.modelEntries?.length),
+    (tool.entityType === "provider" ||
+      tool.providerId ||
+      tool.modelEntries?.length)
   );
 }
 
@@ -104,7 +101,10 @@ function NewExperiencePageContent(): React.ReactElement {
       return null;
     }
 
-    return query(collection(db, "radarItems"), where("status", "==", "Approved"));
+    return query(
+      collection(db, "radarItems"),
+      where("status", "==", "Approved")
+    );
   }, [db, authUser, hasCompanyAccess]);
   const familiesQuery = useMemoFirebase(() => {
     if (!db || !authUser || !hasCompanyAccess) {
@@ -136,10 +136,9 @@ function NewExperiencePageContent(): React.ReactElement {
     roleTitle: "",
     team: "",
     projectContext: "",
-    dataSensitivity: "Internal",
     outcomeRating: 3,
-    timeSavedHours: 0,
     tags: "",
+    links: "",
   });
 
   useEffect(() => {
@@ -161,7 +160,10 @@ function NewExperiencePageContent(): React.ReactElement {
       return {
         ...currentState,
         toolLinks: [...currentState.toolLinks, prefillToolId],
-        toolContexts: [...currentState.toolContexts, buildToolContext(prefillTool)],
+        toolContexts: [
+          ...currentState.toolContexts,
+          buildToolContext(prefillTool),
+        ],
       };
     });
   }, [allTools, prefillToolId]);
@@ -196,13 +198,13 @@ function NewExperiencePageContent(): React.ReactElement {
     return allTools.filter(
       (tool) =>
         tool.name.toLowerCase().includes(toolSearch.toLowerCase()) &&
-        !formData.toolLinks.includes(tool.id),
+        !formData.toolLinks.includes(tool.id)
     );
   }, [allTools, formData.toolLinks, toolSearch]);
 
   function getToolContext(toolId: string): ExperienceToolContext {
     const existingContext = formData.toolContexts.find(
-      (context) => (context.blipId || context.itemId) === toolId,
+      (context) => (context.blipId || context.itemId) === toolId
     );
 
     if (existingContext) {
@@ -235,20 +237,20 @@ function NewExperiencePageContent(): React.ReactElement {
       ...currentState,
       toolLinks: currentState.toolLinks.filter((id) => id !== toolId),
       toolContexts: currentState.toolContexts.filter(
-        (context) => (context.blipId || context.itemId) !== toolId,
+        (context) => (context.blipId || context.itemId) !== toolId
       ),
     }));
   }
 
   function updateToolContext(
     toolId: string,
-    patch: Partial<ExperienceToolContext>,
+    patch: Partial<ExperienceToolContext>
   ): void {
     const tool = allTools?.find((candidate) => candidate.id === toolId) || null;
 
     setFormData((currentState) => {
       const existingContext = currentState.toolContexts.find(
-        (context) => (context.blipId || context.itemId) === toolId,
+        (context) => (context.blipId || context.itemId) === toolId
       );
       const nextContext = {
         ...(existingContext || buildToolContext(tool)),
@@ -261,7 +263,9 @@ function NewExperiencePageContent(): React.ReactElement {
         ...currentState,
         toolContexts: existingContext
           ? currentState.toolContexts.map((context) =>
-              (context.blipId || context.itemId) === toolId ? nextContext : context,
+              (context.blipId || context.itemId) === toolId
+                ? nextContext
+                : context
             )
           : [...currentState.toolContexts, nextContext],
       };
@@ -299,7 +303,8 @@ function NewExperiencePageContent(): React.ReactElement {
     const toolContexts = formData.toolLinks
       .map((toolId) => {
         const context = getToolContext(toolId);
-        const tool = allTools?.find((candidate) => candidate.id === toolId) || null;
+        const tool =
+          allTools?.find((candidate) => candidate.id === toolId) || null;
         const familyId = trimToUndefined(context.familyId);
         const modelName = trimToUndefined(context.modelName);
         const modelVersion = trimToUndefined(context.modelVersion);
@@ -315,7 +320,8 @@ function NewExperiencePageContent(): React.ReactElement {
         };
       })
       .filter(
-        (context) => context.familyId || context.modelName || context.modelVersion,
+        (context) =>
+          context.familyId || context.modelName || context.modelVersion
       );
 
     const experienceData: Partial<Experience> = {
@@ -336,12 +342,14 @@ function NewExperiencePageContent(): React.ReactElement {
       ...(trimToUndefined(formData.projectContext)
         ? { projectContext: formData.projectContext.trim() }
         : {}),
-      dataSensitivity: formData.dataSensitivity,
       outcomeRating: formData.outcomeRating,
-      ...(formData.timeSavedHours ? { timeSavedHours: formData.timeSavedHours } : {}),
       tags: formData.tags
         .split(",")
         .map((tag) => tag.trim())
+        .filter(Boolean),
+      links: formData.links
+        .split("\n")
+        .map((link) => link.trim())
         .filter(Boolean),
       status: "Published",
       createdAt: now,
@@ -388,7 +396,9 @@ function NewExperiencePageContent(): React.ReactElement {
       <div className="min-h-screen bg-background">
         <Navbar />
         <main className="container mx-auto max-w-4xl px-6 py-24 text-center">
-          <h1 className="text-4xl font-black">{common.auth.companySignInRequired}</h1>
+          <h1 className="text-2xl font-black">
+            {common.auth.companySignInRequired}
+          </h1>
           <p className="mt-4 text-muted-foreground">
             {formContent.authError.description}
           </p>
@@ -420,31 +430,31 @@ function NewExperiencePageContent(): React.ReactElement {
 
         <form onSubmit={handleSubmit} className="space-y-12">
           <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
-            <div className="space-y-2">
-              <h1 className="text-6xl font-black uppercase leading-none tracking-tighter text-foreground">
-                {formContent.heading} <br />
-                <span className="text-primary">{formContent.headingHighlight}</span>
-              </h1>
-              <p className="text-xl font-medium text-muted-foreground">
-                {formContent.description}
-              </p>
-            </div>
+            <PageTitle
+              title={formContent.heading}
+              highlight={formContent.headingHighlight}
+              description={formContent.description}
+              titleClassName="text-2xl"
+              descriptionClassName="text-s"
+            />
             <div className="flex gap-4">
               <Button
                 type="button"
-                variant="outline"
-                className="h-14 rounded-full border-2 px-10 text-lg font-bold"
+                variant="ghost"
+                className="rounded-full px-6 font-bold text-muted-foreground hover:text-foreground"
                 onClick={() => router.push("/experiences")}
               >
                 {formContent.discard}
               </Button>
               <Button
                 type="submit"
-                className="h-14 gap-2 rounded-full px-12 text-lg font-bold shadow-lg hover:shadow-primary/20"
+                className="gap-2 rounded-full px-8 font-bold shadow-lg hover:shadow-primary/20"
                 disabled={loading}
               >
                 <Save className="h-5 w-5" />
-                {loading ? formContent.submittingButton : formContent.submitButton}
+                {loading
+                  ? formContent.submittingButton
+                  : formContent.submitButton}
               </Button>
             </div>
           </div>
@@ -467,7 +477,9 @@ function NewExperiencePageContent(): React.ReactElement {
                     </Label>
                     <Input
                       id="title"
-                      placeholder={formContent.fields.experienceTitle.placeholder}
+                      placeholder={
+                        formContent.fields.experienceTitle.placeholder
+                      }
                       className="h-16 rounded-2xl border-2 border-border bg-white/50 text-xl focus:border-primary"
                       required
                       value={formData.title}
@@ -486,12 +498,17 @@ function NewExperiencePageContent(): React.ReactElement {
                     </Label>
                     <Input
                       id="summary"
-                      placeholder={formContent.fields.conciseSummary.placeholder}
+                      placeholder={
+                        formContent.fields.conciseSummary.placeholder
+                      }
                       className="h-16 rounded-2xl border-2 border-border bg-white/50 text-lg focus:border-primary"
                       required
                       value={formData.summary}
                       onChange={(event) =>
-                        setFormData({ ...formData, summary: event.target.value })
+                        setFormData({
+                          ...formData,
+                          summary: event.target.value,
+                        })
                       }
                     />
                   </div>
@@ -502,7 +519,9 @@ function NewExperiencePageContent(): React.ReactElement {
                     </Label>
                     <div className="mb-4 flex flex-wrap gap-2">
                       {formData.toolLinks.map((toolId) => {
-                        const tool = allTools?.find((candidate) => candidate.id === toolId);
+                        const tool = allTools?.find(
+                          (candidate) => candidate.id === toolId
+                        );
                         return (
                           <Badge
                             key={toolId}
@@ -526,7 +545,9 @@ function NewExperiencePageContent(): React.ReactElement {
                     <div className="relative group">
                       <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                       <Input
-                        placeholder={formContent.fields.linkedTools.searchPlaceholder}
+                        placeholder={
+                          formContent.fields.linkedTools.searchPlaceholder
+                        }
                         className="h-14 rounded-2xl border-2 border-border bg-white/50 pl-12 focus:border-primary"
                         value={toolSearch}
                         onChange={(event) => setToolSearch(event.target.value)}
@@ -538,7 +559,7 @@ function NewExperiencePageContent(): React.ReactElement {
                               key={tool.id}
                               type="button"
                               variant="ghost"
-                              className="h-12 w-full justify-start gap-3 rounded-xl px-4 font-bold"
+                              className="w-full justify-start gap-3 rounded-xl font-bold"
                               onClick={() => handleAddTool(tool.id)}
                             >
                               <CheckCircle2 className="h-4 w-4 text-primary" />
@@ -549,7 +570,9 @@ function NewExperiencePageContent(): React.ReactElement {
                       ) : null}
                     </div>
 
-                    {selectedTools.some((tool) => isProviderContextTool(tool)) ? (
+                    {selectedTools.some((tool) =>
+                      isProviderContextTool(tool)
+                    ) ? (
                       <div className="space-y-4 pt-4">
                         <div className="text-sm font-bold tracking-tight text-foreground/70">
                           {formContent.fields.toolContext.label}
@@ -564,14 +587,15 @@ function NewExperiencePageContent(): React.ReactElement {
 
                           const context = getToolContext(tool.id);
                           const providerFamilies = families.filter(
-                            (family) => family.providerId === tool.providerId,
+                            (family) => family.providerId === tool.providerId
                           );
                           const modelPlaceholder = tool.modelEntries?.length
                             ? tool.modelEntries
                                 .map((entry) => entry.name)
                                 .slice(0, 3)
                                 .join(", ")
-                            : formContent.fields.toolContext.modelNamePlaceholder;
+                            : formContent.fields.toolContext
+                                .modelNamePlaceholder;
 
                           return (
                             <Card
@@ -589,11 +613,15 @@ function NewExperiencePageContent(): React.ReactElement {
                                     {formContent.fields.toolContext.family}
                                   </Label>
                                   <Select
-                                    value={context.familyId || NONE_SELECT_VALUE}
+                                    value={
+                                      context.familyId || NONE_SELECT_VALUE
+                                    }
                                     onValueChange={(value) =>
                                       updateToolContext(tool.id, {
                                         familyId:
-                                          value === NONE_SELECT_VALUE ? undefined : value,
+                                          value === NONE_SELECT_VALUE
+                                            ? undefined
+                                            : value,
                                         providerId: tool.providerId,
                                       })
                                     }
@@ -603,10 +631,16 @@ function NewExperiencePageContent(): React.ReactElement {
                                     </SelectTrigger>
                                     <SelectContent className="rounded-2xl">
                                       <SelectItem value={NONE_SELECT_VALUE}>
-                                        {formContent.fields.toolContext.noFamily}
+                                        {
+                                          formContent.fields.toolContext
+                                            .noFamily
+                                        }
                                       </SelectItem>
                                       {providerFamilies.map((family) => (
-                                        <SelectItem key={family.id} value={family.id}>
+                                        <SelectItem
+                                          key={family.id}
+                                          value={family.id}
+                                        >
                                           {family.name}
                                         </SelectItem>
                                       ))}
@@ -615,10 +649,16 @@ function NewExperiencePageContent(): React.ReactElement {
                                 </div>
                                 <div className="space-y-2">
                                   <Label className="text-xs font-bold uppercase tracking-widest opacity-50">
-                                    {formContent.fields.toolContext.modelVersion}
+                                    {
+                                      formContent.fields.toolContext
+                                        .modelVersion
+                                    }
                                   </Label>
                                   <Input
-                                    placeholder={formContent.fields.toolContext.modelVersionPlaceholder}
+                                    placeholder={
+                                      formContent.fields.toolContext
+                                        .modelVersionPlaceholder
+                                    }
                                     value={context.modelVersion || ""}
                                     onChange={(event) =>
                                       updateToolContext(tool.id, {
@@ -647,7 +687,8 @@ function NewExperiencePageContent(): React.ReactElement {
                                   <div className="md:col-span-2 text-sm font-medium text-muted-foreground">
                                     {formContent.fields.toolContext.familyResolved.replace(
                                       "{family}",
-                                      familyMap.get(context.familyId)?.name || context.familyId,
+                                      familyMap.get(context.familyId)?.name ||
+                                        context.familyId
                                     )}
                                   </div>
                                 ) : null}
@@ -678,22 +719,9 @@ function NewExperiencePageContent(): React.ReactElement {
                       required
                       value={formData.howUsed}
                       onChange={(event) =>
-                        setFormData({ ...formData, howUsed: event.target.value })
-                      }
-                    />
-                  </div>
-                  <div className="space-y-3">
-                    <Label className="font-bold text-sm tracking-tight text-foreground/70">
-                      {formContent.fields.promptsTemplates.label}
-                    </Label>
-                    <Textarea
-                      placeholder={formContent.fields.promptsTemplates.placeholder}
-                      className="min-h-[150px] rounded-2xl border-2 border-border bg-white/50 p-6 font-mono text-base focus:border-primary"
-                      value={formData.promptsOrTemplates}
-                      onChange={(event) =>
                         setFormData({
                           ...formData,
-                          promptsOrTemplates: event.target.value,
+                          howUsed: event.target.value,
                         })
                       }
                     />
@@ -708,7 +736,10 @@ function NewExperiencePageContent(): React.ReactElement {
                       required
                       value={formData.findings}
                       onChange={(event) =>
-                        setFormData({ ...formData, findings: event.target.value })
+                        setFormData({
+                          ...formData,
+                          findings: event.target.value,
+                        })
                       }
                     />
                   </div>
@@ -734,7 +765,10 @@ function NewExperiencePageContent(): React.ReactElement {
                       required
                       value={formData.roleTitle}
                       onChange={(event) =>
-                        setFormData({ ...formData, roleTitle: event.target.value })
+                        setFormData({
+                          ...formData,
+                          roleTitle: event.target.value,
+                        })
                       }
                     />
                   </div>
@@ -749,11 +783,19 @@ function NewExperiencePageContent(): React.ReactElement {
                       }
                     >
                       <SelectTrigger className="h-14 rounded-xl border-2 border-transparent bg-secondary/30 px-4 font-bold transition-all">
-                        <SelectValue placeholder={formContent.fields.studioTeam.placeholder} />
+                        <SelectValue
+                          placeholder={
+                            formContent.fields.studioTeam.placeholder
+                          }
+                        />
                       </SelectTrigger>
                       <SelectContent className="rounded-2xl">
                         {TEAM_OPTIONS.map((team) => (
-                          <SelectItem key={team} value={team} className="p-3 font-bold">
+                          <SelectItem
+                            key={team}
+                            value={team}
+                            className="p-3 font-bold"
+                          >
                             {team}
                           </SelectItem>
                         ))}
@@ -786,7 +828,8 @@ function NewExperiencePageContent(): React.ReactElement {
                             {value}{" "}
                             {value > 1
                               ? formContent.fields.outcomeRating.starPlural
-                              : formContent.fields.outcomeRating.starSingular}{" "}
+                              : formContent.fields.outcomeRating
+                                  .starSingular}{" "}
                             {value === 5
                               ? formContent.fields.outcomeRating.gameChanger
                               : value === 1
@@ -803,61 +846,10 @@ function NewExperiencePageContent(): React.ReactElement {
               <Card className="rounded-[3rem] border-none bg-white p-4 shadow-xl shadow-primary/5">
                 <CardHeader>
                   <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                    {formContent.sections.governanceImpact}
+                    {formContent.sections.extraMetadata}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-8">
-                  <div className="space-y-2">
-                    <Label className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest opacity-50">
-                      <ShieldAlert className="h-4 w-4" />
-                      {formContent.fields.dataSensitivity.label}
-                    </Label>
-                    <Select
-                      value={formData.dataSensitivity}
-                      onValueChange={(value) =>
-                        setFormData({
-                          ...formData,
-                          dataSensitivity: value as DataSensitivity,
-                        })
-                      }
-                    >
-                      <SelectTrigger className="h-14 rounded-xl border-2 border-transparent bg-secondary/30 font-bold transition-all">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="rounded-2xl">
-                        <SelectItem value="Public" className="p-3 font-bold">
-                          {formContent.fields.dataSensitivity.public}
-                        </SelectItem>
-                        <SelectItem value="Internal" className="p-3 font-bold">
-                          {formContent.fields.dataSensitivity.internal}
-                        </SelectItem>
-                        <SelectItem
-                          value="Client Confidential"
-                          className="p-3 font-bold"
-                        >
-                          {formContent.fields.dataSensitivity.clientConfidential}
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest opacity-50">
-                      <Clock className="h-4 w-4" />
-                      {formContent.fields.timeSaved.label}
-                    </Label>
-                    <Input
-                      type="number"
-                      placeholder={formContent.fields.timeSaved.placeholder}
-                      className="h-14 rounded-xl border-2 border-transparent bg-secondary/30 px-4 font-bold transition-all focus:border-primary focus:bg-white"
-                      value={formData.timeSavedHours}
-                      onChange={(event) =>
-                        setFormData({
-                          ...formData,
-                          timeSavedHours: parseFloat(event.target.value) || 0,
-                        })
-                      }
-                    />
-                  </div>
                   <div className="space-y-2">
                     <Label className="text-xs font-bold uppercase tracking-widest opacity-50">
                       {formContent.fields.tags.label}
@@ -875,6 +867,48 @@ function NewExperiencePageContent(): React.ReactElement {
               </Card>
             </div>
           </div>
+
+          <Card className="overflow-hidden rounded-[3rem] border-none bg-secondary/20 shadow-none">
+            <CardHeader className="p-10 pb-2">
+              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
+                {formContent.sections.reusableAssets}
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-10 p-10">
+              <div className="space-y-3">
+                <Label className="font-bold text-sm tracking-tight text-foreground/70">
+                  {formContent.fields.links.label}
+                </Label>
+                <Textarea
+                  placeholder={formContent.fields.links.placeholder}
+                  className="min-h-[140px] rounded-2xl border-2 border-border bg-white/50 p-6 text-base focus:border-primary"
+                  value={formData.links}
+                  onChange={(event) =>
+                    setFormData({
+                      ...formData,
+                      links: event.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div className="space-y-3">
+                <Label className="font-bold text-sm tracking-tight text-foreground/70">
+                  {formContent.fields.promptsTemplates.label}
+                </Label>
+                <Textarea
+                  placeholder={formContent.fields.promptsTemplates.placeholder}
+                  className="min-h-[150px] rounded-2xl border-2 border-border bg-white/50 p-6 font-mono text-base focus:border-primary"
+                  value={formData.promptsOrTemplates}
+                  onChange={(event) =>
+                    setFormData({
+                      ...formData,
+                      promptsOrTemplates: event.target.value,
+                    })
+                  }
+                />
+              </div>
+            </CardContent>
+          </Card>
         </form>
       </main>
     </div>

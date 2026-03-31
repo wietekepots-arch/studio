@@ -12,6 +12,7 @@
   },
   "latestExperiences": {
     "title": "Laatste ervaringen",
+    "close": "Sluit",
     "emptyState": "Nog geen ervaringen gedeeld. Voeg de eerste praktijkervaring toe.",
     "button": "Ervaring toevoegen"
   },

@@ -5,6 +5,7 @@ import { signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { Loader2, LogIn, ShieldCheck, Sparkles, Zap } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
+import { PageTitle } from "@/components/layout/PageTitle";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -89,14 +90,14 @@ export default function LoginPage(): React.ReactElement {
       <main className="container mx-auto flex items-center justify-center px-6 py-20">
         <div className="grid w-full max-w-6xl grid-cols-1 items-center gap-20 lg:grid-cols-2">
           <div className="space-y-10">
-            <h1 className="text-8xl font-black uppercase leading-[0.85] tracking-tighter text-foreground">
-              {loginContent.heading} <br />
-              <span className="text-primary">{loginContent.headingHighlight}</span>
-            </h1>
-            <p className="text-3xl font-medium leading-tight text-muted-foreground">
-              {loginContent.description}
-            </p>
-
+            <PageTitle
+              title={loginContent.heading}
+              highlight={loginContent.headingHighlight}
+              description={loginContent.description}
+              breakBeforeHighlight
+              titleClassName="text-8xl leading-[0.85]"
+              descriptionClassName="text-3xl leading-tight"
+            />
             <div className="space-y-6">
               <div className="flex items-center gap-4">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">

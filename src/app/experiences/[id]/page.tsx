@@ -7,9 +7,9 @@ import {
   ArrowLeft,
   Award,
   ChevronRight,
+  ExternalLink,
   Lock,
   MessageSquare,
-  ShieldCheck,
   Sparkles,
   Star,
   Tag,
@@ -181,16 +181,6 @@ export default function ExperienceDetailPage({
               Return to Feed
             </Link>
           </Button>
-
-          <div className="flex items-center gap-4">
-            <Badge
-              variant="outline"
-              className="gap-2 rounded-full border-2 border-primary px-6 py-2 font-black uppercase text-primary"
-            >
-              <ShieldCheck className="h-4 w-4" />
-              {experience.dataSensitivity || "Internal"}
-            </Badge>
-          </div>
         </div>
 
         <div className="grid grid-cols-1 gap-20 lg:grid-cols-12">
@@ -241,18 +231,6 @@ export default function ExperienceDetailPage({
                 </div>
               </section>
 
-              {experience.promptsOrTemplates ? (
-                <section className="space-y-8">
-                  <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-primary">
-                    <MessageSquare className="h-6 w-6" />
-                    Prompts & Templates
-                  </div>
-                  <div className="rounded-[2.5rem] border-2 border-primary/10 bg-secondary/30 p-8 font-mono text-lg whitespace-pre-wrap">
-                    {experience.promptsOrTemplates}
-                  </div>
-                </section>
-              ) : null}
-
               <section className="space-y-8">
                 <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-primary">
                   <Sparkles className="h-6 w-6" />
@@ -273,6 +251,41 @@ export default function ExperienceDetailPage({
                   </div>
                   <div className="prose prose-xl max-w-none whitespace-pre-wrap font-medium italic leading-relaxed text-muted-foreground">
                     {experience.recommendations}
+                  </div>
+                </section>
+              ) : null}
+
+              {experience.links?.length ? (
+                <section className="space-y-8">
+                  <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-primary">
+                    <ExternalLink className="h-6 w-6" />
+                    Links
+                  </div>
+                  <div className="grid gap-4">
+                    {experience.links.map((link) => (
+                      <a
+                        key={link}
+                        href={link}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="group flex items-center justify-between rounded-[2rem] border-2 border-primary/10 bg-secondary/20 px-6 py-5 font-bold transition-colors hover:border-primary/30 hover:bg-secondary/30"
+                      >
+                        <span className="truncate pr-4">{link}</span>
+                        <ExternalLink className="h-4 w-4 shrink-0 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                      </a>
+                    ))}
+                  </div>
+                </section>
+              ) : null}
+
+              {experience.promptsOrTemplates ? (
+                <section className="space-y-8">
+                  <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-primary">
+                    <MessageSquare className="h-6 w-6" />
+                    Prompts & Templates
+                  </div>
+                  <div className="rounded-[2.5rem] border-2 border-primary/10 bg-secondary/30 p-8 font-mono text-lg whitespace-pre-wrap">
+                    {experience.promptsOrTemplates}
                   </div>
                 </section>
               ) : null}
@@ -324,17 +337,6 @@ export default function ExperienceDetailPage({
                     </div>
                   </div>
                 </div>
-
-                {experience.timeSavedHours ? (
-                  <div className="flex items-center justify-between rounded-[2.5rem] border-2 border-yellow-100 bg-yellow-50 p-8">
-                    <div className="text-[10px] font-black uppercase tracking-widest text-yellow-700">
-                      Efficiency Gain
-                    </div>
-                    <div className="text-3xl font-black text-yellow-700">
-                      +{experience.timeSavedHours}h
-                    </div>
-                  </div>
-                ) : null}
               </CardContent>
             </Card>
 

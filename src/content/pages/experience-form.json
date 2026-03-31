@@ -10,7 +10,8 @@
     "strategicContext": "Context",
     "theProcess": "Proces",
     "pulseMetadata": "Metadata",
-    "governanceImpact": "Governance & impact"
+    "extraMetadata": "Extra metadata",
+    "reusableAssets": "Links & prompts"
   },
   "fields": {
     "experienceTitle": {
@@ -45,6 +46,10 @@
       "label": "Prompts of templates (optioneel)",
       "placeholder": "Plak hier prompts die anderen kunnen hergebruiken."
     },
+    "links": {
+      "label": "Links (optioneel)",
+      "placeholder": "Voeg een link per regel toe, bijvoorbeeld:\nhttps://www.figma.com/file/...\nhttps://docs.google.com/..."
+    },
     "keyFindings": {
       "label": "Belangrijkste bevindingen & uitkomsten",
       "placeholder": "Wat werkte? Wat niet? Welke verrassingen waren er?"
@@ -63,16 +68,6 @@
       "caution": "(Let op)",
       "starSingular": "ster",
       "starPlural": "sterren"
-    },
-    "dataSensitivity": {
-      "label": "Gevoeligheid van data",
-      "public": "Publiek",
-      "internal": "Alleen intern",
-      "clientConfidential": "Vertrouwelijk voor klant"
-    },
-    "timeSaved": {
-      "label": "Bespaarde tijd (uren)",
-      "placeholder": "Bijvoorbeeld: 4"
     },
     "tags": {
       "label": "Tags",

@@ -1,7 +1,7 @@
 export const TEAM_OPTIONS = [
   "Development",
   "Content",
-  "Management",
+  "Project / Account Manager",
   "Strategy",
   "Visual Design",
   "User Experience",

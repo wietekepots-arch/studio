@@ -6,8 +6,6 @@ import { collection, orderBy, query, where } from "firebase/firestore";
 import {
   ChevronRight,
   Clock,
-  PanelRightClose,
-  PanelRightOpen,
   Plus,
   ShieldCheck,
   Sparkles,
@@ -15,7 +13,9 @@ import {
 } from "lucide-react";
 import common from "@/content/common.json";
 import homeContent from "@/content/pages/home.json";
+import { OutcomeStars } from "@/components/experiences";
 import { Navbar } from "@/components/layout/Navbar";
+import { PageTitle } from "@/components/layout/PageTitle";
 import { useAppUser } from "@/components/app/AppUserProvider";
 import { RadarChart } from "@/components/radar/RadarChart";
 import { RadarQuadrantLegend } from "@/components/radar/RadarQuadrantLegend";
@@ -28,12 +28,6 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { Blip, Experience, RadarConfigOption } from "@/app/lib/radar-types";
 import {
   buildRadarConfig,
@@ -43,11 +37,12 @@ import {
 
 export default function HomePage(): React.ReactElement {
   const db = useFirestore();
-  const { authUser, hasCompanyAccess, isLoading } = useAppUser();
+  const { authUser, hasCompanyAccess, isLoading, profile } = useAppUser();
   const [search, setSearch] = useState("");
   const [activeQuadrant, setActiveQuadrant] = useState<number | undefined>();
   const [mounted, setMounted] = useState(false);
-  const [isLatestExperiencesOpen, setIsLatestExperiencesOpen] = useState(true);
+  const [latestExperiencesOpenOverride, setLatestExperiencesOpenOverride] =
+    useState<boolean | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -102,6 +97,43 @@ export default function HomePage(): React.ReactElement {
   const config = buildRadarConfig(quadrants, rings);
   const sortedBlips = sortBlips(approvedBlips);
   const recentExperiences = (publishedExperiences ?? []).slice(0, 4);
+  const authLastSignInAt = useMemo(() => {
+    if (!authUser?.metadata.lastSignInTime) {
+      return null;
+    }
+
+    const timestamp = new Date(authUser.metadata.lastSignInTime).getTime();
+    return Number.isNaN(timestamp) ? null : timestamp;
+  }, [authUser?.metadata.lastSignInTime]);
+  const experienceDrawerBaselineAt = useMemo(() => {
+    if (!profile) {
+      return null;
+    }
+
+    if (
+      authLastSignInAt !== null &&
+      profile.lastLoginAt === authLastSignInAt
+    ) {
+      return profile.previousLoginAt ?? profile.lastLoginAt ?? null;
+    }
+
+    return profile.lastLoginAt ?? profile.previousLoginAt ?? null;
+  }, [authLastSignInAt, profile]);
+  const shouldOpenLatestExperiencesByDefault = useMemo(() => {
+    if (!experienceDrawerBaselineAt || !publishedExperiences?.length) {
+      return false;
+    }
+
+    return publishedExperiences.some(
+      (experience) => experience.createdAt > experienceDrawerBaselineAt,
+    );
+  }, [experienceDrawerBaselineAt, publishedExperiences]);
+  const isLatestExperiencesOpen =
+    latestExperiencesOpenOverride ?? shouldOpenLatestExperiencesByDefault;
+
+  useEffect(() => {
+    setLatestExperiencesOpenOverride(null);
+  }, [authLastSignInAt, authUser?.uid]);
 
   const filteredBlips = useMemo(() => {
     return sortedBlips.filter((blip) => {
@@ -213,20 +245,15 @@ export default function HomePage(): React.ReactElement {
           }`}
         >
           <div className="flex flex-col gap-6 md:justify-between">
-            <div className="space-y-3 w-full">
-              <div className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">
-                {homeContent.sectionLabel}
-              </div>
-              <h1 className="text-2xl font-black uppercase leading-none tracking-tighter">
-                {homeContent.heading}{" "}
-                <span className="text-primary">
-                  {homeContent.headingHighlight}
-                </span>
-              </h1>
-              <p className="max-w-lg text-sm font-medium text-muted-foreground">
-                {homeContent.description}
-              </p>
-            </div>
+            <PageTitle
+              label={homeContent.sectionLabel}
+              title={homeContent.heading}
+              highlight={homeContent.headingHighlight}
+              description={homeContent.description}
+              className="w-full space-y-3"
+              titleClassName="text-2xl"
+              descriptionClassName="max-w-lg text-sm"
+            />
           </div>
 
           {!config.quadrants.length || !config.rings.length ? (
@@ -385,7 +412,7 @@ export default function HomePage(): React.ReactElement {
           >
             <Collapsible
               open={isLatestExperiencesOpen}
-              onOpenChange={setIsLatestExperiencesOpen}
+              onOpenChange={setLatestExperiencesOpenOverride}
             >
               <CardHeader
                 className={`p-8 ${
@@ -394,63 +421,39 @@ export default function HomePage(): React.ReactElement {
                     : "flex items-center justify-center px-3 py-6"
                 }`}
               >
-                <TooltipProvider delayDuration={100}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <CollapsibleTrigger
-                        title="Toggle experiences"
-                        className={`flex w-full items-center text-left ${
-                          isLatestExperiencesOpen
-                            ? "justify-between gap-4"
-                            : "flex-col justify-center gap-3"
-                        }`}
+                {isLatestExperiencesOpen ? (
+                  <div className="flex items-start justify-between gap-4">
+                    <CardTitle className="flex items-center gap-3 text-lg font-black uppercase tracking-tighter">
+                      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/70 text-primary">
+                        <Sparkles className="h-6 w-6" />
+                      </span>
+                      <span>{homeContent.latestExperiences.title}</span>
+                    </CardTitle>
+                    <CollapsibleTrigger asChild>
+                      <button
+                        type="button"
+                        className="text-sm font-bold uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-primary"
                       >
-                        <CardTitle
-                          className={`flex items-center text-lg font-black uppercase tracking-tighter ${
-                            isLatestExperiencesOpen
-                              ? "gap-3"
-                              : "flex-col justify-center gap-2 text-center"
-                          }`}
-                        >
-                          <span
-                            className={`flex shrink-0 items-center justify-center rounded-full bg-white/70 text-primary ${
-                              isLatestExperiencesOpen
-                                ? "h-12 w-12"
-                                : "h-11 w-11"
-                            }`}
-                          >
-                            <Sparkles className="h-6 w-6" />
-                          </span>
-                          {isLatestExperiencesOpen ? (
-                            <span>{homeContent.latestExperiences.title}</span>
-                          ) : (
-                            <span className="sr-only">
-                              {homeContent.latestExperiences.title}
-                            </span>
-                          )}
-                        </CardTitle>
-                        <span
-                          className={`flex items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-primary ${
-                            isLatestExperiencesOpen
-                              ? "h-10 w-10 bg-white/70"
-                              : "h-8 w-8 bg-white/50"
-                          }`}
-                        >
-                          {isLatestExperiencesOpen ? (
-                            <PanelRightClose className="h-5 w-5" />
-                          ) : (
-                            <PanelRightOpen className="h-4 w-4" />
-                          )}
-                        </span>
-                      </CollapsibleTrigger>
-                    </TooltipTrigger>
-                    <TooltipContent side="left">
-                      {isLatestExperiencesOpen
-                        ? "Collapse experiences"
-                        : "Toggle experiences"}
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                        {homeContent.latestExperiences.close}
+                      </button>
+                    </CollapsibleTrigger>
+                  </div>
+                ) : (
+                  <CollapsibleTrigger
+                    title={homeContent.latestExperiences.title}
+                    aria-label={homeContent.latestExperiences.title}
+                    className="flex w-full cursor-pointer flex-col items-center justify-center gap-3 text-left"
+                  >
+                    <CardTitle className="flex flex-col justify-center gap-2 text-center text-lg font-black uppercase tracking-tighter">
+                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/70 text-primary">
+                        <Sparkles className="h-6 w-6" />
+                      </span>
+                      <span className="sr-only">
+                        {homeContent.latestExperiences.title}
+                      </span>
+                    </CardTitle>
+                  </CollapsibleTrigger>
+                )}
               </CardHeader>
               <CollapsibleContent
                 className={`overflow-hidden transition-opacity duration-150 ${
@@ -471,12 +474,13 @@ export default function HomePage(): React.ReactElement {
                           <div className="space-y-4">
                             <div className="space-y-2">
                               <div className="flex items-center justify-between gap-3">
-                                <Badge
-                                  variant="outline"
-                                  className="rounded-full border-none bg-primary/5 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-primary"
-                                >
-                                  {experience.team}
-                                </Badge>
+                                {experience.outcomeRating ? (
+                                  <OutcomeStars
+                                    outcomeRating={experience.outcomeRating}
+                                  />
+                                ) : (
+                                  <span />
+                                )}
                                 <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground transition-all group-hover:translate-x-1 group-hover:text-primary" />
                               </div>
                               <span className="text-xl font-bold tracking-tight transition-colors group-hover:text-primary">

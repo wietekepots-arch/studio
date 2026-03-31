@@ -44,6 +44,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { PageTitle } from "@/components/layout/PageTitle";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -1214,13 +1215,14 @@ export function RadarBlipForm({
       </div>
 
       <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-        <div className="space-y-2">
-          <h1 className="text-6xl font-black uppercase leading-none tracking-tighter text-foreground">
-            {isEditMode ? formContent.edit.heading : formContent.create.heading} <br />
-            <span className="text-primary">{formContent.headingHighlight}</span>
-          </h1>
-          <p className="text-xl font-medium text-muted-foreground">{helperText}</p>
-        </div>
+        <PageTitle
+          title={isEditMode ? formContent.edit.heading : formContent.create.heading}
+          highlight={formContent.headingHighlight}
+          description={helperText}
+          breakBeforeHighlight
+          titleClassName="text-6xl"
+          descriptionClassName="text-xl"
+        />
         <Button
           type="submit"
           className="h-14 gap-2 rounded-full px-12 text-lg font-bold shadow-lg hover:shadow-primary/20"

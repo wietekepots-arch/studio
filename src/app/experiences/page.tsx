@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { OutcomeStars } from "@/components/experiences";
 import { Navbar } from "@/components/layout/Navbar";
+import { PageTitle } from "@/components/layout/PageTitle";
 import { useAppUser } from "@/components/app/AppUserProvider";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { Badge } from "@/components/ui/badge";
@@ -148,17 +149,16 @@ export default function ExperiencesPage(): React.ReactElement {
 
       <main className="container mx-auto max-w-7xl px-6 py-12">
         <div className="mb-16 flex flex-col items-start justify-between gap-8 md:flex-row md:items-end">
-          <div className="space-y-4">
-            <h1 className="text-7xl font-black uppercase leading-none tracking-tighter text-foreground">
-              {experiencesContent.heading}{" "}
-              <span className="text-primary">{experiencesContent.headingHighlight}</span>{" "}
-              <br />
-              {experiencesContent.headingEnd}
-            </h1>
-            <p className="max-w-2xl text-2xl font-medium text-muted-foreground">
-              {experiencesContent.description}
-            </p>
-          </div>
+          <PageTitle
+            title={experiencesContent.heading}
+            highlight={experiencesContent.headingHighlight}
+            suffix={experiencesContent.headingEnd}
+            description={experiencesContent.description}
+            breakAfterHighlight
+            className="space-y-4"
+            titleClassName="text-7xl"
+            descriptionClassName="max-w-2xl text-2xl"
+          />
           <Button
             asChild
             className="h-16 gap-3 rounded-full px-10 text-lg font-bold shadow-xl transition-all hover:shadow-primary/20"

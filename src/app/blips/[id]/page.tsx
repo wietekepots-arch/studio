@@ -676,12 +676,6 @@ export default function BlipDetailPage({
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="space-y-1">
-                  <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
-                    {common.labels.owner}
-                  </div>
-                  <div className="text-xl font-bold">{item.ownerName}</div>
-                </div>
                 {item.providerName ? (
                   <div className="space-y-1">
                     <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">

@@ -10,6 +10,7 @@ import {
   LogIn,
   LogOut,
   PlusCircle,
+  Sparkles,
   Radar,
   Search,
 } from "lucide-react";
@@ -69,9 +70,9 @@ export function Navbar({
   const navItems = [
     { label: navigation.radar, href: "/", icon: Radar, requiresAuth: false },
     {
-      label: navigation.dashboard,
-      href: "/dashboard",
-      icon: LayoutDashboard,
+      label: navigation.experiences,
+      href: "/experiences",
+      icon: Sparkles,
       requiresAuth: true,
     },
     {
@@ -94,8 +95,21 @@ export function Navbar({
             href="/"
             className="group flex items-center gap-3 font-bold text-xl tracking-tight text-foreground"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground transition-all group-hover:scale-110">
-              <Radar className="h-5 w-5" />
+            <div className="flex items-center justify-center text-primary transition-transform duration-200 group-hover:scale-105">
+              <svg
+                width="56"
+                height="50"
+                viewBox="0 0 56 50"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-11 w-auto"
+                aria-hidden="true"
+              >
+                <path
+                  d="M56.0061 19.2448L52.0567 12.3307H46.6624L49.3885 7.68267L45.2993 0.526611H37.3868L34.7118 5.21212L32.0368 0.533427H23.9606L21.289 5.21894L18.614 0.533427H10.7594L6.67024 7.68948L9.39636 12.3375H4.03613L0.0866699 19.2448L4.09747 26.2407H9.49177L6.76566 30.8649L10.8548 37.9937H16.2355L13.5094 42.6281L17.5134 49.6103H25.351L28.0226 44.9248L30.6976 49.6103H38.6135L42.6141 42.6281L39.888 37.9937H45.2823L49.3715 30.8649L46.6453 26.2373H52.0396L56.0061 19.2448ZM42.3108 7.36576C42.0102 7.36846 41.7155 7.28174 41.4643 7.11661C41.2131 6.95149 41.0166 6.71541 40.8998 6.43838C40.7831 6.16134 40.7513 5.85585 40.8085 5.56071C40.8658 5.26557 41.0094 4.9941 41.2213 4.7808C41.4332 4.56749 41.7036 4.42198 41.9984 4.36274C42.2931 4.3035 42.5988 4.33321 42.8767 4.4481C43.1545 4.56298 43.3919 4.75786 43.5587 5.00797C43.7255 5.25807 43.8142 5.55212 43.8136 5.85276C43.8136 6.25227 43.6556 6.63556 43.3741 6.91901C43.0925 7.20246 42.7103 7.36306 42.3108 7.36576Z"
+                  fill="currentColor"
+                />
+              </svg>
             </div>
             <div className="flex flex-col leading-none">
               <span className="text-2xl font-black tracking-tighter">
@@ -123,8 +137,12 @@ export function Navbar({
                 return (
                   <Link key={item.href} href={item.href}>
                     <Button
-                      variant={isActive ? "secondary" : "ghost"}
-                      className="h-10 gap-2 rounded-full px-5 text-sm font-bold transition-all hover:bg-secondary/80"
+                      variant="navbar"
+                      className={
+                        isActive
+                          ? "bg-secondary text-secondary-foreground"
+                          : "text-muted-foreground"
+                      }
                     >
                       <item.icon className="h-4 w-4" />
                       {item.label}
@@ -179,8 +197,8 @@ export function Navbar({
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
-                    variant="ghost"
-                    className="h-auto rounded-full p-1 hover:bg-secondary/60"
+                    variant="navbar"
+                    className="h-auto p-1 hover:bg-secondary/60"
                   >
                     <div className="flex items-center gap-2">
                       <Avatar className="h-10 w-10 border-2 border-primary/20">
@@ -212,7 +230,10 @@ export function Navbar({
                     </span>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild className="cursor-pointer rounded-xl px-3 py-2 font-medium">
+                  <DropdownMenuItem
+                    asChild
+                    className="cursor-pointer rounded-xl px-3 py-2 font-medium"
+                  >
                     <Link href="/dashboard">
                       <LayoutDashboard className="h-4 w-4" />
                       {navigation.dashboard}
@@ -229,7 +250,7 @@ export function Navbar({
               </DropdownMenu>
             </>
           ) : (
-            <Button asChild className="rounded-full px-6 font-bold gap-2">
+            <Button asChild variant="navbar" className="px-6 gap-2">
               <Link href="/login">
                 <LogIn className="h-4 w-4" />
                 {navigation.signIn}

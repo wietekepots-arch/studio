@@ -7,6 +7,8 @@ export interface UserProfile {
   role: Role;
   team?: string;
   createdAt?: number;
+  lastLoginAt?: number;
+  previousLoginAt?: number;
   updatedAt?: number;
 }
 

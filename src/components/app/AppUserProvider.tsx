@@ -42,8 +42,17 @@ export function AppUserProvider({
   const { user, isUserLoading } = useUser();
   const [isEnsuringProfile, setIsEnsuringProfile] = useState(false);
   const [isEnsuringRoleAssignment, setIsEnsuringRoleAssignment] = useState(false);
+  const [isSyncingLoginMetadata, setIsSyncingLoginMetadata] = useState(false);
   const isSigningOutRef = useRef(false);
   const isCompanyUser = isCompanyEmail(user?.email);
+  const authLastSignInAt = useMemo(() => {
+    if (!user?.metadata.lastSignInTime) {
+      return null;
+    }
+
+    const timestamp = new Date(user.metadata.lastSignInTime).getTime();
+    return Number.isNaN(timestamp) ? null : timestamp;
+  }, [user?.metadata.lastSignInTime]);
 
   function isRole(value: unknown): value is Role {
     return value === "Member" || value === "PowerUser" || value === "Admin";
@@ -185,6 +194,44 @@ export function AppUserProvider({
     roleAssignmentDocument,
     roleAssignmentError,
     roleAssignmentRef,
+    user,
+  ]);
+
+  useEffect(() => {
+    if (
+      !user ||
+      !isCompanyUser ||
+      isProfileLoading ||
+      profileError ||
+      !profileDocument ||
+      !profileRef ||
+      isSyncingLoginMetadata ||
+      authLastSignInAt === null ||
+      profileDocument.lastLoginAt === authLastSignInAt
+    ) {
+      return;
+    }
+
+    setIsSyncingLoginMetadata(true);
+
+    void setDoc(
+      profileRef,
+      {
+        lastLoginAt: authLastSignInAt,
+        previousLoginAt: profileDocument.lastLoginAt ?? authLastSignInAt,
+      } satisfies Partial<UserProfile>,
+      { merge: true },
+    ).finally(() => {
+      setIsSyncingLoginMetadata(false);
+    });
+  }, [
+    authLastSignInAt,
+    isCompanyUser,
+    isProfileLoading,
+    isSyncingLoginMetadata,
+    profileDocument,
+    profileError,
+    profileRef,
     user,
   ]);
 

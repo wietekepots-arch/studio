@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { collection, query, where } from "firebase/firestore";
 import { Navbar } from "@/components/layout/Navbar";
+import { PageTitle } from "@/components/layout/PageTitle";
 import { useAppUser } from "@/components/app/AppUserProvider";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { Button } from "@/components/ui/button";
@@ -342,18 +343,15 @@ export default function DashboardPage(): React.ReactElement {
 
       <main className="container mx-auto max-w-7xl px-6 py-12">
         <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-          <div className="space-y-3">
-            <div className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">
-              {dashboardContent.sectionLabel}
-            </div>
-            <h1 className="text-6xl font-black uppercase leading-none tracking-tighter">
-              {dashboardContent.heading}{" "}
-              <span className="text-primary">{dashboardContent.headingHighlight}</span>
-            </h1>
-            <p className="max-w-2xl text-lg font-medium text-muted-foreground">
-              {dashboardContent.description}
-            </p>
-          </div>
+          <PageTitle
+            label={dashboardContent.sectionLabel}
+            title={dashboardContent.heading}
+            highlight={dashboardContent.headingHighlight}
+            description={dashboardContent.description}
+            className="space-y-3"
+            titleClassName="text-6xl"
+            descriptionClassName="max-w-2xl text-lg"
+          />
 
           {canReview ? (
             <div className="flex flex-col items-start gap-2 md:items-end">

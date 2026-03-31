@@ -3,12 +3,12 @@
 import {
   type RadarConfigOption,
   type RadarFamily,
-  type RadarItem,
+  type Blip,
   type RadarProvider,
   type SeedMetadata,
 } from "@/app/lib/radar-types";
 import seedFamiliesData from "@/content/seed/families.json";
-import seedItemsData from "@/content/seed/items.json";
+import seedBlipsData from "@/content/seed/blips.json";
 import seedProvidersData from "@/content/seed/providers.json";
 import seedQuadrantsData from "@/content/seed/quadrants.json";
 import seedRingsData from "@/content/seed/rings.json";
@@ -30,8 +30,8 @@ function slugifyTag(tag: string): string {
 type SeedConfigOptionData = Omit<RadarConfigOption, "seedManaged" | "seedVersion">;
 type SeedProviderData = Omit<RadarProvider, "seedManaged" | "seedVersion">;
 type SeedFamilyData = Omit<RadarFamily, "seedManaged" | "seedVersion">;
-type SeedRadarItemInput = Omit<
-  RadarItem,
+type SeedBlipInput = Omit<
+  Blip,
   | "ownerId"
   | "ownerName"
   | "status"
@@ -56,8 +56,8 @@ type SeedRadarItemInput = Omit<
   | "seedVersion"
 >;
 
-type SeedResolvedRadarItem = Omit<
-  RadarItem,
+type SeedResolvedBlip = Omit<
+  Blip,
   | "ownerId"
   | "ownerName"
   | "status"
@@ -90,7 +90,7 @@ export const seedFamilies: RadarFamily[] = (
   seedFamiliesData as SeedFamilyData[]
 ).map((item) => withSeedMetadata(item));
 
-export const legacySeedRadarItemIds = [
+export const legacySeedBlipIds = [
   "claude-3-5",
   "claude-4-6",
   "transcriptor",
@@ -154,14 +154,14 @@ const legacySeedTagNames = [
 export const legacySeedTagIds = legacySeedTagNames.map((tag) => slugifyTag(tag));
 export const seedProviderIds = seedProviders.map((item) => item.id);
 export const seedFamilyIds = seedFamilies.map((item) => item.id);
-export const seedRadarItemIds = (seedItemsData as SeedRadarItemInput[]).map(
+export const seedBlipIds = (seedBlipsData as SeedBlipInput[]).map(
   (item) => item.id,
 );
 
 const seedProvidersById = new Map(seedProviders.map((item) => [item.id, item]));
 const seedFamiliesById = new Map(seedFamilies.map((item) => [item.id, item]));
 
-function buildSeedRadarItem(input: SeedRadarItemInput): SeedResolvedRadarItem {
+function buildSeedBlip(input: SeedBlipInput): SeedResolvedBlip {
   const family = input.familyId ? seedFamiliesById.get(input.familyId) : undefined;
   const providerId = input.providerId || family?.providerId;
   const provider = providerId ? seedProvidersById.get(providerId) : undefined;
@@ -214,16 +214,16 @@ function buildSeedRadarItem(input: SeedRadarItemInput): SeedResolvedRadarItem {
   });
 }
 
-export function getSeedRadarItems(now = Date.now()): RadarItem[] {
-  const items = seedItemsData as SeedRadarItemInput[];
-  const totalItems = items.length;
+export function getSeedBlips(now = Date.now()): Blip[] {
+  const blips = seedBlipsData as SeedBlipInput[];
+  const totalBlips = blips.length;
 
-  return items.map((item, index) => {
-    const seededItem = buildSeedRadarItem(item);
-    const createdAt = now - (totalItems - index) * 86_400_000;
+  return blips.map((blip, index) => {
+    const seededBlip = buildSeedBlip(blip);
+    const createdAt = now - (totalBlips - index) * 86_400_000;
 
     return {
-      ...seededItem,
+      ...seededBlip,
       ownerId: "seed-admin",
       ownerName: "Greenberry Admin",
       status: "Approved",
@@ -242,8 +242,8 @@ export function getSeedRadarItems(now = Date.now()): RadarItem[] {
 export function getSeedTags(): RadarConfigOption[] {
   const tags = new Set<string>();
 
-  for (const item of getSeedRadarItems()) {
-    for (const tag of item.tags) {
+  for (const blip of getSeedBlips()) {
+    for (const tag of blip.tags) {
       tags.add(tag);
     }
   }

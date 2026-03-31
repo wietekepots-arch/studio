@@ -86,11 +86,15 @@ export interface RadarFamily extends RadarSharedProfile, SeedMetadata {
   description?: string;
 }
 
-export type ItemStatus = "Draft" | "Pending" | "Approved" | "Archived";
+export type BlipStatus = "Draft" | "Pending" | "Approved" | "Archived";
 export type CostRange = "Free" | "Low" | "Medium" | "High";
 export type Origin = "European" | "American" | "Other";
 export type DataSensitivity = "Public" | "Internal" | "Client Confidential";
-export type RadarEntityType = "provider" | "product" | "workflow" | "governance";
+export type RadarEntityType =
+  | "provider"
+  | "product"
+  | "workflow"
+  | "governance";
 
 export interface PricingTier {
   name: string;
@@ -101,7 +105,8 @@ export interface PricingTier {
 
 export interface HistoryEntry {
   id: string;
-  itemId: string;
+  blipId?: string;
+  itemId?: string;
   action: string;
   note?: string;
   before?: unknown;
@@ -110,7 +115,7 @@ export interface HistoryEntry {
   createdBy: string;
 }
 
-export interface RadarItem {
+export interface Blip {
   id: string;
   name: string;
   shortDesc: string;
@@ -118,7 +123,7 @@ export interface RadarItem {
   entityType?: RadarEntityType;
   useCases?: RadarUseCase[];
   quadrantId: number; // 0 to 3
-  ringId: number;     // 0 to 3
+  ringId: number; // 0 to 3
   previousRingId?: number; // For tracking movement
   tags: string[];
   team: string;
@@ -146,7 +151,7 @@ export interface RadarItem {
   pricingUrl?: string;
   modelEntries?: RadarModelEntry[];
   links: string[];
-  status: ItemStatus;
+  status: BlipStatus;
   submittedAt?: number;
   submittedBy?: string;
   reviewedAt?: number;
@@ -164,7 +169,8 @@ export interface RadarItem {
 }
 
 export interface ExperienceToolContext {
-  itemId: string;
+  blipId?: string;
+  itemId?: string;
   providerId?: string;
   familyId?: string;
   modelName?: string;
@@ -175,7 +181,7 @@ export interface Experience {
   id: string;
   title: string;
   summary: string;
-  toolLinks: string[]; // RadarItem IDs
+  toolLinks: string[]; // Blip IDs
   toolContexts?: ExperienceToolContext[];
   howUsed: string;
   promptsOrTemplates?: string;
@@ -201,15 +207,10 @@ export interface Experience {
 
 export const DEFAULT_CONFIG: RadarConfig = {
   quadrants: [
-    "Bouwen & Prototypen",
-    "Modellen & Intelligentie",
-    "Workflow & Agents",
-    "Vertrouwen & Governance"
+    "Methods & Practices",
+    "Models & Platforms",
+    "Workflow & Tools",
+    "Prototyping & Experiments",
   ],
-  rings: [
-    "Inzetten",
-    "Uitproberen",
-    "Beoordelen",
-    "Parkeren"
-  ]
+  rings: ["Adopt", "Trial", "Assess", "Hold"],
 };

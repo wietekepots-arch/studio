@@ -11,30 +11,33 @@ import {
   type Firestore,
 } from "firebase/firestore";
 import {
+  Blip,
+  BlipStatus,
   HistoryEntry,
-  ItemStatus,
   RadarConfig,
   RadarConfigOption,
   RadarFamily,
-  RadarItem,
   RadarProvider,
   Role,
   UserProfile,
 } from "@/app/lib/radar-types";
 import { canReviewBlips } from "@/lib/company-auth";
 import {
-  getSeedRadarItems,
+  getSeedBlips,
   seedFamilies,
   seedProviders,
   getSeedTags,
-  legacySeedRadarItemIds,
+  legacySeedBlipIds,
   legacySeedTagIds,
   seedFamilyIds,
   seedProviderIds,
   seedQuadrants,
-  seedRadarItemIds,
+  seedBlipIds,
   seedRings,
 } from "@/lib/radar-seed";
+
+export const RADAR_BLIPS_COLLECTION = "radarItems";
+export const BLIP_HISTORY_COLLECTION = "itemHistory";
 
 export interface SeedResult {
   quadrants: number;
@@ -42,7 +45,7 @@ export interface SeedResult {
   providers: number;
   families: number;
   tags: number;
-  items: number;
+  blips: number;
   historyEntries: number;
 }
 
@@ -113,20 +116,20 @@ function hasSharedProfileChanged<
   );
 }
 
-function canFinalizeSeedItem(
-  item: Partial<RadarItem> | undefined,
+function canFinalizeSeedBlip(
+  blip: Partial<Blip> | undefined,
   userId: string,
 ): boolean {
-  if (!item) {
+  if (!blip) {
     return true;
   }
 
   return (
-    item.status === "Pending" &&
-    item.createdBy === userId &&
-    item.updatedBy === userId &&
-    item.ownerId === userId &&
-    item.submittedBy === userId
+    blip.status === "Pending" &&
+    blip.createdBy === userId &&
+    blip.updatedBy === userId &&
+    blip.ownerId === userId &&
+    blip.submittedBy === userId
   );
 }
 
@@ -226,9 +229,9 @@ export function mergeRadarFamilies(
 export function resolveRadarSharedProfile(
   provider?: RadarProvider | null,
   family?: RadarFamily | null,
-  fallbackOrigin: RadarItem["origin"] = "Other",
+  fallbackOrigin: Blip["origin"] = "Other",
 ): Pick<
-  RadarItem,
+  Blip,
   | "origin"
   | "sustainabilityNotes"
   | "securityNotes"
@@ -246,51 +249,51 @@ export function resolveRadarSharedProfile(
   };
 }
 
-export function resolveRadarItem(
-  item: RadarItem,
+export function resolveBlip(
+  blip: Blip,
   families: RadarFamily[] | Map<string, RadarFamily> | null | undefined,
   providers: RadarProvider[] | Map<string, RadarProvider> | null | undefined,
-): RadarItem {
+): Blip {
   const familyMap = buildEntityMap(families);
   const providerMap = buildEntityMap(providers);
-  const family = item.familyId ? familyMap.get(item.familyId) : undefined;
-  const providerId = item.providerId || family?.providerId;
+  const family = blip.familyId ? familyMap.get(blip.familyId) : undefined;
+  const providerId = blip.providerId || family?.providerId;
   const provider = providerId ? providerMap.get(providerId) : undefined;
 
   return {
-    ...item,
+    ...blip,
     ...(providerId ? { providerId } : {}),
-    ...(provider?.name || family?.providerName || item.providerName
+    ...(provider?.name || family?.providerName || blip.providerName
       ? {
-          providerName: provider?.name || family?.providerName || item.providerName,
+          providerName: provider?.name || family?.providerName || blip.providerName,
         }
       : {}),
-    ...(family?.id || item.familyId ? { familyId: item.familyId || family?.id } : {}),
-    ...(family?.name || item.familyName
-      ? { familyName: family?.name || item.familyName }
+    ...(family?.id || blip.familyId ? { familyId: blip.familyId || family?.id } : {}),
+    ...(family?.name || blip.familyName
+      ? { familyName: family?.name || blip.familyName }
       : {}),
-    origin: item.originOverride ?? family?.origin ?? provider?.origin ?? item.origin,
+    origin: blip.originOverride ?? family?.origin ?? provider?.origin ?? blip.origin,
     sustainabilityNotes:
-      item.sustainabilityNotesOverride ??
+      blip.sustainabilityNotesOverride ??
       family?.sustainabilityNotes ??
       provider?.sustainabilityNotes ??
-      item.sustainabilityNotes,
+      blip.sustainabilityNotes,
     securityNotes:
-      item.securityNotesOverride ??
+      blip.securityNotesOverride ??
       family?.securityNotes ??
       provider?.securityNotes ??
-      item.securityNotes,
+      blip.securityNotes,
     securityCertifications:
-      item.securityCertifications?.length
-        ? item.securityCertifications
+      blip.securityCertifications?.length
+        ? blip.securityCertifications
         : family?.securityCertifications ??
           provider?.securityCertifications ??
           [],
     ethicsNotes:
-      item.ethicsNotesOverride ??
+      blip.ethicsNotesOverride ??
       family?.ethicsNotes ??
       provider?.ethicsNotes ??
-      item.ethicsNotes,
+      blip.ethicsNotes,
   };
 }
 
@@ -304,18 +307,18 @@ export function buildRadarConfig(
   };
 }
 
-export function sortRadarItems(
-  items: RadarItem[] | null | undefined,
-): RadarItem[] {
-  if (!items) {
+export function sortBlips(
+  blips: Blip[] | null | undefined,
+): Blip[] {
+  if (!blips) {
     return [];
   }
 
-  return [...items].sort((left, right) => right.updatedAt - left.updatedAt);
+  return [...blips].sort((left, right) => right.updatedAt - left.updatedAt);
 }
 
-export function canEditRadarItem(
-  item: RadarItem,
+export function canEditBlip(
+  blip: Blip,
   userId?: string | null,
   role?: Role | null,
 ): boolean {
@@ -328,55 +331,55 @@ export function canEditRadarItem(
   }
 
   return (
-    item.createdBy === userId &&
-    item.ownerId === userId &&
-    item.status !== "Archived"
+    blip.createdBy === userId &&
+    blip.ownerId === userId &&
+    blip.status !== "Archived"
   );
 }
 
-export function getNextRadarItemStatus(
-  item: RadarItem | null | undefined,
+export function getNextBlipStatus(
+  blip: Blip | null | undefined,
   userId: string,
   role?: Role | null,
-): ItemStatus {
-  if (!item) {
+): BlipStatus {
+  if (!blip) {
     return "Pending";
   }
 
-  const isOwner = item.createdBy === userId && item.ownerId === userId;
+  const isOwner = blip.createdBy === userId && blip.ownerId === userId;
 
   if (!isOwner) {
-    return item.status;
+    return blip.status;
   }
 
-  if (item.status === "Draft") {
+  if (blip.status === "Draft") {
     return "Pending";
   }
 
-  if (item.status === "Approved" && !canReviewBlips(role)) {
+  if (blip.status === "Approved" && !canReviewBlips(role)) {
     return "Pending";
   }
 
-  return item.status;
+  return blip.status;
 }
 
-export function isRadarItemEditResubmission(
-  item: RadarItem | null | undefined,
+export function isBlipEditResubmission(
+  blip: Blip | null | undefined,
   userId: string,
   role?: Role | null,
 ): boolean {
-  if (!item) {
+  if (!blip) {
     return false;
   }
 
   return (
-    getNextRadarItemStatus(item, userId, role) === "Pending" &&
-    item.status !== "Pending"
+    getNextBlipStatus(blip, userId, role) === "Pending" &&
+    blip.status !== "Pending"
   );
 }
 
 export function getStatusBadgeVariant(
-  status: ItemStatus,
+  status: BlipStatus,
 ): "default" | "secondary" | "outline" {
   if (status === "Approved") {
     return "default";
@@ -389,25 +392,28 @@ export function getStatusBadgeVariant(
   return "outline";
 }
 
-export async function appendItemHistory(
+export async function appendBlipHistory(
   db: Firestore,
-  itemId: string,
+  blipId: string,
   entry: Omit<HistoryEntry, "id">,
 ): Promise<void> {
-  await addDoc(collection(db, "radarItems", itemId, "itemHistory"), entry);
+  await addDoc(
+    collection(db, RADAR_BLIPS_COLLECTION, blipId, BLIP_HISTORY_COLLECTION),
+    entry,
+  );
 }
 
-export async function reviewRadarItem(
+export async function reviewBlip(
   db: Firestore,
-  item: RadarItem,
+  blip: Blip,
   reviewer: UserProfile,
-  nextStatus: Extract<ItemStatus, "Draft" | "Approved" | "Archived">,
+  nextStatus: Extract<BlipStatus, "Draft" | "Approved" | "Archived">,
   note: string,
 ): Promise<void> {
   const now = Date.now();
   const trimmedNote = note.trim();
 
-  await updateDoc(doc(db, "radarItems", item.id), {
+  await updateDoc(doc(db, RADAR_BLIPS_COLLECTION, blip.id), {
     status: nextStatus,
     reviewedAt: now,
     reviewedBy: reviewer.uid,
@@ -417,8 +423,9 @@ export async function reviewRadarItem(
     updatedBy: reviewer.uid,
   });
 
-  await appendItemHistory(db, item.id, {
-    itemId: item.id,
+  await appendBlipHistory(db, blip.id, {
+    blipId: blip.id,
+    itemId: blip.id,
     action:
       nextStatus === "Approved"
         ? "approved"
@@ -426,7 +433,7 @@ export async function reviewRadarItem(
           ? "archived"
           : "sent back to draft",
     note: trimmedNote,
-    before: item.status,
+    before: blip.status,
     after: nextStatus,
     createdAt: now,
     createdBy: reviewer.uid,
@@ -458,15 +465,15 @@ async function deleteDocumentRefs(
   }
 }
 
-async function deleteItemHistories(
+async function deleteBlipHistories(
   db: Firestore,
-  itemIds: string[],
+  blipIds: string[],
 ): Promise<void> {
   const historyRefs: Array<DocumentReference<unknown, DocumentData>> = [];
 
-  for (const itemId of itemIds) {
+  for (const blipId of blipIds) {
     const historyDocs = await getDocs(
-      collection(db, "radarItems", itemId, "itemHistory"),
+      collection(db, RADAR_BLIPS_COLLECTION, blipId, BLIP_HISTORY_COLLECTION),
     );
 
     historyRefs.push(...historyDocs.docs.map((entry) => entry.ref));
@@ -483,7 +490,7 @@ async function resetStarterRadarCollections(
     providers: Awaited<ReturnType<typeof getDocs>>;
     families: Awaited<ReturnType<typeof getDocs>>;
     tags: Awaited<ReturnType<typeof getDocs>>;
-    items: Awaited<ReturnType<typeof getDocs>>;
+    blips: Awaited<ReturnType<typeof getDocs>>;
   },
 ): Promise<void> {
   const quadrantIds = new Set(seedQuadrants.map((item) => item.id));
@@ -491,18 +498,18 @@ async function resetStarterRadarCollections(
   const providerIds = new Set(seedProviderIds);
   const familyIds = new Set(seedFamilyIds);
   const tagIds = new Set([...legacySeedTagIds, ...getSeedTags().map((item) => item.id)]);
-  const itemIds = new Set([...legacySeedRadarItemIds, ...seedRadarItemIds]);
+  const blipIds = new Set([...legacySeedBlipIds, ...seedBlipIds]);
 
-  const itemDocsToDelete = snapshots.items.docs.filter((entry) =>
+  const blipDocsToDelete = snapshots.blips.docs.filter((entry) =>
     shouldResetSeedDoc(
       entry.id,
       entry.data() as { seedManaged?: boolean } | undefined,
-      itemIds,
+      blipIds,
     ),
   );
-  const itemIdsToDelete = itemDocsToDelete.map((entry) => entry.id);
+  const blipIdsToDelete = blipDocsToDelete.map((entry) => entry.id);
 
-  await deleteItemHistories(db, itemIdsToDelete);
+  await deleteBlipHistories(db, blipIdsToDelete);
 
   await deleteDocumentRefs(db, [
     ...snapshots.quadrants.docs
@@ -550,7 +557,7 @@ async function resetStarterRadarCollections(
         ),
       )
       .map((entry) => entry.ref),
-    ...itemDocsToDelete.map((entry) => entry.ref),
+    ...blipDocsToDelete.map((entry) => entry.ref),
   ]);
 }
 
@@ -567,14 +574,14 @@ export async function seedRadarCollections(
     providerDocs,
     familyDocs,
     tagDocs,
-    radarItemDocs,
+    radarBlipDocs,
   ] = await Promise.all([
     getDocs(collection(db, "quadrants")),
     getDocs(collection(db, "rings")),
     getDocs(collection(db, "radarProviders")),
     getDocs(collection(db, "radarFamilies")),
     getDocs(collection(db, "tags")),
-    getDocs(collection(db, "radarItems")),
+    getDocs(collection(db, RADAR_BLIPS_COLLECTION)),
   ]);
 
   if (options?.reset) {
@@ -584,7 +591,7 @@ export async function seedRadarCollections(
       providers: providerDocs,
       families: familyDocs,
       tags: tagDocs,
-      items: radarItemDocs,
+      blips: radarBlipDocs,
     });
 
     return seedRadarCollections(db, userProfile);
@@ -596,7 +603,12 @@ export async function seedRadarCollections(
       item.data() as Partial<RadarConfigOption>,
     ]),
   );
-  const existingRings = new Set(ringDocs.docs.map((item) => item.id));
+  const existingRings = new Map(
+    ringDocs.docs.map((item) => [
+      item.id,
+      item.data() as Partial<RadarConfigOption>,
+    ]),
+  );
   const existingProviders = new Map(
     providerDocs.docs.map((item) => [item.id, item.data() as Partial<RadarProvider>]),
   );
@@ -604,8 +616,8 @@ export async function seedRadarCollections(
     familyDocs.docs.map((item) => [item.id, item.data() as Partial<RadarFamily>]),
   );
   const existingTags = new Set(tagDocs.docs.map((item) => item.id));
-  const existingRadarItems = new Map(
-    radarItemDocs.docs.map((item) => [item.id, item.data() as Partial<RadarItem>]),
+  const existingBlips = new Map(
+    radarBlipDocs.docs.map((blip) => [blip.id, blip.data() as Partial<Blip>]),
   );
   const configBatch = writeBatch(db);
   let result: SeedResult = {
@@ -614,7 +626,7 @@ export async function seedRadarCollections(
     providers: 0,
     families: 0,
     tags: 0,
-    items: 0,
+    blips: 0,
     historyEntries: 0,
   };
   const now = Date.now();
@@ -636,13 +648,18 @@ export async function seedRadarCollections(
   }
 
   for (const ring of seedRings) {
-    if (existingRings.has(ring.id)) {
+    const existingRing = existingRings.get(ring.id);
+
+    if (!hasConfigOptionChanged(existingRing, ring)) {
       continue;
     }
 
     configBatch.set(doc(db, "rings", ring.id), ring);
     hasConfigWrites = true;
-    result = { ...result, rings: result.rings + 1 };
+
+    if (!existingRing) {
+      result = { ...result, rings: result.rings + 1 };
+    }
   }
 
   for (const provider of seedProviders) {
@@ -689,35 +706,35 @@ export async function seedRadarCollections(
     await configBatch.commit();
   }
 
-  for (const item of getSeedRadarItems(now)) {
-    const existingItem = existingRadarItems.get(item.id);
-    const { history, ...seedItem } = item;
-    const normalizedItem: Omit<RadarItem, "history"> = {
-      ...seedItem,
+  for (const blip of getSeedBlips(now)) {
+    const existingBlip = existingBlips.get(blip.id);
+    const { history, ...seedBlip } = blip;
+    const normalizedBlip: Omit<Blip, "history"> = {
+      ...seedBlip,
       ownerId: userProfile.uid,
       ownerName: userProfile.displayName,
       createdBy: userProfile.uid,
       updatedBy: userProfile.uid,
-      submittedAt: item.createdAt,
+      submittedAt: blip.createdAt,
       submittedBy: userProfile.uid,
       reviewedBy: userProfile.uid,
-      reviewedAt: item.reviewedAt || now,
-      lastReviewedAt: item.lastReviewedAt || now,
+      reviewedAt: blip.reviewedAt || now,
+      lastReviewedAt: blip.lastReviewedAt || now,
     };
-    const shouldFinalize = canFinalizeSeedItem(existingItem, userProfile.uid);
+    const shouldFinalize = canFinalizeSeedBlip(existingBlip, userProfile.uid);
 
-    if (!existingItem) {
+    if (!existingBlip) {
       const { reviewedAt, reviewedBy, reviewComment, ...pendingBase } =
-        normalizedItem;
-      const pendingItem: Omit<RadarItem, "history"> = {
+        normalizedBlip;
+      const pendingBlip: Omit<Blip, "history"> = {
         ...pendingBase,
         status: "Pending",
-        lastReviewedAt: normalizedItem.createdAt,
+        lastReviewedAt: normalizedBlip.createdAt,
       };
 
-      await setDoc(doc(db, "radarItems", item.id), pendingItem);
-      existingRadarItems.set(item.id, pendingItem);
-      result = { ...result, items: result.items + 1 };
+      await setDoc(doc(db, RADAR_BLIPS_COLLECTION, blip.id), pendingBlip);
+      existingBlips.set(blip.id, pendingBlip);
+      result = { ...result, blips: result.blips + 1 };
     }
 
     if (!shouldFinalize) {
@@ -725,13 +742,13 @@ export async function seedRadarCollections(
     }
 
     const finalizeBatch = writeBatch(db);
-    finalizeBatch.update(doc(db, "radarItems", item.id), normalizedItem);
+    finalizeBatch.update(doc(db, RADAR_BLIPS_COLLECTION, blip.id), normalizedBlip);
 
     let existingHistoryEntries = new Set<string>();
 
     if (history?.length) {
       const historyDocs = await getDocs(
-        collection(db, "radarItems", item.id, "itemHistory"),
+        collection(db, RADAR_BLIPS_COLLECTION, blip.id, BLIP_HISTORY_COLLECTION),
       );
       existingHistoryEntries = new Set(historyDocs.docs.map((entry) => entry.id));
     }
@@ -742,9 +759,17 @@ export async function seedRadarCollections(
       }
 
       finalizeBatch.set(
-        doc(db, "radarItems", item.id, "itemHistory", historyEntry.id),
+        doc(
+          db,
+          RADAR_BLIPS_COLLECTION,
+          blip.id,
+          BLIP_HISTORY_COLLECTION,
+          historyEntry.id,
+        ),
         {
           ...historyEntry,
+          blipId: historyEntry.blipId || historyEntry.itemId || blip.id,
+          itemId: historyEntry.itemId || historyEntry.blipId || blip.id,
           createdBy: userProfile.uid,
         },
       );

@@ -16,9 +16,9 @@
   "table": {
     "allBlips": "Alle blips",
     "yourDashboard": "Jouw dashboard",
-    "allBlipsDescription": "Overzicht van alle radar-items, ongeacht status.",
-    "yourDashboardDescription": "Goedgekeurde radar-items en je eigen concepten of inzendingen.",
-    "suggestTool": "Tool voorstellen",
+    "allBlipsDescription": "Overzicht van alle blips, ongeacht status.",
+    "yourDashboardDescription": "Goedgekeurde blips en je eigen concepten of inzendingen.",
+    "suggestBlip": "Blip voorstellen",
     "columns": {
       "blip": "Blip",
       "status": "Status",
@@ -30,7 +30,7 @@
   },
   "emptyState": {
     "heading": "Nog geen blips",
-    "description": "Voeg de eerste tool toe of laad de starter radar.",
+    "description": "Voeg de eerste blip toe of laad de starter radar.",
     "seedRestricted": "Starterdata laden is alleen toegestaan voor PowerUsers en Admins."
   },
   "coworkerReview": {
@@ -58,7 +58,7 @@
     },
     "seeded": {
       "title": "Starter radar geladen",
-      "description": "{items} blips, {providers} providers, {families} families, {tags} tags en {historyEntries} historie-items toegevoegd."
+      "description": "{blips} blips, {providers} providers, {families} families, {tags} tags en {historyEntries} historie-items toegevoegd."
     },
     "seedFailed": {
       "title": "Starterdata laden mislukt",
@@ -66,7 +66,7 @@
     },
     "reset": {
       "title": "Starter radar gereset",
-      "description": "{items} blips, {providers} providers, {families} families, {tags} tags en {historyEntries} historie-items opnieuw geladen."
+      "description": "{blips} blips, {providers} providers, {families} families, {tags} tags en {historyEntries} historie-items opnieuw geladen."
     },
     "resetFailed": {
       "title": "Reset mislukt",

@@ -1,6 +1,6 @@
 [
-  { "id": "adopt", "name": "Inzetten", "order": 0 },
-  { "id": "trial", "name": "Uitproberen", "order": 1 },
-  { "id": "assess", "name": "Beoordelen", "order": 2 },
-  { "id": "hold", "name": "Parkeren", "order": 3 }
+  { "id": "adopt", "name": "Adopt", "order": 0 },
+  { "id": "trial", "name": "Trial", "order": 1 },
+  { "id": "assess", "name": "Assess", "order": 2 },
+  { "id": "hold", "name": "Hold", "order": 3 }
 ]

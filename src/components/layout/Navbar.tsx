@@ -4,24 +4,50 @@ import Link from "next/link";
 import { signOut } from "firebase/auth";
 import { usePathname } from "next/navigation";
 import {
+  ChevronDown,
   LayoutDashboard,
   LogIn,
   LogOut,
   PlusCircle,
   Radar,
-  Sparkles,
+  Search,
 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import { useAuth } from "@/firebase";
 import { useAppUser } from "@/components/app/AppUserProvider";
 import common from "@/content/common.json";
 
 const { navigation, branding, auth: authContent } = common;
 
-export function Navbar(): React.ReactElement {
+type NavbarProps = {
+  radarSearchValue?: string;
+  radarSearchPlaceholder?: string;
+  onRadarSearchChange?: (value: string) => void;
+};
+
+export function Navbar({
+  radarSearchValue,
+  radarSearchPlaceholder,
+  onRadarSearchChange,
+}: NavbarProps = {}): React.ReactElement {
   const pathname = usePathname();
   const auth = useAuth();
   const { authUser, hasCompanyAccess, isLoading, profile, role } = useAppUser();
+  const showRadarSearch =
+    pathname === "/" &&
+    radarSearchValue !== undefined &&
+    radarSearchPlaceholder !== undefined &&
+    onRadarSearchChange !== undefined;
 
   const navItems = [
     { label: navigation.radar, href: "/", icon: Radar, requiresAuth: false },
@@ -32,14 +58,8 @@ export function Navbar(): React.ReactElement {
       requiresAuth: true,
     },
     {
-      label: navigation.experiences,
-      href: "/experiences",
-      icon: Sparkles,
-      requiresAuth: true,
-    },
-    {
-      label: navigation.proposeTool,
-      href: "/items/new",
+      label: navigation.proposeBlip,
+      href: "/blips/new",
       icon: PlusCircle,
       requiresAuth: true,
     },
@@ -51,8 +71,8 @@ export function Navbar(): React.ReactElement {
 
   return (
     <nav className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur-md">
-      <div className="container mx-auto flex h-20 items-center justify-between px-6">
-        <div className="flex items-center gap-12">
+      <div className="container mx-auto flex min-h-20 flex-col gap-4 px-6 py-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-1 flex-col gap-4 lg:flex-row lg:items-center lg:gap-8">
           <Link
             href="/"
             className="group flex items-center gap-3 font-bold text-xl tracking-tight text-foreground"
@@ -65,12 +85,12 @@ export function Navbar(): React.ReactElement {
                 {branding.companyName}
               </span>
               <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground opacity-80">
-                {branding.tagline}
+                AI Radar
               </span>
             </div>
           </Link>
 
-          <div className="hidden gap-1 md:flex">
+          <div className="flex flex-1 flex-col gap-3 md:flex-row md:items-center md:justify-between">
             {visibleNavItems.map((item) => {
               const isActive =
                 pathname === item.href ||
@@ -88,6 +108,18 @@ export function Navbar(): React.ReactElement {
                 </Link>
               );
             })}
+
+            {showRadarSearch ? (
+              <div className="relative w-full md:max-w-sm">
+                <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder={radarSearchPlaceholder}
+                  className="h-12 rounded-full border-2 border-border bg-secondary/30 pl-12"
+                  value={radarSearchValue}
+                  onChange={(event) => onRadarSearchChange(event.target.value)}
+                />
+              </div>
+            ) : null}
           </div>
         </div>
 
@@ -96,27 +128,65 @@ export function Navbar(): React.ReactElement {
             <>
               <div className="hidden text-right sm:flex sm:flex-col">
                 <span className="text-sm font-bold tracking-tight">
-                  {profile?.displayName || authUser.displayName || authContent.memberFallback}
+                  {profile?.displayName ||
+                    authUser.displayName ||
+                    authContent.memberFallback}
                 </span>
                 <span className="text-[10px] font-black uppercase tracking-wider text-primary">
                   {role}
                 </span>
               </div>
-              {authUser.photoURL ? (
-                <img
-                  src={authUser.photoURL}
-                  className="h-10 w-10 rounded-full border-2 border-primary/20"
-                  alt={authContent.profileAlt}
-                />
-              ) : null}
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-11 w-11 rounded-full border bg-secondary/30"
-                onClick={() => signOut(auth)}
-              >
-                <LogOut className="h-5 w-5" />
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="h-auto rounded-full p-1 hover:bg-secondary/60"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-10 w-10 border-2 border-primary/20">
+                        <AvatarImage
+                          src={authUser.photoURL ?? undefined}
+                          alt={authContent.profileAlt}
+                        />
+                        <AvatarFallback className="bg-secondary/40 text-xs font-black uppercase text-muted-foreground">
+                          {(
+                            profile?.displayName ||
+                            authUser.displayName ||
+                            authContent.memberFallback
+                          ).slice(0, 2)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 rounded-2xl">
+                  <DropdownMenuLabel className="flex flex-col gap-1 px-3 py-2">
+                    <span className="text-sm font-bold tracking-tight">
+                      {profile?.displayName ||
+                        authUser.displayName ||
+                        authContent.memberFallback}
+                    </span>
+                    <span className="text-[10px] font-black uppercase tracking-wider text-primary">
+                      {role}
+                    </span>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild className="cursor-pointer rounded-xl px-3 py-2 font-medium">
+                    <Link href="/dashboard">
+                      <LayoutDashboard className="h-4 w-4" />
+                      {navigation.dashboard}
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="cursor-pointer rounded-xl px-3 py-2 font-medium text-destructive focus:text-destructive"
+                    onClick={() => signOut(auth)}
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Uitloggen
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </>
           ) : (
             <Button asChild className="rounded-full px-6 font-bold gap-2">

@@ -1,7 +1,7 @@
 {
   "create": {
     "heading": "Stel voor",
-    "description": "Dien een nieuwe toolblip in voor review.",
+    "description": "Dien een nieuwe blip in voor review.",
     "submitButton": "Blip indienen"
   },
   "edit": {
@@ -12,7 +12,7 @@
     "submitButton": "Wijzigingen opslaan",
     "resubmitButton": "Opslaan en opnieuw indienen"
   },
-  "headingHighlight": "Toolblip",
+  "headingHighlight": "Blip",
   "sections": {
     "identityContext": "Identiteit & context",
     "pricingSources": "Prijs & bronnen",
@@ -24,7 +24,7 @@
     "metadata": "Metadata"
   },
   "fields": {
-    "toolName": "Naam van de tool",
+    "toolName": "Naam van de blip",
     "strategicContext": "Beschrijving",
     "conciseSummary": "Korte omschrijving",
     "entityType": "Type blip",
@@ -111,7 +111,7 @@
     },
     "aiCategorizeFailed": {
       "title": "AI-categorisatie mislukt",
-      "description": "De tool kon nu niet worden gecategoriseerd."
+      "description": "De blip kon nu niet worden gecategoriseerd."
     },
     "missingContextPrefill": {
       "title": "Context ontbreekt",
@@ -173,6 +173,6 @@
   },
   "authError": {
     "heading": "Inloggen vereist",
-    "description": "Je hebt je Greenberry Google-account nodig voordat je een tool kunt voorstellen."
+    "description": "Je hebt je Greenberry Google-account nodig voordat je een blip kunt voorstellen."
   }
 }

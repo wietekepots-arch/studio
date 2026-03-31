@@ -14,11 +14,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  type Blip,
   type DataSensitivity,
   type Experience,
   type ExperienceToolContext,
   type RadarFamily,
-  type RadarItem,
 } from "@/app/lib/radar-types";
 import {
   ArrowLeft,
@@ -69,15 +69,16 @@ function trimToUndefined(value: string | undefined): string | undefined {
   return trimmed ? trimmed : undefined;
 }
 
-function buildToolContext(tool?: RadarItem | null): ExperienceToolContext {
+function buildToolContext(tool?: Blip | null): ExperienceToolContext {
   return {
+    blipId: tool?.id || "",
     itemId: tool?.id || "",
     ...(tool?.providerId ? { providerId: tool.providerId } : {}),
     ...(tool?.familyId ? { familyId: tool.familyId } : {}),
   };
 }
 
-function isProviderContextTool(tool?: RadarItem | null): boolean {
+function isProviderContextTool(tool?: Blip | null): boolean {
   return Boolean(
     tool &&
       (tool.entityType === "provider" ||
@@ -112,7 +113,7 @@ function NewExperiencePageContent(): React.ReactElement {
     return collection(db, "radarFamilies");
   }, [db, authUser, hasCompanyAccess]);
 
-  const { data: allTools } = useCollection<RadarItem>(toolsQuery);
+  const { data: allTools } = useCollection<Blip>(toolsQuery);
   const { data: familyDocs } = useCollection<RadarFamily>(familiesQuery);
 
   const families = useMemo(() => {
@@ -171,7 +172,7 @@ function NewExperiencePageContent(): React.ReactElement {
 
     return formData.toolLinks
       .map((toolId) => allTools.find((tool) => tool.id === toolId) || null)
-      .filter((tool): tool is RadarItem => Boolean(tool));
+      .filter((tool): tool is Blip => Boolean(tool));
   }, [allTools, formData.toolLinks]);
   const filteredTools = useMemo(() => {
     if (!allTools?.length) {
@@ -187,7 +188,7 @@ function NewExperiencePageContent(): React.ReactElement {
 
   function getToolContext(toolId: string): ExperienceToolContext {
     const existingContext = formData.toolContexts.find(
-      (context) => context.itemId === toolId,
+      (context) => (context.blipId || context.itemId) === toolId,
     );
 
     if (existingContext) {
@@ -220,7 +221,7 @@ function NewExperiencePageContent(): React.ReactElement {
       ...currentState,
       toolLinks: currentState.toolLinks.filter((id) => id !== toolId),
       toolContexts: currentState.toolContexts.filter(
-        (context) => context.itemId !== toolId,
+        (context) => (context.blipId || context.itemId) !== toolId,
       ),
     }));
   }
@@ -233,11 +234,12 @@ function NewExperiencePageContent(): React.ReactElement {
 
     setFormData((currentState) => {
       const existingContext = currentState.toolContexts.find(
-        (context) => context.itemId === toolId,
+        (context) => (context.blipId || context.itemId) === toolId,
       );
       const nextContext = {
         ...(existingContext || buildToolContext(tool)),
         ...patch,
+        blipId: toolId,
         itemId: toolId,
       };
 
@@ -245,7 +247,7 @@ function NewExperiencePageContent(): React.ReactElement {
         ...currentState,
         toolContexts: existingContext
           ? currentState.toolContexts.map((context) =>
-              context.itemId === toolId ? nextContext : context,
+              (context.blipId || context.itemId) === toolId ? nextContext : context,
             )
           : [...currentState.toolContexts, nextContext],
       };
@@ -281,6 +283,7 @@ function NewExperiencePageContent(): React.ReactElement {
         const providerId = context.providerId || tool?.providerId;
 
         return {
+          blipId: toolId,
           itemId: toolId,
           ...(providerId ? { providerId } : {}),
           ...(familyId ? { familyId } : {}),

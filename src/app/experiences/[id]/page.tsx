@@ -22,7 +22,7 @@ import { useCollection, useDoc, useFirestore, useMemoFirebase } from "@/firebase
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Experience, RadarFamily, RadarItem } from "@/app/lib/radar-types";
+import { Blip, Experience, RadarFamily } from "@/app/lib/radar-types";
 import { mergeRadarFamilies } from "@/lib/radar-firestore";
 import { seedFamilies } from "@/lib/radar-seed";
 
@@ -71,7 +71,7 @@ export default function ExperienceDetailPage({
   }, [families]);
   const effectiveToolIds = React.useMemo(() => {
     const ids =
-      experience?.toolContexts?.map((context) => context.itemId) ||
+      experience?.toolContexts?.map((context) => context.blipId || context.itemId) ||
       experience?.toolLinks ||
       [];
 
@@ -79,8 +79,9 @@ export default function ExperienceDetailPage({
   }, [experience?.toolContexts, experience?.toolLinks]);
   const toolContextMap = React.useMemo(() => {
     const entries =
-      experience?.toolContexts?.map((context) => [context.itemId, context] as const) ||
-      [];
+      experience?.toolContexts?.map(
+        (context) => [context.blipId || context.itemId || "", context] as const,
+      ) || []
 
     return new Map(entries);
   }, [experience?.toolContexts]);
@@ -101,7 +102,7 @@ export default function ExperienceDetailPage({
     );
   }, [authUser, db, effectiveToolIds, hasCompanyAccess]);
   const { data: linkedTools, isLoading: isLinkedToolsLoading } =
-    useCollection<RadarItem>(linkedToolsQuery);
+    useCollection<Blip>(linkedToolsQuery);
 
   function formatDate(timestamp: number): string {
     if (!mounted) {
@@ -340,7 +341,7 @@ export default function ExperienceDetailPage({
             <div className="space-y-8 px-8">
               <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.3em] text-primary">
                 <Tag className="h-5 w-5" />
-                Linked Tools
+                Linked Blips
               </div>
               <div className="space-y-4">
                 {isLinkedToolsLoading ? (
@@ -354,7 +355,7 @@ export default function ExperienceDetailPage({
                   </div>
                 ) : (
                   linkedTools?.map((tool) => (
-                    <Link key={tool.id} href={`/items/${tool.id}`}>
+                    <Link key={tool.id} href={`/blips/${tool.id}`}>
                       <Card className="group rounded-[2.5rem] border-2 border-transparent p-6 transition-all hover:border-primary/20 hover:bg-secondary/10">
                         <div className="flex items-center justify-between">
                           <div className="space-y-1">

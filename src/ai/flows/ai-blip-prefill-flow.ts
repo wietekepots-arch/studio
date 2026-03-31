@@ -15,8 +15,8 @@ const PrefillModelEntrySchema = z.object({
   benchmarkLinks: z.array(BenchmarkLinkSchema).max(4).optional(),
 });
 
-const AiItemPrefillInputSchema = z.object({
-  itemName: z.string().trim().min(1).describe('The radar item name.'),
+const AiBlipPrefillInputSchema = z.object({
+  blipName: z.string().trim().min(1).describe('The blip name.'),
   existingNotes: z.string().trim().optional().describe('Existing notes or rough context already written by the editor.'),
   primaryLink: z.string().url().optional().describe('Optional primary source link from the editor.'),
   entityType: z.enum(['provider', 'product', 'workflow', 'governance']).describe('The selected top-level entity type.'),
@@ -24,9 +24,9 @@ const AiItemPrefillInputSchema = z.object({
   familyName: z.string().trim().optional().describe('Optional family context selected in the form.'),
   availableTags: z.array(z.string()).optional().describe('Existing tags to align with when possible.'),
 });
-export type AiItemPrefillInput = z.infer<typeof AiItemPrefillInputSchema>;
+export type AiBlipPrefillInput = z.infer<typeof AiBlipPrefillInputSchema>;
 
-const AiItemPrefillOutputSchema = z.object({
+const AiBlipPrefillOutputSchema = z.object({
   shortDescription: z.string().trim().max(160),
   notes: z.string().trim(),
   securityNotes: z.string().trim(),
@@ -37,12 +37,12 @@ const AiItemPrefillOutputSchema = z.object({
   modelEntries: z.array(PrefillModelEntrySchema).max(6),
   needsVerification: z.array(z.string().trim().min(1).max(80)).max(10),
 });
-export type AiItemPrefillOutput = z.infer<typeof AiItemPrefillOutputSchema>;
+export type AiBlipPrefillOutput = z.infer<typeof AiBlipPrefillOutputSchema>;
 
-export async function aiItemPrefill(
-  input: AiItemPrefillInput,
-): Promise<AiItemPrefillOutput> {
-  return aiItemPrefillFlow(input);
+export async function aiBlipPrefill(
+  input: AiBlipPrefillInput,
+): Promise<AiBlipPrefillOutput> {
+  return aiBlipPrefillFlow(input);
 }
 
 function normalizeSingleSentence(
@@ -81,9 +81,9 @@ function normalizeNeedsVerification(fields: string[]): string[] {
 }
 
 const prompt = ai.definePrompt({
-  name: 'aiItemPrefillPrompt',
-  input: { schema: AiItemPrefillInputSchema },
-  output: { schema: AiItemPrefillOutputSchema },
+  name: 'aiBlipPrefillPrompt',
+  input: { schema: AiBlipPrefillInputSchema },
+  output: { schema: AiBlipPrefillOutputSchema },
   prompt: `Je schrijft Nederlandstalige conceptcontent voor een interne Tech Radar.
 
 Doel:
@@ -92,7 +92,7 @@ Doel:
 - maak geen claims over certificeringen, compliance of prijzen als de input daarvoor geen harde basis geeft
 
 Context:
-- itemnaam: {{{itemName}}}
+- blipnaam: {{{blipName}}}
 - entityType: {{{entityType}}}
 - providercontext: {{{providerName}}}
 - familiecontext: {{{familyName}}}
@@ -130,15 +130,15 @@ Als iets niet te onderbouwen is, laat het leeg of zet het onderwerp in needsVeri
 Houd de output strikt aan het JSON-schema.`,
 });
 
-const aiItemPrefillFlow = ai.defineFlow(
+const aiBlipPrefillFlow = ai.defineFlow(
   {
-    name: 'aiItemPrefillFlow',
-    inputSchema: AiItemPrefillInputSchema,
-    outputSchema: AiItemPrefillOutputSchema,
+    name: 'aiBlipPrefillFlow',
+    inputSchema: AiBlipPrefillInputSchema,
+    outputSchema: AiBlipPrefillOutputSchema,
   },
   async (input) => {
     const { output } = await prompt(input);
-    const normalizedOrigin: AiItemPrefillOutput['origin'] =
+    const normalizedOrigin: AiBlipPrefillOutput['origin'] =
       output?.origin === 'European' ||
       output?.origin === 'American' ||
       output?.origin === 'Other'

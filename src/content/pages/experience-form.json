@@ -22,9 +22,9 @@
       "placeholder": "De kern in een duidelijke zin..."
     },
     "linkedTools": {
-      "label": "Gekoppelde tools",
-      "emptyState": "Nog geen tools gekoppeld. Zoek hieronder.",
-      "searchPlaceholder": "Zoek goedgekeurde tools..."
+      "label": "Gekoppelde blips",
+      "emptyState": "Nog geen blips gekoppeld. Zoek hieronder.",
+      "searchPlaceholder": "Zoek goedgekeurde blips..."
     },
     "toolContext": {
       "label": "Provider- en modelcontext",
@@ -82,7 +82,7 @@
   "toasts": {
     "validationError": {
       "title": "Validatiefout",
-      "description": "Koppel ten minste een tool."
+      "description": "Koppel ten minste een blip."
     },
     "experienceLogged": {
       "title": "Ervaring opgeslagen",

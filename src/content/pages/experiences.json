@@ -13,7 +13,7 @@
     "allStudios": "Alle teams"
   },
   "card": {
-    "toolPulled": "Gebruikte tool",
+    "toolPulled": "Gebruikte blip",
     "more": "+{count} meer"
   },
   "emptyState": {

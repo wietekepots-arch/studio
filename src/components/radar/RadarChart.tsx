@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useMemo } from 'react';
-import { RadarItem, RadarConfig } from '@/app/lib/radar-types';
-import { useRouter } from 'next/navigation';
+import React, { useMemo } from "react";
+import { Blip, RadarConfig } from "@/app/lib/radar-types";
+import { useRouter } from "next/navigation";
 
 interface RadarChartProps {
-  items: RadarItem[];
+  blips: Blip[];
   config: RadarConfig;
   activeFilters?: {
     quadrant?: number;
@@ -13,52 +13,65 @@ interface RadarChartProps {
   };
 }
 
-export const RadarChart: React.FC<RadarChartProps> = ({ items, config, activeFilters }) => {
+export const RadarChart: React.FC<RadarChartProps> = ({
+  blips,
+  config,
+  activeFilters,
+}) => {
   const router = useRouter();
   const size = 600;
   const center = size / 2;
   const ringCount = config.rings.length;
   const quadrantCount = config.quadrants.length;
-  
+
   const ringRadii = useMemo(() => {
     const maxRadius = center - 80;
     return config.rings.map((_, i) => (maxRadius / ringCount) * (i + 1));
   }, [center, ringCount, config.rings]);
 
-  const blips = useMemo(() => {
-    return items.map(item => {
-      // Deterministic placement based on item ID
-      const baseAngle = (item.quadrantId * (2 * Math.PI)) / quadrantCount;
+  const plottedBlips = useMemo(() => {
+    return blips.map((blip) => {
+      // Deterministic placement based on blip ID
+      const baseAngle = (blip.quadrantId * (2 * Math.PI)) / quadrantCount;
       const sliceWidth = (2 * Math.PI) / quadrantCount;
       const anglePadding = 0.3;
-      
-      const seed = item.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-      const randomAngle = baseAngle + anglePadding + ((seed * 17) % 100 / 100) * (sliceWidth - 2 * anglePadding);
-      
-      const innerRadius = item.ringId === 0 ? 0 : ringRadii[item.ringId - 1];
-      const outerRadius = ringRadii[item.ringId];
+
+      const seed = blip.id
+        .split("")
+        .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+      const randomAngle =
+        baseAngle +
+        anglePadding +
+        (((seed * 17) % 100) / 100) * (sliceWidth - 2 * anglePadding);
+
+      const innerRadius = blip.ringId === 0 ? 0 : ringRadii[blip.ringId - 1];
+      const outerRadius = ringRadii[blip.ringId];
       const rPadding = 25;
-      const randomRadius = innerRadius + rPadding + ((seed * 31) % 100 / 100) * (outerRadius - innerRadius - 2 * rPadding);
-      
-      const isNew = item.createdAt > (Date.now() - 1000 * 60 * 60 * 24 * 14);
-      const hasMoved = item.previousRingId !== undefined && item.previousRingId !== item.ringId;
+      const randomRadius =
+        innerRadius +
+        rPadding +
+        (((seed * 31) % 100) / 100) * (outerRadius - innerRadius - 2 * rPadding);
+
+      const isNew = blip.createdAt > Date.now() - 1000 * 60 * 60 * 24 * 14;
+      const hasMoved =
+        blip.previousRingId !== undefined && blip.previousRingId !== blip.ringId;
 
       return {
-        item,
+        blip,
         x: center + randomRadius * Math.cos(randomAngle),
         y: center + randomRadius * Math.sin(randomAngle),
         isNew,
-        hasMoved
+        hasMoved,
       };
     });
-  }, [items, quadrantCount, ringRadii, center]);
+  }, [blips, quadrantCount, ringRadii, center]);
 
   return (
     <div className="relative flex justify-center items-center overflow-visible select-none">
-      <svg 
-        width={size} 
-        height={size} 
-        viewBox={`0 0 ${size} ${size}`} 
+      <svg
+        width={size}
+        height={size}
+        viewBox={`0 0 ${size} ${size}`}
         className="max-w-full h-auto overflow-visible touch-none"
       >
         <defs>
@@ -69,7 +82,12 @@ export const RadarChart: React.FC<RadarChartProps> = ({ items, config, activeFil
         </defs>
         
         {/* Background Glow */}
-        <circle cx={center} cy={center} r={ringRadii[ringCount-1] + 20} fill="url(#radarGlow)" />
+        <circle
+          cx={center}
+          cy={center}
+          r={ringRadii[ringCount - 1] + 20}
+          fill="url(#radarGlow)"
+        />
 
         {/* Concentric Radar Rings */}
         {ringRadii.slice().reverse().map((radius, i) => (
@@ -83,8 +101,20 @@ export const RadarChart: React.FC<RadarChartProps> = ({ items, config, activeFil
         ))}
 
         {/* Quadrant Partition Lines */}
-        <line x1={center - ringRadii[ringCount - 1]} y1={center} x2={center + ringRadii[ringCount - 1]} y2={center} className="stroke-foreground/5 stroke-[1px]" />
-        <line x1={center} y1={center - ringRadii[ringCount - 1]} x2={center} y2={center + ringRadii[ringCount - 1]} className="stroke-foreground/5 stroke-[1px]" />
+        <line
+          x1={center - ringRadii[ringCount - 1]}
+          y1={center}
+          x2={center + ringRadii[ringCount - 1]}
+          y2={center}
+          className="stroke-foreground/5 stroke-[1px]"
+        />
+        <line
+          x1={center}
+          y1={center - ringRadii[ringCount - 1]}
+          x2={center}
+          y2={center + ringRadii[ringCount - 1]}
+          className="stroke-foreground/5 stroke-[1px]"
+        />
 
         {/* Ring Maturity Labels */}
         {config.rings.map((ring, i) => (
@@ -117,19 +147,22 @@ export const RadarChart: React.FC<RadarChartProps> = ({ items, config, activeFil
         })}
 
         {/* Individual Tool Blips */}
-        {blips.map(({ item, x, y, isNew, hasMoved }) => {
-          const isActive = (activeFilters?.quadrant === undefined || activeFilters.quadrant === item.quadrantId) &&
-                         (activeFilters?.ring === undefined || activeFilters.ring === item.ringId);
-          
-          const textWidth = item.name.length * 7;
-          
+        {plottedBlips.map(({ blip, x, y, isNew, hasMoved }) => {
+          const isActive =
+            (activeFilters?.quadrant === undefined ||
+              activeFilters.quadrant === blip.quadrantId) &&
+            (activeFilters?.ring === undefined ||
+              activeFilters.ring === blip.ringId);
+
+          const textWidth = blip.name.length * 7;
+
           return (
-            <g 
-              key={item.id} 
-              className={`group cursor-pointer transition-opacity duration-300 ${isActive ? 'opacity-100' : 'opacity-10'}`}
-              onClick={() => router.push(`/items/${item.id}`)}
+            <g
+              key={blip.id}
+              className={`group cursor-pointer transition-opacity duration-300 ${isActive ? "opacity-100" : "opacity-10"}`}
+              onClick={() => router.push(`/blips/${blip.id}`)}
             >
-              {/* Pulse effect for new items */}
+              {/* Pulse effect for new blips */}
               {isNew && (
                 <circle
                   cx={x}
@@ -152,20 +185,22 @@ export const RadarChart: React.FC<RadarChartProps> = ({ items, config, activeFil
                 cx={x}
                 cy={y}
                 r="8"
-                style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
+                style={{ transformBox: "fill-box", transformOrigin: "center" }}
                 className={`transition-all duration-300 transform-gpu ${
-                  item.ringId === 3 ? 'fill-muted stroke-muted-foreground' : 'fill-primary stroke-white'
+                  blip.ringId === 3
+                    ? "fill-muted stroke-muted-foreground"
+                    : "fill-primary stroke-white"
                 } stroke-2 group-hover:scale-[1.4] group-hover:fill-primary-foreground group-hover:stroke-primary`}
               />
-              
+
               {/* Tool Name Tooltip */}
               <g className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                <rect 
-                  x={x - (textWidth / 2) - 8} 
-                  y={y - 36} 
-                  width={textWidth + 16} 
-                  height="22" 
-                  rx="11" 
+                <rect
+                  x={x - textWidth / 2 - 8}
+                  y={y - 36}
+                  width={textWidth + 16}
+                  height="22"
+                  rx="11"
                   className="fill-white shadow-lg stroke-primary/10 stroke-1"
                 />
                 <text
@@ -174,7 +209,7 @@ export const RadarChart: React.FC<RadarChartProps> = ({ items, config, activeFil
                   textAnchor="middle"
                   className="text-[10px] font-black uppercase fill-primary tracking-wider"
                 >
-                  {item.name}
+                  {blip.name}
                 </text>
               </g>
             </g>

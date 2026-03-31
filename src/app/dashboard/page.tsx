@@ -30,14 +30,14 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import common from "@/content/common.json";
 import dashboardContent from "@/content/pages/dashboard.json";
-import { RadarConfigOption, RadarItem } from "@/app/lib/radar-types";
+import { Blip, RadarConfigOption } from "@/app/lib/radar-types";
 import {
-  canEditRadarItem,
+  canEditBlip,
   getStatusBadgeVariant,
   mergeConfigOptions,
-  reviewRadarItem,
+  reviewBlip,
   seedRadarCollections,
-  sortRadarItems,
+  sortBlips,
 } from "@/lib/radar-firestore";
 import { seedQuadrants, seedRings } from "@/lib/radar-seed";
 
@@ -58,7 +58,7 @@ function formatTemplate<T extends object>(
   }, template);
 }
 
-function getStatusLabel(status: RadarItem["status"]): string {
+function getStatusLabel(status: Blip["status"]): string {
   switch (status) {
     case "Approved":
       return "Goedgekeurd";
@@ -101,28 +101,28 @@ export default function DashboardPage(): React.ReactElement {
 
     return collection(db, "rings");
   }, [db, hasCompanyAccess]);
-  const approvedItemsQuery = useMemoFirebase(() => {
+  const approvedBlipsQuery = useMemoFirebase(() => {
     if (!authUser || !hasCompanyAccess) {
       return null;
     }
 
     return query(collection(db, "radarItems"), where("status", "==", "Approved"));
   }, [authUser, db, hasCompanyAccess]);
-  const ownItemsQuery = useMemoFirebase(() => {
+  const ownBlipsQuery = useMemoFirebase(() => {
     if (!authUser || !hasCompanyAccess) {
       return null;
     }
 
     return query(collection(db, "radarItems"), where("createdBy", "==", authUser.uid));
   }, [authUser, db, hasCompanyAccess]);
-  const allItemsQuery = useMemoFirebase(() => {
+  const allBlipsQuery = useMemoFirebase(() => {
     if (!authUser || !canReview || !hasCompanyAccess) {
       return null;
     }
 
     return collection(db, "radarItems");
   }, [authUser, canReview, db, hasCompanyAccess]);
-  const pendingItemsQuery = useMemoFirebase(() => {
+  const pendingBlipsQuery = useMemoFirebase(() => {
     if (!authUser || !canReview || !hasCompanyAccess) {
       return null;
     }
@@ -132,14 +132,14 @@ export default function DashboardPage(): React.ReactElement {
 
   const { data: quadrantDocs } = useCollection<RadarConfigOption>(quadrantsQuery);
   const { data: ringDocs } = useCollection<RadarConfigOption>(ringsQuery);
-  const { data: approvedItems, isLoading: isApprovedItemsLoading } =
-    useCollection<RadarItem>(approvedItemsQuery);
-  const { data: ownItems, isLoading: isOwnItemsLoading } =
-    useCollection<RadarItem>(ownItemsQuery);
-  const { data: allItems, isLoading: isAllItemsLoading } =
-    useCollection<RadarItem>(allItemsQuery);
-  const { data: pendingItems, isLoading: isPendingItemsLoading } =
-    useCollection<RadarItem>(pendingItemsQuery);
+  const { data: approvedBlips, isLoading: isApprovedBlipsLoading } =
+    useCollection<Blip>(approvedBlipsQuery);
+  const { data: ownBlips, isLoading: isOwnBlipsLoading } =
+    useCollection<Blip>(ownBlipsQuery);
+  const { data: allBlips, isLoading: isAllBlipsLoading } =
+    useCollection<Blip>(allBlipsQuery);
+  const { data: pendingBlips, isLoading: isPendingBlipsLoading } =
+    useCollection<Blip>(pendingBlipsQuery);
 
   const quadrants = mergeConfigOptions(quadrantDocs, seedQuadrants, true);
   const rings = mergeConfigOptions(ringDocs, seedRings);
@@ -150,54 +150,54 @@ export default function DashboardPage(): React.ReactElement {
     return new Map(rings.map((item) => [item.order, item.name]));
   }, [rings]);
 
-  const mainItems = useMemo(() => {
+  const mainBlips = useMemo(() => {
     if (canReview) {
-      return sortRadarItems(allItems);
+      return sortBlips(allBlips);
     }
 
-    const dedupedItems = new Map<string, RadarItem>();
+    const dedupedBlips = new Map<string, Blip>();
 
-    for (const item of approvedItems || []) {
-      dedupedItems.set(item.id, item);
+    for (const blip of approvedBlips || []) {
+      dedupedBlips.set(blip.id, blip);
     }
 
-    for (const item of ownItems || []) {
-      dedupedItems.set(item.id, item);
+    for (const blip of ownBlips || []) {
+      dedupedBlips.set(blip.id, blip);
     }
 
-    return sortRadarItems(Array.from(dedupedItems.values()));
-  }, [allItems, approvedItems, canReview, ownItems]);
+    return sortBlips(Array.from(dedupedBlips.values()));
+  }, [allBlips, approvedBlips, canReview, ownBlips]);
 
-  const pendingCoworkerItems = useMemo(() => {
-    return sortRadarItems(
-      (pendingItems || []).filter((item) => item.createdBy !== authUser?.uid),
+  const pendingCoworkerBlips = useMemo(() => {
+    return sortBlips(
+      (pendingBlips || []).filter((blip) => blip.createdBy !== authUser?.uid),
     );
-  }, [authUser?.uid, pendingItems]);
+  }, [authUser?.uid, pendingBlips]);
 
   const isAnyTableLoading =
     isLoading ||
-    isApprovedItemsLoading ||
-    isOwnItemsLoading ||
-    isAllItemsLoading ||
-    isPendingItemsLoading;
+    isApprovedBlipsLoading ||
+    isOwnBlipsLoading ||
+    isAllBlipsLoading ||
+    isPendingBlipsLoading;
   const needsSeed =
     !quadrants.length ||
     !rings.length ||
-    !(approvedItems && approvedItems.length);
+    !(approvedBlips && approvedBlips.length);
 
-  async function handleApprove(item: RadarItem): Promise<void> {
+  async function handleApprove(blip: Blip): Promise<void> {
     if (!profile) {
       return;
     }
 
-    setActionItemId(item.id);
+    setActionItemId(blip.id);
 
     try {
-      await reviewRadarItem(db, item, profile, "Approved", reviewNotes[item.id] || "");
+      await reviewBlip(db, blip, profile, "Approved", reviewNotes[blip.id] || "");
       toast({
         title: dashboardContent.toasts.approved.title,
         description: formatTemplate(dashboardContent.toasts.approved.description, {
-          name: item.name,
+          name: blip.name,
         }),
       });
     } catch (error) {
@@ -211,20 +211,20 @@ export default function DashboardPage(): React.ReactElement {
     }
   }
 
-  async function handleReject(item: RadarItem): Promise<void> {
+  async function handleReject(blip: Blip): Promise<void> {
     if (!profile) {
       return;
     }
 
-    setActionItemId(item.id);
+    setActionItemId(blip.id);
 
     try {
-      await reviewRadarItem(db, item, profile, "Draft", reviewNotes[item.id] || "");
+      await reviewBlip(db, blip, profile, "Draft", reviewNotes[blip.id] || "");
       toast({
         title: dashboardContent.toasts.returnedToDraft.title,
         description: formatTemplate(
           dashboardContent.toasts.returnedToDraft.description,
-          { name: item.name },
+          { name: blip.name },
         ),
       });
     } catch (error) {
@@ -421,7 +421,7 @@ export default function DashboardPage(): React.ReactElement {
               </CardTitle>
             </CardHeader>
             <CardContent className="text-3xl font-black tracking-tight">
-              {mainItems.length}
+              {mainBlips.length}
             </CardContent>
           </Card>
           <Card className="border-none bg-secondary/20 shadow-none">
@@ -431,7 +431,7 @@ export default function DashboardPage(): React.ReactElement {
               </CardTitle>
             </CardHeader>
             <CardContent className="text-3xl font-black tracking-tight">
-              {canReview ? pendingCoworkerItems.length : 0}
+              {canReview ? pendingCoworkerBlips.length : 0}
             </CardContent>
           </Card>
         </div>
@@ -451,7 +451,7 @@ export default function DashboardPage(): React.ReactElement {
               </p>
             </div>
             <Button asChild className="rounded-full px-6 font-bold">
-              <Link href="/items/new">{dashboardContent.table.suggestTool}</Link>
+              <Link href="/blips/new">{dashboardContent.table.suggestBlip}</Link>
             </Button>
           </CardHeader>
           <CardContent>
@@ -459,7 +459,7 @@ export default function DashboardPage(): React.ReactElement {
               <div className="py-12 text-center text-muted-foreground">
                 {common.common.loadingDashboardData}
               </div>
-            ) : mainItems.length ? (
+            ) : mainBlips.length ? (
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -474,41 +474,41 @@ export default function DashboardPage(): React.ReactElement {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {mainItems.map((item) => (
-                    <TableRow key={item.id}>
+                  {mainBlips.map((blip) => (
+                    <TableRow key={blip.id}>
                       <TableCell>
                         <div className="space-y-1">
-                          <div className="font-semibold">{item.name}</div>
+                          <div className="font-semibold">{blip.name}</div>
                           <div className="text-xs text-muted-foreground">
-                            {item.team}
+                            {blip.team}
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={getStatusBadgeVariant(item.status)}>
-                          {getStatusLabel(item.status)}
+                        <Badge variant={getStatusBadgeVariant(blip.status)}>
+                          {getStatusLabel(blip.status)}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {quadrantMap.get(item.quadrantId) || common.common.unassigned}
+                        {quadrantMap.get(blip.quadrantId) || common.common.unassigned}
                       </TableCell>
                       <TableCell>
-                        {ringMap.get(item.ringId) || common.common.unassigned}
+                        {ringMap.get(blip.ringId) || common.common.unassigned}
                       </TableCell>
                       <TableCell>
-                        {new Date(item.updatedAt).toLocaleDateString("nl-NL")}
+                        {new Date(blip.updatedAt).toLocaleDateString("nl-NL")}
                       </TableCell>
                       <TableCell>
                         <div className="flex justify-end gap-2">
                           <Button variant="ghost" size="sm" asChild>
-                            <Link href={`/items/${item.id}`}>
+                            <Link href={`/blips/${blip.id}`}>
                               <Eye className="mr-2 h-4 w-4" />
                               {common.common.view}
                             </Link>
                           </Button>
-                          {canEditRadarItem(item, authUser.uid, role) ? (
+                          {canEditBlip(blip, authUser.uid, role) ? (
                             <Button variant="ghost" size="sm" asChild>
-                              <Link href={`/items/${item.id}/edit`}>
+                              <Link href={`/blips/${blip.id}/edit`}>
                                 <Pencil className="mr-2 h-4 w-4" />
                                 {common.common.edit}
                               </Link>
@@ -545,28 +545,28 @@ export default function DashboardPage(): React.ReactElement {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {pendingCoworkerItems.length ? (
-                pendingCoworkerItems.map((item) => (
-                  <div key={item.id} className="rounded-[2rem] border border-border/60 p-6">
+              {pendingCoworkerBlips.length ? (
+                pendingCoworkerBlips.map((blip) => (
+                  <div key={blip.id} className="rounded-[2rem] border border-border/60 p-6">
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                       <div className="space-y-2">
                         <div className="flex flex-wrap items-center gap-3">
-                          <h3 className="text-2xl font-black tracking-tight">{item.name}</h3>
-                          <Badge variant="secondary">{getStatusLabel(item.status)}</Badge>
+                          <h3 className="text-2xl font-black tracking-tight">{blip.name}</h3>
+                          <Badge variant="secondary">{getStatusLabel(blip.status)}</Badge>
                         </div>
                         <p className="max-w-3xl text-sm font-medium text-muted-foreground">
-                          {item.shortDesc}
+                          {blip.shortDesc}
                         </p>
                         <div className="flex flex-wrap gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                          <span>{item.team}</span>
+                          <span>{blip.team}</span>
                           <span>
-                            {quadrantMap.get(item.quadrantId) || common.common.unassigned}
+                            {quadrantMap.get(blip.quadrantId) || common.common.unassigned}
                           </span>
-                          <span>{ringMap.get(item.ringId) || common.common.unassigned}</span>
+                          <span>{ringMap.get(blip.ringId) || common.common.unassigned}</span>
                         </div>
                       </div>
                       <Button variant="ghost" asChild>
-                        <Link href={`/items/${item.id}`}>
+                        <Link href={`/blips/${blip.id}`}>
                           {dashboardContent.coworkerReview.openDetail}
                         </Link>
                       </Button>
@@ -575,18 +575,18 @@ export default function DashboardPage(): React.ReactElement {
                     <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_auto_auto]">
                       <Input
                         placeholder={dashboardContent.coworkerReview.reviewPlaceholder}
-                        value={reviewNotes[item.id] || ""}
+                        value={reviewNotes[blip.id] || ""}
                         onChange={(event) =>
                           setReviewNotes((currentState) => ({
                             ...currentState,
-                            [item.id]: event.target.value,
+                            [blip.id]: event.target.value,
                           }))
                         }
                       />
                       <Button
                         className="gap-2"
-                        disabled={actionItemId === item.id}
-                        onClick={() => handleApprove(item)}
+                        disabled={actionItemId === blip.id}
+                        onClick={() => handleApprove(blip)}
                       >
                         <CheckCircle2 className="h-4 w-4" />
                         {common.common.approve}
@@ -594,8 +594,8 @@ export default function DashboardPage(): React.ReactElement {
                       <Button
                         variant="outline"
                         className="gap-2"
-                        disabled={actionItemId === item.id}
-                        onClick={() => handleReject(item)}
+                        disabled={actionItemId === blip.id}
+                        onClick={() => handleReject(blip)}
                       >
                         <XCircle className="h-4 w-4" />
                         {common.common.sendToDraft}

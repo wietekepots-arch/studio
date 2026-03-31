@@ -26,13 +26,13 @@ import {
   Trash2,
   Wand2,
 } from "lucide-react";
-import { aiItemCategorization } from "@/ai/flows/ai-item-categorization-flow";
-import { aiItemPrefill } from "@/ai/flows/ai-item-prefill-flow";
-import { aiShortDescriptionDrafting } from "@/ai/flows/ai-short-description-drafting";
+import { aiBlipCategorization } from "@/ai/flows/ai-blip-categorization-flow";
+import { aiBlipPrefill } from "@/ai/flows/ai-blip-prefill-flow";
+import { aiBlipShortDescriptionDrafting } from "@/ai/flows/ai-short-description-drafting";
 import {
+  type Blip,
   type RadarEntityType,
   type RadarFamily,
-  type RadarItem,
   type RadarModelEntry,
   type RadarProvider,
   type RadarSecurityReference,
@@ -59,10 +59,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import {
+  BLIP_HISTORY_COLLECTION,
+  RADAR_BLIPS_COLLECTION,
   buildRadarConfig,
-  canEditRadarItem,
-  getNextRadarItemStatus,
-  isRadarItemEditResubmission,
+  canEditBlip,
+  getNextBlipStatus,
+  isBlipEditResubmission,
   mergeConfigOptions,
   mergeRadarFamilies,
   mergeRadarProviders,
@@ -76,10 +78,10 @@ import {
   seedRings,
 } from "@/lib/radar-seed";
 import common from "@/content/common.json";
-import formContent from "@/content/pages/item-form.json";
+import formContent from "@/content/pages/blip-form.json";
 
-interface RadarItemFormProps {
-  initialItem?: RadarItem | null;
+interface RadarBlipFormProps {
+  initialBlip?: Blip | null;
 }
 
 const NONE_SELECT_VALUE = "__none__";
@@ -105,7 +107,7 @@ interface ModelEntryDraft {
   benchmarkLinks: ModelBenchmarkDraft[];
 }
 
-interface RadarItemFormState {
+interface RadarBlipFormState {
   name: string;
   shortDesc: string;
   notes: string;
@@ -120,7 +122,7 @@ interface RadarItemFormState {
   providerId: string;
   familyId: string;
   team: string;
-  origin: RadarItem["origin"] | "";
+  origin: Blip["origin"] | "";
   sustainabilityNotes: string;
   securityNotes: string;
   securityCertifications: SecurityCertificationDraft[];
@@ -145,7 +147,7 @@ function trimToUndefined(value: string): string | undefined {
   return trimmed ? trimmed : undefined;
 }
 
-function getOriginLabel(origin: RadarItem["origin"]): string {
+function getOriginLabel(origin: Blip["origin"]): string {
   switch (origin) {
     case "European":
       return formContent.origin.european;
@@ -158,12 +160,12 @@ function getOriginLabel(origin: RadarItem["origin"]): string {
   }
 }
 
-function getDefaultEntityType(item?: RadarItem | null): RadarEntityType {
-  if (item?.entityType) {
-    return item.entityType;
+function getDefaultEntityType(blip?: Blip | null): RadarEntityType {
+  if (blip?.entityType) {
+    return blip.entityType;
   }
 
-  if (item?.modelEntries?.length) {
+  if (blip?.modelEntries?.length) {
     return "provider";
   }
 
@@ -303,41 +305,41 @@ function hasModelEntryWithoutOutboundLink(drafts: ModelEntryDraft[]): boolean {
   });
 }
 
-function getFormState(item?: RadarItem | null): RadarItemFormState {
-  const usesSharedProfile = Boolean(item?.providerId || item?.familyId);
+function getFormState(blip?: Blip | null): RadarBlipFormState {
+  const usesSharedProfile = Boolean(blip?.providerId || blip?.familyId);
 
   return {
-    name: item?.name || "",
-    shortDesc: item?.shortDesc || "",
-    notes: item?.notes || "",
-    entityType: getDefaultEntityType(item),
-    availabilitySummary: item?.availabilitySummary || "",
-    accessNotes: item?.accessNotes || "",
-    accessRequestUrl: item?.accessRequestUrl || "",
-    pricingSummary: item?.pricingSummary || "",
-    pricingUrl: item?.pricingUrl || "",
-    quadrantId: String(item?.quadrantId ?? 0),
-    ringId: String(item?.ringId ?? 2),
-    providerId: item?.providerId || "",
-    familyId: item?.familyId || "",
-    team: item?.team || "",
+    name: blip?.name || "",
+    shortDesc: blip?.shortDesc || "",
+    notes: blip?.notes || "",
+    entityType: getDefaultEntityType(blip),
+    availabilitySummary: blip?.availabilitySummary || "",
+    accessNotes: blip?.accessNotes || "",
+    accessRequestUrl: blip?.accessRequestUrl || "",
+    pricingSummary: blip?.pricingSummary || "",
+    pricingUrl: blip?.pricingUrl || "",
+    quadrantId: String(blip?.quadrantId ?? 0),
+    ringId: String(blip?.ringId ?? 2),
+    providerId: blip?.providerId || "",
+    familyId: blip?.familyId || "",
+    team: blip?.team || "",
     origin:
-      item?.originOverride || (usesSharedProfile ? "" : item?.origin || "European"),
+      blip?.originOverride || (usesSharedProfile ? "" : blip?.origin || "European"),
     sustainabilityNotes:
-      item?.sustainabilityNotesOverride ||
-      (usesSharedProfile ? "" : item?.sustainabilityNotes || ""),
+      blip?.sustainabilityNotesOverride ||
+      (usesSharedProfile ? "" : blip?.sustainabilityNotes || ""),
     securityNotes:
-      item?.securityNotesOverride ||
-      (usesSharedProfile ? "" : item?.securityNotes || ""),
+      blip?.securityNotesOverride ||
+      (usesSharedProfile ? "" : blip?.securityNotes || ""),
     securityCertifications: toSecurityCertificationDrafts(
-      item?.securityCertifications,
+      blip?.securityCertifications,
     ),
     ethicsNotes:
-      item?.ethicsNotesOverride ||
-      (usesSharedProfile ? "" : item?.ethicsNotes || ""),
-    modelEntries: toModelEntryDrafts(item?.modelEntries),
-    tags: item?.tags?.join(", ") || "",
-    primaryLink: item?.links?.[0] || "",
+      blip?.ethicsNotesOverride ||
+      (usesSharedProfile ? "" : blip?.ethicsNotes || ""),
+    modelEntries: toModelEntryDrafts(blip?.modelEntries),
+    tags: blip?.tags?.join(", ") || "",
+    primaryLink: blip?.links?.[0] || "",
   };
 }
 
@@ -373,15 +375,15 @@ function setOptionalJsonUpdateField(
   }
 }
 
-export function RadarItemForm({
-  initialItem,
-}: RadarItemFormProps): React.ReactElement {
+export function RadarBlipForm({
+  initialBlip,
+}: RadarBlipFormProps): React.ReactElement {
   const db = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
   const { authUser, hasCompanyAccess, profile, role } = useAppUser();
-  const [formData, setFormData] = useState<RadarItemFormState>(() =>
-    getFormState(initialItem),
+  const [formData, setFormData] = useState<RadarBlipFormState>(() =>
+    getFormState(initialBlip),
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAiLoading, setIsAiLoading] = useState(false);
@@ -481,10 +483,10 @@ export function RadarItemForm({
     ? `${selectedProvider?.name || selectedFamily.providerName || formContent.fields.provider} / ${selectedFamily.name}`
     : selectedProvider?.name || "";
   const config = buildRadarConfig(quadrants, rings);
-  const isEditMode = Boolean(initialItem);
+  const isEditMode = Boolean(initialBlip);
   const isProviderBlip = formData.entityType === "provider";
   const isResubmittingForReview = authUser
-    ? isRadarItemEditResubmission(initialItem, authUser.uid, role)
+    ? isBlipEditResubmission(initialBlip, authUser.uid, role)
     : false;
   const submitLabel = isEditMode
     ? isResubmittingForReview
@@ -493,16 +495,16 @@ export function RadarItemForm({
     : formContent.create.submitButton;
   const helperText = !isEditMode
     ? formContent.create.description
-    : initialItem?.status === "Approved" && isResubmittingForReview
+    : initialBlip?.status === "Approved" && isResubmittingForReview
       ? formContent.edit.approvedResubmitDescription
       : isResubmittingForReview
         ? formContent.edit.resubmitDescription
         : formContent.edit.description;
 
   useEffect(() => {
-    setFormData(getFormState(initialItem));
+    setFormData(getFormState(initialBlip));
     setAiNeedsVerification([]);
-  }, [initialItem]);
+  }, [initialBlip]);
 
   function handleProviderChange(value: string): void {
     if (value === NONE_SELECT_VALUE) {
@@ -713,9 +715,9 @@ export function RadarItemForm({
     setIsAiLoading(true);
 
     try {
-      const result = await aiItemCategorization({
-        itemName: formData.name,
-        itemDescription: formData.notes,
+      const result = await aiBlipCategorization({
+        blipName: formData.name,
+        blipDescription: formData.notes,
         availableQuadrants: config.quadrants,
         availableTags,
       });
@@ -757,8 +759,8 @@ export function RadarItemForm({
     setIsAiLoading(true);
 
     try {
-      const result = await aiItemPrefill({
-        itemName: formData.name.trim(),
+      const result = await aiBlipPrefill({
+        blipName: formData.name.trim(),
         existingNotes: trimToUndefined(formData.notes),
         primaryLink: trimToUndefined(formData.primaryLink),
         entityType: formData.entityType,
@@ -826,7 +828,7 @@ export function RadarItemForm({
     setIsAiLoading(true);
 
     try {
-      const result = await aiShortDescriptionDrafting({
+      const result = await aiBlipShortDescriptionDrafting({
         detailedNotes: formData.notes,
         links: formData.primaryLink ? [formData.primaryLink] : [],
       });
@@ -862,7 +864,7 @@ export function RadarItemForm({
       return;
     }
 
-    if (initialItem && !canEditRadarItem(initialItem, authUser.uid, role)) {
+    if (initialBlip && !canEditBlip(initialBlip, authUser.uid, role)) {
       toast({
         title: formContent.toasts.editingNotAllowed.title,
         description: formContent.toasts.editingNotAllowed.description,
@@ -883,7 +885,7 @@ export function RadarItemForm({
     setIsSubmitting(true);
 
     const now = Date.now();
-    const nextStatus = getNextRadarItemStatus(initialItem, authUser.uid, role);
+    const nextStatus = getNextBlipStatus(initialBlip, authUser.uid, role);
     const nextRingId = Number(formData.ringId);
     const providerId = selectedFamily?.providerId || formData.providerId;
     const providerName = selectedProvider?.name || selectedFamily?.providerName;
@@ -929,8 +931,8 @@ export function RadarItemForm({
       ringId: nextRingId,
       tags: normalizedTags,
       team: formData.team.trim(),
-      ownerId: initialItem?.ownerId || authUser.uid,
-      ownerName: initialItem?.ownerName || profile.displayName,
+      ownerId: initialBlip?.ownerId || authUser.uid,
+      ownerName: initialBlip?.ownerName || profile.displayName,
       origin: effectiveOrigin,
       sustainabilityNotes: effectiveSustainability,
       securityNotes: effectiveSecurity,
@@ -938,21 +940,21 @@ export function RadarItemForm({
       links: primaryLink ? [primaryLink] : [],
       status: nextStatus,
       submittedAt:
-        !initialItem?.submittedAt || isResubmittingForReview
+        !initialBlip?.submittedAt || isResubmittingForReview
           ? now
-          : initialItem.submittedAt,
+          : initialBlip.submittedAt,
       submittedBy:
-        !initialItem?.submittedBy || isResubmittingForReview
+        !initialBlip?.submittedBy || isResubmittingForReview
           ? authUser.uid
-          : initialItem.submittedBy,
-      lastReviewedAt: initialItem?.lastReviewedAt || now,
-      createdAt: initialItem?.createdAt || now,
-      createdBy: initialItem?.createdBy || authUser.uid,
+          : initialBlip.submittedBy,
+      lastReviewedAt: initialBlip?.lastReviewedAt || now,
+      createdAt: initialBlip?.createdAt || now,
+      createdBy: initialBlip?.createdBy || authUser.uid,
       updatedAt: now,
       updatedBy: authUser.uid,
-      history: initialItem?.history || [],
-      ...(initialItem?.pricingTiers ? { pricingTiers: initialItem.pricingTiers } : {}),
-      ...(initialItem?.costRange ? { costRange: initialItem.costRange } : {}),
+      history: initialBlip?.history || [],
+      ...(initialBlip?.pricingTiers ? { pricingTiers: initialBlip.pricingTiers } : {}),
+      ...(initialBlip?.costRange ? { costRange: initialBlip.costRange } : {}),
       ...(availabilitySummary ? { availabilitySummary } : {}),
       ...(accessNotes ? { accessNotes } : {}),
       ...(accessRequestUrl ? { accessRequestUrl } : {}),
@@ -973,99 +975,99 @@ export function RadarItemForm({
     };
 
     try {
-      if (initialItem) {
+      if (initialBlip) {
         const payload: UpdateData<DocumentData> = { ...basePayload };
 
-        if (initialItem.ringId !== nextRingId) {
-          payload.previousRingId = initialItem.ringId;
-        } else if (typeof initialItem.previousRingId === "number") {
-          payload.previousRingId = initialItem.previousRingId;
+        if (initialBlip.ringId !== nextRingId) {
+          payload.previousRingId = initialBlip.ringId;
+        } else if (typeof initialBlip.previousRingId === "number") {
+          payload.previousRingId = initialBlip.previousRingId;
         }
 
         setOptionalUpdateField(
           payload,
           "providerId",
           providerId || undefined,
-          initialItem.providerId,
+          initialBlip.providerId,
         );
         setOptionalUpdateField(
           payload,
           "providerName",
           providerName,
-          initialItem.providerName,
+          initialBlip.providerName,
         );
-        setOptionalUpdateField(payload, "familyId", familyId, initialItem.familyId);
+        setOptionalUpdateField(payload, "familyId", familyId, initialBlip.familyId);
         setOptionalUpdateField(
           payload,
           "familyName",
           familyName,
-          initialItem.familyName,
+          initialBlip.familyName,
         );
         setOptionalUpdateField(
           payload,
           "originOverride",
           originOverride,
-          initialItem.originOverride,
+          initialBlip.originOverride,
         );
         setOptionalUpdateField(
           payload,
           "sustainabilityNotesOverride",
           sustainabilityOverride,
-          initialItem.sustainabilityNotesOverride,
+          initialBlip.sustainabilityNotesOverride,
         );
         setOptionalUpdateField(
           payload,
           "securityNotesOverride",
           securityOverride,
-          initialItem.securityNotesOverride,
+          initialBlip.securityNotesOverride,
         );
         setOptionalUpdateField(
           payload,
           "ethicsNotesOverride",
           ethicsOverride,
-          initialItem.ethicsNotesOverride,
+          initialBlip.ethicsNotesOverride,
         );
         setOptionalUpdateField(
           payload,
           "availabilitySummary",
           availabilitySummary,
-          initialItem.availabilitySummary,
+          initialBlip.availabilitySummary,
         );
         setOptionalUpdateField(
           payload,
           "accessNotes",
           accessNotes,
-          initialItem.accessNotes,
+          initialBlip.accessNotes,
         );
         setOptionalUpdateField(
           payload,
           "accessRequestUrl",
           accessRequestUrl,
-          initialItem.accessRequestUrl,
+          initialBlip.accessRequestUrl,
         );
         setOptionalUpdateField(
           payload,
           "pricingSummary",
           pricingSummary,
-          initialItem.pricingSummary,
+          initialBlip.pricingSummary,
         );
         setOptionalUpdateField(
           payload,
           "pricingUrl",
           pricingUrl,
-          initialItem.pricingUrl,
+          initialBlip.pricingUrl,
         );
         setOptionalJsonUpdateField(
           payload,
           "securityCertifications",
           securityCertifications,
-          initialItem.securityCertifications,
+          initialBlip.securityCertifications,
         );
         setOptionalJsonUpdateField(
           payload,
           "modelEntries",
           modelEntries,
-          initialItem.modelEntries,
+          initialBlip.modelEntries,
         );
 
         if (isResubmittingForReview) {
@@ -1073,33 +1075,42 @@ export function RadarItemForm({
           payload.reviewedAt = deleteField();
           payload.reviewedBy = deleteField();
         } else {
-          if (initialItem.reviewComment) {
-            payload.reviewComment = initialItem.reviewComment;
+          if (initialBlip.reviewComment) {
+            payload.reviewComment = initialBlip.reviewComment;
           }
-          if (typeof initialItem.reviewedAt === "number") {
-            payload.reviewedAt = initialItem.reviewedAt;
+          if (typeof initialBlip.reviewedAt === "number") {
+            payload.reviewedAt = initialBlip.reviewedAt;
           }
-          if (initialItem.reviewedBy) {
-            payload.reviewedBy = initialItem.reviewedBy;
+          if (initialBlip.reviewedBy) {
+            payload.reviewedBy = initialBlip.reviewedBy;
           }
         }
 
-        await updateDoc(doc(db, "radarItems", initialItem.id), payload);
-        await addDoc(collection(db, "radarItems", initialItem.id, "itemHistory"), {
-          itemId: initialItem.id,
-          action: isResubmittingForReview
-            ? formContent.history.resubmitted
-            : formContent.history.updated,
-          note: isResubmittingForReview
-            ? initialItem.status === "Approved"
-              ? formContent.history.resubmittedApprovedNote
-              : formContent.history.resubmittedNote
-            : formContent.history.updatedNote,
-          before: initialItem.status,
-          after: nextStatus,
-          createdAt: now,
-          createdBy: authUser.uid,
-        });
+        await updateDoc(doc(db, RADAR_BLIPS_COLLECTION, initialBlip.id), payload);
+        await addDoc(
+          collection(
+            db,
+            RADAR_BLIPS_COLLECTION,
+            initialBlip.id,
+            BLIP_HISTORY_COLLECTION,
+          ),
+          {
+            blipId: initialBlip.id,
+            itemId: initialBlip.id,
+            action: isResubmittingForReview
+              ? formContent.history.resubmitted
+              : formContent.history.updated,
+            note: isResubmittingForReview
+              ? initialBlip.status === "Approved"
+                ? formContent.history.resubmittedApprovedNote
+                : formContent.history.resubmittedNote
+              : formContent.history.updatedNote,
+            before: initialBlip.status,
+            after: nextStatus,
+            createdAt: now,
+            createdBy: authUser.uid,
+          },
+        );
         toast({
           title: isResubmittingForReview
             ? formContent.toasts.blipResubmitted.title
@@ -1108,17 +1119,29 @@ export function RadarItemForm({
             ? formContent.toasts.blipResubmitted.description
             : formContent.toasts.changesSaved.description,
         });
-        router.push(`/items/${initialItem.id}`);
+        router.push(`/blips/${initialBlip.id}`);
       } else {
-        const documentReference = await addDoc(collection(db, "radarItems"), basePayload);
-        await addDoc(collection(db, "radarItems", documentReference.id, "itemHistory"), {
-          itemId: documentReference.id,
-          action: formContent.history.submitted,
-          note: formContent.history.submittedNote,
-          after: "Pending",
-          createdAt: now,
-          createdBy: authUser.uid,
-        });
+        const documentReference = await addDoc(
+          collection(db, RADAR_BLIPS_COLLECTION),
+          basePayload,
+        );
+        await addDoc(
+          collection(
+            db,
+            RADAR_BLIPS_COLLECTION,
+            documentReference.id,
+            BLIP_HISTORY_COLLECTION,
+          ),
+          {
+            blipId: documentReference.id,
+            itemId: documentReference.id,
+            action: formContent.history.submitted,
+            note: formContent.history.submittedNote,
+            after: "Pending",
+            createdAt: now,
+            createdBy: authUser.uid,
+          },
+        );
         toast({
           title: formContent.toasts.suggestionSubmitted.title,
           description: formContent.toasts.suggestionSubmitted.description,
@@ -1144,7 +1167,7 @@ export function RadarItemForm({
           asChild
           className="gap-2 -ml-2 font-bold text-muted-foreground hover:text-primary"
         >
-          <Link href={initialItem ? `/items/${initialItem.id}` : "/dashboard"}>
+          <Link href={initialBlip ? `/blips/${initialBlip.id}` : "/dashboard"}>
             <ArrowLeft className="h-5 w-5" />
             {common.common.return}
           </Link>

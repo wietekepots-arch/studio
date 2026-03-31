@@ -1,26 +1,26 @@
 [
   {
     "id": "creation-craft",
-    "name": "Bouwen & Prototypen",
+    "name": "Methods & Practices",
     "order": 0,
-    "description": "Appbouwers, coding-assistenten en prototypingtools waarmee teams sneller kunnen maken en valideren."
+    "description": "Frameworks, guidelines, and best practices for adopting AI responsibly and effectively."
   },
   {
     "id": "strategy-intelligence",
-    "name": "Modellen & Intelligentie",
+    "name": "Models & Platforms",
     "order": 1,
-    "description": "Foundation models, researchtools en AI-platformen voor redeneren, schrijven en synthese."
+    "description": "Foundation models, research tools, and AI platforms for reasoning, writing, and synthesis."
   },
   {
     "id": "process-flow",
-    "name": "Workflow & Agents",
+    "name": "Workflow & Tools",
     "order": 2,
-    "description": "AI-producten die samenwerking, automatisering en dagelijkse werkprocessen ondersteunen."
+    "description": "AI products that support collaboration, automation, and daily work processes."
   },
   {
     "id": "positive-impact",
-    "name": "Vertrouwen & Governance",
+    "name": "Prototyping & Experiments",
     "order": 3,
-    "description": "Tools en platformen die helpen om privacy, beleid en organisatierisico's beheersbaar te houden."
+    "description": "App builders, coding assistants, and prototyping tools that help teams build and validate faster."
   }
 ]

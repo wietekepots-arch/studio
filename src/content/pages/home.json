@@ -1,18 +1,19 @@
 {
-  "sectionLabel": "Live Firestore Radar",
+  "sectionLabel": "Live AI Tech Radar",
   "heading": "Design for",
   "headingHighlight": "Progress",
-  "description": "Goedgekeurde toolblips uit de Greenberry-workflow, zichtbaar zodra een reviewer ze publiceert.",
+  "description": "Inspiratie, inzichten en ondersteuning voor Greenberry AI Initiatieven vindt je hier. Ontdek de beste technologie voor jouw doel, deel ervaringen en ontdek hoe AI onze manier van werken kan verbeteren.",
   "searchPlaceholder": "Zoek in de radar...",
-  "entireNetwork": "Hele netwerk",
+  "entireNetwork": "All",
   "focus": "Focus:",
   "radarNotInitialized": {
     "heading": "Radar nog niet geinitialiseerd",
-    "description": "Laad eerst de starterconfiguratie en goedgekeurde items via het dashboard om de radar te activeren."
+    "description": "Laad eerst de starterconfiguratie en goedgekeurde blips via het dashboard om de radar te activeren."
   },
-  "latestPulses": {
-    "title": "Laatste bewegingen",
-    "emptyState": "Wacht op de eerste strategische beweging..."
+  "latestExperiences": {
+    "title": "Laatste ervaringen",
+    "emptyState": "Nog geen ervaringen gedeeld. Voeg de eerste praktijkervaring toe.",
+    "button": "Ervaring toevoegen"
   },
   "governance": {
     "title": "Governance-workflow",

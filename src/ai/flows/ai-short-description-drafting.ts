@@ -1,38 +1,40 @@
 'use server';
 /**
  * @fileOverview This file implements a Genkit flow for drafting a concise short description
- * for a radar item based on detailed notes and optional links.
+ * for a radar blip based on detailed notes and optional links.
  *
- * - aiShortDescriptionDrafting - A function that generates a short description.
- * - AiShortDescriptionDraftingInput - The input type for the aiShortDescriptionDrafting function.
- * - AiShortDescriptionDraftingOutput - The return type for the aiShortDescriptionDrafting function.
+ * - aiBlipShortDescriptionDrafting - A function that generates a short description.
+ * - AiBlipShortDescriptionDraftingInput - The input type for the aiBlipShortDescriptionDrafting function.
+ * - AiBlipShortDescriptionDraftingOutput - The return type for the aiBlipShortDescriptionDrafting function.
  */
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
-const AiShortDescriptionDraftingInputSchema = z.object({
-  detailedNotes: z.string().describe('Detailed notes about the radar item.'),
-  links: z.array(z.string().url()).optional().describe('Optional list of external links related to the radar item.'),
+const AiBlipShortDescriptionDraftingInputSchema = z.object({
+  detailedNotes: z.string().describe('Detailed notes about the radar blip.'),
+  links: z.array(z.string().url()).optional().describe('Optional list of external links related to the radar blip.'),
 });
-export type AiShortDescriptionDraftingInput = z.infer<typeof AiShortDescriptionDraftingInputSchema>;
+export type AiBlipShortDescriptionDraftingInput = z.infer<typeof AiBlipShortDescriptionDraftingInputSchema>;
 
-const AiShortDescriptionDraftingOutputSchema = z.object({
-  shortDescription: z.string().trim().max(160).describe('A concise short description for the radar item.'),
+const AiBlipShortDescriptionDraftingOutputSchema = z.object({
+  shortDescription: z.string().trim().max(160).describe('A concise short description for the radar blip.'),
 });
-export type AiShortDescriptionDraftingOutput = z.infer<typeof AiShortDescriptionDraftingOutputSchema>;
+export type AiBlipShortDescriptionDraftingOutput = z.infer<typeof AiBlipShortDescriptionDraftingOutputSchema>;
 
-export async function aiShortDescriptionDrafting(input: AiShortDescriptionDraftingInput): Promise<AiShortDescriptionDraftingOutput> {
-  return aiShortDescriptionDraftingFlow(input);
+export async function aiBlipShortDescriptionDrafting(
+  input: AiBlipShortDescriptionDraftingInput,
+): Promise<AiBlipShortDescriptionDraftingOutput> {
+  return aiBlipShortDescriptionDraftingFlow(input);
 }
 
 const prompt = ai.definePrompt({
-  name: 'aiShortDescriptionDraftingPrompt',
-  input: { schema: AiShortDescriptionDraftingInputSchema },
-  output: { schema: AiShortDescriptionDraftingOutputSchema },
+  name: 'aiBlipShortDescriptionDraftingPrompt',
+  input: { schema: AiBlipShortDescriptionDraftingInputSchema },
+  output: { schema: AiBlipShortDescriptionDraftingOutputSchema },
   prompt: `Je schrijft korte Nederlandstalige samenvattingen voor een Tech Radar-applicatie.
 Genereer exact 1 beknopte zin op basis van de uitgebreide notities en eventuele links.
-De omschrijving moet duidelijk maken wat het item is, waar het voor dient en waarom het relevant is.
+De omschrijving moet duidelijk maken wat de blip is, waar die voor dient en waarom die relevant is.
 Schrijf in helder Nederlands, zonder marketingtaal en zonder opsommingen.
 De zin moet maximaal 160 tekens hebben.
 
@@ -48,11 +50,11 @@ Externe links (gebruik vooral de notities als links niet goed leesbaar of niet d
 Houd de output strikt aan het JSON-schema.`,
 });
 
-const aiShortDescriptionDraftingFlow = ai.defineFlow(
+const aiBlipShortDescriptionDraftingFlow = ai.defineFlow(
   {
-    name: 'aiShortDescriptionDraftingFlow',
-    inputSchema: AiShortDescriptionDraftingInputSchema,
-    outputSchema: AiShortDescriptionDraftingOutputSchema,
+    name: 'aiBlipShortDescriptionDraftingFlow',
+    inputSchema: AiBlipShortDescriptionDraftingInputSchema,
+    outputSchema: AiBlipShortDescriptionDraftingOutputSchema,
   },
   async (input) => {
     const { output } = await prompt(input);

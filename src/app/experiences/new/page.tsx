@@ -40,6 +40,7 @@ import { collection, query, where } from "firebase/firestore";
 import { useAppUser } from "@/components/app/AppUserProvider";
 import { mergeRadarFamilies } from "@/lib/radar-firestore";
 import { seedFamilies } from "@/lib/radar-seed";
+import { TEAM_OPTIONS, isTeamOption } from "@/lib/team-options";
 import common from "@/content/common.json";
 import formContent from "@/content/pages/experience-form.json";
 
@@ -165,6 +166,19 @@ function NewExperiencePageContent(): React.ReactElement {
     });
   }, [allTools, prefillToolId]);
 
+  useEffect(() => {
+    const profileTeam = profile?.team;
+
+    if (!profileTeam || formData.team || !isTeamOption(profileTeam)) {
+      return;
+    }
+
+    setFormData((currentState) => ({
+      ...currentState,
+      team: profileTeam,
+    }));
+  }, [formData.team, profile?.team]);
+
   const selectedTools = useMemo(() => {
     if (!allTools?.length) {
       return [];
@@ -265,6 +279,15 @@ function NewExperiencePageContent(): React.ReactElement {
       toast({
         title: formContent.toasts.validationError.title,
         description: formContent.toasts.validationError.description,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.team.trim()) {
+      toast({
+        title: formContent.toasts.teamRequired.title,
+        description: formContent.toasts.teamRequired.description,
         variant: "destructive",
       });
       return;
@@ -428,7 +451,7 @@ function NewExperiencePageContent(): React.ReactElement {
 
           <div className="grid grid-cols-1 gap-12 md:grid-cols-12">
             <div className="space-y-10 md:col-span-8">
-              <Card className="overflow-hidden rounded-[3rem] border-none bg-secondary/20 shadow-none">
+              <Card className="overflow-visible rounded-[3rem] border-none bg-secondary/20 shadow-none">
                 <CardHeader className="p-10 pb-2">
                   <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
                     {formContent.sections.strategicContext}
@@ -719,15 +742,23 @@ function NewExperiencePageContent(): React.ReactElement {
                     <Label className="text-xs font-bold uppercase tracking-widest opacity-50">
                       {formContent.fields.studioTeam.label}
                     </Label>
-                    <Input
-                      placeholder={formContent.fields.studioTeam.placeholder}
-                      className="h-14 rounded-xl border-2 border-transparent bg-secondary/30 px-4 font-bold transition-all focus:border-primary focus:bg-white"
-                      required
+                    <Select
                       value={formData.team}
-                      onChange={(event) =>
-                        setFormData({ ...formData, team: event.target.value })
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, team: value })
                       }
-                    />
+                    >
+                      <SelectTrigger className="h-14 rounded-xl border-2 border-transparent bg-secondary/30 px-4 font-bold transition-all">
+                        <SelectValue placeholder={formContent.fields.studioTeam.placeholder} />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-2xl">
+                        {TEAM_OPTIONS.map((team) => (
+                          <SelectItem key={team} value={team} className="p-3 font-bold">
+                            {team}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs font-bold uppercase tracking-widest opacity-50">

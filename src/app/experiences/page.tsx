@@ -10,9 +10,9 @@ import {
   Plus,
   Search,
   Sparkles,
-  Star,
   User as UserIcon,
 } from "lucide-react";
+import { OutcomeStars } from "@/components/experiences";
 import { Navbar } from "@/components/layout/Navbar";
 import { useAppUser } from "@/components/app/AppUserProvider";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
@@ -20,7 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Experience } from "@/app/lib/radar-types";
+import { Blip, Experience } from "@/app/lib/radar-types";
 import experiencesContent from "@/content/pages/experiences.json";
 
 export default function ExperiencesPage(): React.ReactElement {
@@ -45,8 +45,20 @@ export default function ExperiencesPage(): React.ReactElement {
       orderBy("createdAt", "desc"),
     );
   }, [authUser, db, hasCompanyAccess]);
+  const blipsQuery = useMemoFirebase(() => {
+    if (!db || !authUser || !hasCompanyAccess) {
+      return null;
+    }
+
+    return collection(db, "radarItems");
+  }, [authUser, db, hasCompanyAccess]);
 
   const { data: experiences, isLoading } = useCollection<Experience>(experiencesQuery);
+  const { data: blips } = useCollection<Blip>(blipsQuery);
+
+  const blipsById = useMemo(() => {
+    return new Map((blips ?? []).map((blip) => [blip.id, blip]));
+  }, [blips]);
 
   const filteredExperiences = useMemo(() => {
     if (!experiences) {
@@ -77,6 +89,19 @@ export default function ExperiencesPage(): React.ReactElement {
     }
 
     return new Date(timestamp).toLocaleDateString();
+  }
+
+  function getExperienceBlipNames(experience: Experience): string[] {
+    const ids = Array.from(
+      new Set([
+        ...experience.toolLinks,
+        ...(experience.toolContexts ?? []).map(
+          (context) => context.blipId || context.itemId || "",
+        ),
+      ]),
+    ).filter(Boolean);
+
+    return ids.map((id) => blipsById.get(id)?.name || experiencesContent.card.toolPulled);
   }
 
   if (isUserLoading) {
@@ -200,69 +225,71 @@ export default function ExperiencesPage(): React.ReactElement {
               </div>
             ) : filteredExperiences.length > 0 ? (
               <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-                {filteredExperiences.map((experience) => (
-                  <Link key={experience.id} href={`/experiences/${experience.id}`}>
-                    <Card className="group flex h-full flex-col overflow-hidden rounded-[3rem] border-none bg-white shadow-xl shadow-primary/5 transition-all hover:shadow-primary/10">
-                      <CardHeader className="p-8 pb-4">
-                        <div className="mb-4 flex items-start justify-between">
-                          <Badge
-                            variant="outline"
-                            className="rounded-full border-none bg-primary/5 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-primary"
-                          >
-                            {experience.team}
-                          </Badge>
-                          {experience.outcomeRating ? (
-                            <div className="flex items-center gap-1 font-black text-yellow-500">
-                              <Star className="h-4 w-4 fill-current" />
-                              <span className="text-sm">
-                                {experience.outcomeRating}/5
+                {filteredExperiences.map((experience) => {
+                  const blipNames = getExperienceBlipNames(experience);
+
+                  return (
+                    <Link key={experience.id} href={`/experiences/${experience.id}`}>
+                      <Card className="group flex h-full flex-col overflow-hidden rounded-[3rem] border-none bg-white shadow-xl shadow-primary/5 transition-all hover:shadow-primary/10">
+                        <CardHeader className="p-8 pb-4">
+                          <div className="mb-4 flex items-start justify-between">
+                            <Badge
+                              variant="outline"
+                              className="rounded-full border-none bg-primary/5 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-primary"
+                            >
+                              {experience.team}
+                            </Badge>
+                            {experience.outcomeRating
+                              ? <OutcomeStars outcomeRating={experience.outcomeRating} />
+                              : null}
+                          </div>
+                          <CardTitle className="text-3xl font-black leading-tight tracking-tighter transition-colors group-hover:text-primary">
+                            {experience.title}
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex flex-1 flex-col justify-between space-y-6 p-8 pt-0">
+                          <p className="line-clamp-3 font-medium text-muted-foreground">
+                            {experience.summary}
+                          </p>
+                          <div className="space-y-4 border-t border-secondary pt-6">
+                            <div className="flex flex-wrap gap-2">
+                              {blipNames.slice(0, 2).map((blipName, index) => (
+                                <Badge
+                                  key={`${experience.id}-tool-${index}`}
+                                  variant="secondary"
+                                  className="rounded-full bg-secondary/40 px-3 py-1 text-[10px] font-bold uppercase"
+                                >
+                                  {blipName}
+                                </Badge>
+                              ))}
+                              {blipNames.length > 2 ? (
+                                <Badge
+                                  variant="outline"
+                                  className="text-[10px] font-bold opacity-50"
+                                >
+                                  {experiencesContent.card.more.replace(
+                                    "{count}",
+                                    String(blipNames.length - 2),
+                                  )}
+                                </Badge>
+                              ) : null}
+                            </div>
+                            <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                              <span className="flex items-center gap-2">
+                                <UserIcon className="h-3.5 w-3.5" />
+                                {experience.creatorName || "Member"}
+                              </span>
+                              <span className="flex items-center gap-2">
+                                <Clock className="h-3.5 w-3.5" />
+                                {formatDate(experience.createdAt)}
                               </span>
                             </div>
-                          ) : null}
-                        </div>
-                        <CardTitle className="text-3xl font-black leading-tight tracking-tighter transition-colors group-hover:text-primary">
-                          {experience.title}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="flex flex-1 flex-col justify-between space-y-6 p-8 pt-0">
-                        <p className="line-clamp-3 font-medium text-muted-foreground">
-                          {experience.summary}
-                        </p>
-                        <div className="space-y-4 border-t border-secondary pt-6">
-                          <div className="flex flex-wrap gap-2">
-                            {experience.toolLinks.slice(0, 2).map((_, index) => (
-                              <Badge
-                                key={`${experience.id}-tool-${index}`}
-                                variant="secondary"
-                                className="rounded-full bg-secondary/40 px-3 py-1 text-[10px] font-bold uppercase"
-                              >
-                                {experiencesContent.card.toolPulled}
-                              </Badge>
-                            ))}
-                            {experience.toolLinks.length > 2 ? (
-                              <Badge
-                                variant="outline"
-                                className="text-[10px] font-bold opacity-50"
-                              >
-                                {experiencesContent.card.more.replace("{count}", String(experience.toolLinks.length - 2))}
-                              </Badge>
-                            ) : null}
                           </div>
-                          <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
-                            <span className="flex items-center gap-2">
-                              <UserIcon className="h-3.5 w-3.5" />
-                              {experience.creatorName || "Member"}
-                            </span>
-                            <span className="flex items-center gap-2">
-                              <Clock className="h-3.5 w-3.5" />
-                              {formatDate(experience.createdAt)}
-                            </span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                ))}
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  );
+                })}
               </div>
             ) : (
               <div className="space-y-6 py-32 text-center">

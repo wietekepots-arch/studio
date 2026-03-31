@@ -73,6 +73,35 @@ function getHistoryActionLabel(action: string): string {
   );
 }
 
+function getHistoryEntryTitle(
+  entry: HistoryEntry,
+  ringMap: Map<number, string>,
+): string {
+  if (entry.action === "ring changed" && typeof entry.after === "number") {
+    return `${getHistoryActionLabel(entry.action)} naar ${ringMap.get(entry.after) || entry.after}`;
+  }
+
+  return getHistoryActionLabel(entry.action);
+}
+
+function getHistoryEntryMeta(
+  entry: HistoryEntry,
+  ringMap: Map<number, string>,
+): string | null {
+  if (
+    entry.action === "ring changed" &&
+    typeof entry.before === "number" &&
+    typeof entry.after === "number"
+  ) {
+    const previousRing = ringMap.get(entry.before) || String(entry.before);
+    const nextRing = ringMap.get(entry.after) || String(entry.after);
+
+    return `Van ${previousRing} naar ${nextRing}`;
+  }
+
+  return null;
+}
+
 function getLegacyPricingSummary(pricingTiers?: PricingTier[]): string | null {
   if (!pricingTiers?.length) {
     return null;
@@ -732,8 +761,13 @@ export default function BlipDetailPage({
                     <div key={entry.id} className="space-y-2">
                       <div className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-foreground">
                         <FileClock className="h-4 w-4 text-primary" />
-                        {getHistoryActionLabel(entry.action)}
+                        {getHistoryEntryTitle(entry, ringMap)}
                       </div>
+                      {getHistoryEntryMeta(entry, ringMap) ? (
+                        <p className="text-sm font-medium text-foreground/70">
+                          {getHistoryEntryMeta(entry, ringMap)}
+                        </p>
+                      ) : null}
                       {entry.note ? (
                         <p className="text-sm font-medium text-muted-foreground">
                           {entry.note}

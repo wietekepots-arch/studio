@@ -37,9 +37,12 @@
     "pricingUrl": "Prijslink",
     "strategicFocus": "Kwadrant",
     "maturityTrial": "Radarstatus",
+    "ringChangeReason": "Waarom verandert deze radarstatus?",
+    "ringChangeReasonPlaceholder": "Bijvoorbeeld: verplaatst naar Hold omdat de kosten oplopen en het team nog geen betrouwbare use case heeft gevalideerd.",
     "provider": "Provider",
     "family": "Modelfamilie",
     "team": "Team",
+    "teamPlaceholder": "Selecteer een team",
     "securityCertifications": "Security-certificeringen",
     "securityCertificationLabel": "Certificering of compliance-label",
     "securityCertificationUrl": "Bronlink (optioneel)",
@@ -166,10 +169,12 @@
     "resubmitted": "resubmitted",
     "updated": "updated",
     "submitted": "submitted",
+    "ringChanged": "ring changed",
     "resubmittedApprovedNote": "Bijgewerkt na goedkeuring en opnieuw ter review gestuurd.",
     "resubmittedNote": "Bijgewerkt en opnieuw ter review gestuurd.",
     "updatedNote": "Details bijgewerkt.",
-    "submittedNote": "Ingediend voor review."
+    "submittedNote": "Ingediend voor review.",
+    "ringChangedDefaultNote": "Radarstatus aangepast."
   },
   "authError": {
     "heading": "Inloggen vereist",

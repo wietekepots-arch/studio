@@ -77,6 +77,7 @@ import {
   seedQuadrants,
   seedRings,
 } from "@/lib/radar-seed";
+import { TEAM_OPTIONS } from "@/lib/team-options";
 import common from "@/content/common.json";
 import formContent from "@/content/pages/blip-form.json";
 
@@ -119,6 +120,7 @@ interface RadarBlipFormState {
   pricingUrl: string;
   quadrantId: string;
   ringId: string;
+  ringChangeReason: string;
   providerId: string;
   familyId: string;
   team: string;
@@ -320,6 +322,7 @@ function getFormState(blip?: Blip | null): RadarBlipFormState {
     pricingUrl: blip?.pricingUrl || "",
     quadrantId: String(blip?.quadrantId ?? 0),
     ringId: String(blip?.ringId ?? 2),
+    ringChangeReason: "",
     providerId: blip?.providerId || "",
     familyId: blip?.familyId || "",
     team: blip?.team || "",
@@ -500,6 +503,9 @@ export function RadarBlipForm({
       : isResubmittingForReview
         ? formContent.edit.resubmitDescription
         : formContent.edit.description;
+  const hasRingChanged = Boolean(
+    initialBlip && Number(formData.ringId) !== initialBlip.ringId,
+  );
 
   useEffect(() => {
     setFormData(getFormState(initialBlip));
@@ -887,6 +893,7 @@ export function RadarBlipForm({
     const now = Date.now();
     const nextStatus = getNextBlipStatus(initialBlip, authUser.uid, role);
     const nextRingId = Number(formData.ringId);
+    const ringChangeReason = formData.ringChangeReason.trim();
     const providerId = selectedFamily?.providerId || formData.providerId;
     const providerName = selectedProvider?.name || selectedFamily?.providerName;
     const familyId = selectedFamily?.id;
@@ -921,6 +928,16 @@ export function RadarBlipForm({
     );
     const modelEntries = isProviderBlip ? toModelEntries(formData.modelEntries) : undefined;
     const normalizedTags = normalizeTags(formData.tags.split(","));
+
+    if (initialBlip && initialBlip.ringId !== nextRingId && !ringChangeReason) {
+      toast({
+        title: formContent.fields.ringChangeReason,
+        description: formContent.fields.ringChangeReasonPlaceholder,
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+      return;
+    }
 
     const basePayload: WithFieldValue<DocumentData> = {
       name: formData.name.trim(),
@@ -1087,30 +1104,52 @@ export function RadarBlipForm({
         }
 
         await updateDoc(doc(db, RADAR_BLIPS_COLLECTION, initialBlip.id), payload);
-        await addDoc(
-          collection(
-            db,
-            RADAR_BLIPS_COLLECTION,
-            initialBlip.id,
-            BLIP_HISTORY_COLLECTION,
-          ),
-          {
-            blipId: initialBlip.id,
-            itemId: initialBlip.id,
-            action: isResubmittingForReview
-              ? formContent.history.resubmitted
-              : formContent.history.updated,
-            note: isResubmittingForReview
-              ? initialBlip.status === "Approved"
-                ? formContent.history.resubmittedApprovedNote
-                : formContent.history.resubmittedNote
-              : formContent.history.updatedNote,
-            before: initialBlip.status,
-            after: nextStatus,
-            createdAt: now,
-            createdBy: authUser.uid,
-          },
-        );
+        if (initialBlip.ringId !== nextRingId) {
+          await addDoc(
+            collection(
+              db,
+              RADAR_BLIPS_COLLECTION,
+              initialBlip.id,
+              BLIP_HISTORY_COLLECTION,
+            ),
+            {
+              blipId: initialBlip.id,
+              itemId: initialBlip.id,
+              action: formContent.history.ringChanged,
+              note: ringChangeReason || formContent.history.ringChangedDefaultNote,
+              before: initialBlip.ringId,
+              after: nextRingId,
+              createdAt: now,
+              createdBy: authUser.uid,
+            },
+          );
+        }
+        if (isResubmittingForReview || initialBlip.ringId === nextRingId) {
+          await addDoc(
+            collection(
+              db,
+              RADAR_BLIPS_COLLECTION,
+              initialBlip.id,
+              BLIP_HISTORY_COLLECTION,
+            ),
+            {
+              blipId: initialBlip.id,
+              itemId: initialBlip.id,
+              action: isResubmittingForReview
+                ? formContent.history.resubmitted
+                : formContent.history.updated,
+              note: isResubmittingForReview
+                ? initialBlip.status === "Approved"
+                  ? formContent.history.resubmittedApprovedNote
+                  : formContent.history.resubmittedNote
+                : formContent.history.updatedNote,
+              before: initialBlip.status,
+              after: nextStatus,
+              createdAt: now,
+              createdBy: authUser.uid,
+            },
+          );
+        }
         toast({
           title: isResubmittingForReview
             ? formContent.toasts.blipResubmitted.title
@@ -1877,6 +1916,25 @@ export function RadarBlipForm({
                 </Select>
               </div>
 
+              {hasRingChanged ? (
+                <div className="space-y-2 md:col-span-2">
+                  <Label className="text-xs font-bold uppercase tracking-widest opacity-50">
+                    {formContent.fields.ringChangeReason}
+                  </Label>
+                  <Textarea
+                    value={formData.ringChangeReason}
+                    onChange={(event) =>
+                      setFormData((currentState) => ({
+                        ...currentState,
+                        ringChangeReason: event.target.value,
+                      }))
+                    }
+                    placeholder={formContent.fields.ringChangeReasonPlaceholder}
+                    className="min-h-[120px] rounded-2xl border-2 border-transparent bg-secondary/30 font-medium"
+                  />
+                </div>
+              ) : null}
+
               <div className="space-y-2">
                 <Label className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest opacity-50">
                   <Globe className="h-4 w-4" />
@@ -2016,16 +2074,26 @@ export function RadarBlipForm({
                 <Label className="text-xs font-bold uppercase tracking-widest opacity-50">
                   {formContent.fields.team}
                 </Label>
-                <Input
+                <Select
                   value={formData.team}
-                  className="h-14 rounded-xl border-2 border-transparent bg-secondary/30 font-bold"
-                  onChange={(event) =>
+                  onValueChange={(value) =>
                     setFormData((currentState) => ({
                       ...currentState,
-                      team: event.target.value,
+                      team: value,
                     }))
                   }
-                />
+                >
+                  <SelectTrigger className="h-14 rounded-xl border-2 border-transparent bg-secondary/30 font-bold">
+                    <SelectValue placeholder={formContent.fields.teamPlaceholder} />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl">
+                    {TEAM_OPTIONS.map((team) => (
+                      <SelectItem key={team} value={team} className="p-3 font-bold">
+                        {team}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">

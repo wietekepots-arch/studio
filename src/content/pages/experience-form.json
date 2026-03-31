@@ -55,7 +55,7 @@
     },
     "studioTeam": {
       "label": "Studio / team",
-      "placeholder": "Bijvoorbeeld: Amsterdam Studio"
+      "placeholder": "Selecteer een team"
     },
     "outcomeRating": {
       "label": "Waardering van de uitkomst",
@@ -83,6 +83,10 @@
     "validationError": {
       "title": "Validatiefout",
       "description": "Koppel ten minste een blip."
+    },
+    "teamRequired": {
+      "title": "Team ontbreekt",
+      "description": "Kies een team voordat je de ervaring opslaat."
     },
     "experienceLogged": {
       "title": "Ervaring opgeslagen",

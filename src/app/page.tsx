@@ -4,9 +4,10 @@ import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { collection, orderBy, query, where } from "firebase/firestore";
 import {
-  ChevronLeft,
   ChevronRight,
   Clock,
+  PanelRightClose,
+  PanelRightOpen,
   Plus,
   ShieldCheck,
   Sparkles,
@@ -19,9 +20,8 @@ import { useAppUser } from "@/components/app/AppUserProvider";
 import { RadarChart } from "@/components/radar/RadarChart";
 import { RadarQuadrantLegend } from "@/components/radar/RadarQuadrantLegend";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Collapsible,
@@ -389,7 +389,9 @@ export default function HomePage(): React.ReactElement {
             >
               <CardHeader
                 className={`p-8 ${
-                  isLatestExperiencesOpen ? "" : "flex items-center justify-center px-3 py-6"
+                  isLatestExperiencesOpen
+                    ? ""
+                    : "flex items-center justify-center px-3 py-6"
                 }`}
               >
                 <TooltipProvider delayDuration={100}>
@@ -412,7 +414,9 @@ export default function HomePage(): React.ReactElement {
                         >
                           <span
                             className={`flex shrink-0 items-center justify-center rounded-full bg-white/70 text-primary ${
-                              isLatestExperiencesOpen ? "h-12 w-12" : "h-11 w-11"
+                              isLatestExperiencesOpen
+                                ? "h-12 w-12"
+                                : "h-11 w-11"
                             }`}
                           >
                             <Sparkles className="h-6 w-6" />
@@ -432,11 +436,11 @@ export default function HomePage(): React.ReactElement {
                               : "h-8 w-8 bg-white/50"
                           }`}
                         >
-                          <ChevronLeft
-                            className={`${
-                              isLatestExperiencesOpen ? "h-5 w-5" : "h-4 w-4"
-                            }`}
-                          />
+                          {isLatestExperiencesOpen ? (
+                            <PanelRightClose className="h-5 w-5" />
+                          ) : (
+                            <PanelRightOpen className="h-4 w-4" />
+                          )}
                         </span>
                       </CollapsibleTrigger>
                     </TooltipTrigger>
@@ -509,7 +513,7 @@ export default function HomePage(): React.ReactElement {
           </Card>
 
           <div
-            className={`space-y-3 transition-opacity duration-150 ${
+            className={`space-y-3 transition-opacity duration-150  text-right ${
               isLatestExperiencesOpen
                 ? "w-full lg:w-[24rem] opacity-100"
                 : "pointer-events-none w-full lg:w-20 opacity-0"
@@ -517,12 +521,10 @@ export default function HomePage(): React.ReactElement {
           >
             <Link
               href="/experiences"
-              className={cn(
-                buttonVariants({ variant: "outline" }),
-                "h-12 w-full rounded-full font-bold"
-              )}
+              className="inline-flex h-12 items-center gap-2 text-foreground underline underline-offset-4 transition-colors hover:text-primary"
             >
               {common.navigation.experiences}
+              <ChevronRight className="h-4 w-4" />
             </Link>
             <Button
               asChild

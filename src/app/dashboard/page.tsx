@@ -50,13 +50,13 @@ function getErrorMessage(error: unknown, fallback: string): string {
   return fallback;
 }
 
-function formatTemplate<T extends object>(
-  template: string,
-  values: T,
-): string {
-  return Object.entries(values as Record<string, unknown>).reduce((result, [key, value]) => {
-    return result.replaceAll(`{${key}}`, String(value));
-  }, template);
+function formatTemplate<T extends object>(template: string, values: T): string {
+  return Object.entries(values as Record<string, unknown>).reduce(
+    (result, [key, value]) => {
+      return result.replaceAll(`{${key}}`, String(value));
+    },
+    template
+  );
 }
 
 function getStatusLabel(status: Blip["status"]): string {
@@ -79,14 +79,8 @@ export default function DashboardPage(): React.ReactElement {
   const { toast } = useToast();
   const [reviewNotes, setReviewNotes] = useState<Record<string, string>>({});
   const [actionItemId, setActionItemId] = useState<string | null>(null);
-  const {
-    authUser,
-    canReview,
-    hasCompanyAccess,
-    isLoading,
-    profile,
-    role,
-  } = useAppUser();
+  const { authUser, canReview, hasCompanyAccess, isLoading, profile, role } =
+    useAppUser();
 
   const quadrantsQuery = useMemoFirebase(() => {
     if (!hasCompanyAccess) {
@@ -107,14 +101,20 @@ export default function DashboardPage(): React.ReactElement {
       return null;
     }
 
-    return query(collection(db, "radarItems"), where("status", "==", "Approved"));
+    return query(
+      collection(db, "radarItems"),
+      where("status", "==", "Approved")
+    );
   }, [authUser, db, hasCompanyAccess]);
   const ownBlipsQuery = useMemoFirebase(() => {
     if (!authUser || !hasCompanyAccess) {
       return null;
     }
 
-    return query(collection(db, "radarItems"), where("createdBy", "==", authUser.uid));
+    return query(
+      collection(db, "radarItems"),
+      where("createdBy", "==", authUser.uid)
+    );
   }, [authUser, db, hasCompanyAccess]);
   const allBlipsQuery = useMemoFirebase(() => {
     if (!authUser || !canReview || !hasCompanyAccess) {
@@ -128,10 +128,14 @@ export default function DashboardPage(): React.ReactElement {
       return null;
     }
 
-    return query(collection(db, "radarItems"), where("status", "==", "Pending"));
+    return query(
+      collection(db, "radarItems"),
+      where("status", "==", "Pending")
+    );
   }, [authUser, canReview, db, hasCompanyAccess]);
 
-  const { data: quadrantDocs } = useCollection<RadarConfigOption>(quadrantsQuery);
+  const { data: quadrantDocs } =
+    useCollection<RadarConfigOption>(quadrantsQuery);
   const { data: ringDocs } = useCollection<RadarConfigOption>(ringsQuery);
   const { data: approvedBlips, isLoading: isApprovedBlipsLoading } =
     useCollection<Blip>(approvedBlipsQuery);
@@ -171,7 +175,7 @@ export default function DashboardPage(): React.ReactElement {
 
   const pendingCoworkerBlips = useMemo(() => {
     return sortBlips(
-      (pendingBlips || []).filter((blip) => blip.createdBy !== authUser?.uid),
+      (pendingBlips || []).filter((blip) => blip.createdBy !== authUser?.uid)
     );
   }, [authUser?.uid, pendingBlips]);
 
@@ -194,12 +198,21 @@ export default function DashboardPage(): React.ReactElement {
     setActionItemId(blip.id);
 
     try {
-      await reviewBlip(db, blip, profile, "Approved", reviewNotes[blip.id] || "");
+      await reviewBlip(
+        db,
+        blip,
+        profile,
+        "Approved",
+        reviewNotes[blip.id] || ""
+      );
       toast({
         title: dashboardContent.toasts.approved.title,
-        description: formatTemplate(dashboardContent.toasts.approved.description, {
-          name: blip.name,
-        }),
+        description: formatTemplate(
+          dashboardContent.toasts.approved.description,
+          {
+            name: blip.name,
+          }
+        ),
       });
     } catch (error) {
       toast({
@@ -225,7 +238,7 @@ export default function DashboardPage(): React.ReactElement {
         title: dashboardContent.toasts.returnedToDraft.title,
         description: formatTemplate(
           dashboardContent.toasts.returnedToDraft.description,
-          { name: blip.name },
+          { name: blip.name }
         ),
       });
     } catch (error) {
@@ -250,7 +263,10 @@ export default function DashboardPage(): React.ReactElement {
       const result = await seedRadarCollections(db, profile);
       toast({
         title: dashboardContent.toasts.seeded.title,
-        description: formatTemplate(dashboardContent.toasts.seeded.description, result),
+        description: formatTemplate(
+          dashboardContent.toasts.seeded.description,
+          result
+        ),
       });
     } catch (error) {
       console.error("Failed to seed starter radar", error);
@@ -258,7 +274,7 @@ export default function DashboardPage(): React.ReactElement {
         title: dashboardContent.toasts.seedFailed.title,
         description: getErrorMessage(
           error,
-          dashboardContent.toasts.seedFailed.description,
+          dashboardContent.toasts.seedFailed.description
         ),
         variant: "destructive",
       });
@@ -285,7 +301,10 @@ export default function DashboardPage(): React.ReactElement {
       const result = await seedRadarCollections(db, profile, { reset: true });
       toast({
         title: dashboardContent.toasts.reset.title,
-        description: formatTemplate(dashboardContent.toasts.reset.description, result),
+        description: formatTemplate(
+          dashboardContent.toasts.reset.description,
+          result
+        ),
       });
     } catch (error) {
       console.error("Failed to reset starter radar", error);
@@ -293,7 +312,7 @@ export default function DashboardPage(): React.ReactElement {
         title: dashboardContent.toasts.resetFailed.title,
         description: getErrorMessage(
           error,
-          dashboardContent.toasts.resetFailed.description,
+          dashboardContent.toasts.resetFailed.description
         ),
         variant: "destructive",
       });
@@ -355,7 +374,7 @@ export default function DashboardPage(): React.ReactElement {
 
           {canReview ? (
             <div className="flex flex-col items-start gap-2 md:items-end">
-              <div className="flex flex-wrap gap-2">
+              {/* <div className="flex flex-wrap gap-2">
                 <Button
                   className="h-14 gap-2 rounded-full px-8 font-bold"
                   onClick={handleSeed}
@@ -379,7 +398,7 @@ export default function DashboardPage(): React.ReactElement {
                     {dashboardContent.seed.resetButton}
                   </Button>
                 ) : null}
-              </div>
+              </div> */}
             </div>
           ) : needsSeed ? (
             <div className="flex flex-col items-start gap-2 md:items-end">
@@ -449,7 +468,9 @@ export default function DashboardPage(): React.ReactElement {
               </p>
             </div>
             <Button asChild className="rounded-full px-6 font-bold">
-              <Link href="/blips/new">{dashboardContent.table.suggestBlip}</Link>
+              <Link href="/blips/new">
+                {dashboardContent.table.suggestBlip}
+              </Link>
             </Button>
           </CardHeader>
           <CardContent>
@@ -462,10 +483,16 @@ export default function DashboardPage(): React.ReactElement {
                 <TableHeader>
                   <TableRow>
                     <TableHead>{dashboardContent.table.columns.blip}</TableHead>
-                    <TableHead>{dashboardContent.table.columns.status}</TableHead>
-                    <TableHead>{dashboardContent.table.columns.quadrant}</TableHead>
+                    <TableHead>
+                      {dashboardContent.table.columns.status}
+                    </TableHead>
+                    <TableHead>
+                      {dashboardContent.table.columns.quadrant}
+                    </TableHead>
                     <TableHead>{dashboardContent.table.columns.ring}</TableHead>
-                    <TableHead>{dashboardContent.table.columns.updated}</TableHead>
+                    <TableHead>
+                      {dashboardContent.table.columns.updated}
+                    </TableHead>
                     <TableHead className="text-right">
                       {dashboardContent.table.columns.actions}
                     </TableHead>
@@ -488,7 +515,8 @@ export default function DashboardPage(): React.ReactElement {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {quadrantMap.get(blip.quadrantId) || common.common.unassigned}
+                        {quadrantMap.get(blip.quadrantId) ||
+                          common.common.unassigned}
                       </TableCell>
                       <TableCell>
                         {ringMap.get(blip.ringId) || common.common.unassigned}
@@ -521,7 +549,9 @@ export default function DashboardPage(): React.ReactElement {
             ) : (
               <div className="py-12 text-center">
                 <ClipboardList className="mx-auto mb-4 h-10 w-10 text-primary" />
-                <div className="text-xl font-black">{dashboardContent.emptyState.heading}</div>
+                <div className="text-xl font-black">
+                  {dashboardContent.emptyState.heading}
+                </div>
                 <p className="mt-2 text-sm font-medium text-muted-foreground">
                   {dashboardContent.emptyState.description}
                 </p>
@@ -545,12 +575,19 @@ export default function DashboardPage(): React.ReactElement {
             <CardContent className="space-y-4">
               {pendingCoworkerBlips.length ? (
                 pendingCoworkerBlips.map((blip) => (
-                  <div key={blip.id} className="rounded-[2rem] border border-border/60 p-6">
+                  <div
+                    key={blip.id}
+                    className="rounded-[2rem] border border-border/60 p-6"
+                  >
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                       <div className="space-y-2">
                         <div className="flex flex-wrap items-center gap-3">
-                          <h3 className="text-2xl font-black tracking-tight">{blip.name}</h3>
-                          <Badge variant="secondary">{getStatusLabel(blip.status)}</Badge>
+                          <h3 className="text-2xl font-black tracking-tight">
+                            {blip.name}
+                          </h3>
+                          <Badge variant="secondary">
+                            {getStatusLabel(blip.status)}
+                          </Badge>
                         </div>
                         <p className="max-w-3xl text-sm font-medium text-muted-foreground">
                           {blip.shortDesc}
@@ -558,9 +595,13 @@ export default function DashboardPage(): React.ReactElement {
                         <div className="flex flex-wrap gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
                           <span>{blip.team}</span>
                           <span>
-                            {quadrantMap.get(blip.quadrantId) || common.common.unassigned}
+                            {quadrantMap.get(blip.quadrantId) ||
+                              common.common.unassigned}
                           </span>
-                          <span>{ringMap.get(blip.ringId) || common.common.unassigned}</span>
+                          <span>
+                            {ringMap.get(blip.ringId) ||
+                              common.common.unassigned}
+                          </span>
                         </div>
                       </div>
                       <Button variant="ghost" asChild>
@@ -572,7 +613,9 @@ export default function DashboardPage(): React.ReactElement {
 
                     <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_auto_auto]">
                       <Input
-                        placeholder={dashboardContent.coworkerReview.reviewPlaceholder}
+                        placeholder={
+                          dashboardContent.coworkerReview.reviewPlaceholder
+                        }
                         value={reviewNotes[blip.id] || ""}
                         onChange={(event) =>
                           setReviewNotes((currentState) => ({

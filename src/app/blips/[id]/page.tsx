@@ -4,6 +4,7 @@ import React, { useMemo } from "react";
 import Link from "next/link";
 import { collection, doc, query, where } from "firebase/firestore";
 import {
+  ArrowUpDown,
   ArrowLeft,
   Clock,
   ExternalLink,
@@ -14,10 +15,23 @@ import {
 } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { useAppUser } from "@/components/app/AppUserProvider";
-import { useCollection, useDoc, useFirestore, useMemoFirebase } from "@/firebase";
+import {
+  useCollection,
+  useDoc,
+  useFirestore,
+  useMemoFirebase,
+} from "@/firebase";
 import { Badge, badgeVariants } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Blip,
   Experience,
@@ -44,6 +58,7 @@ import {
 } from "@/lib/radar-seed";
 import common from "@/content/common.json";
 import blipDetailContent from "@/content/pages/blip-detail.json";
+import experiencesContent from "@/content/pages/experiences.json";
 
 interface BlipDetailPageProps {
   params: Promise<{ id: string }>;
@@ -75,10 +90,12 @@ function getHistoryActionLabel(action: string): string {
 
 function getHistoryEntryTitle(
   entry: HistoryEntry,
-  ringMap: Map<number, string>,
+  ringMap: Map<number, string>
 ): string {
   if (entry.action === "ring changed" && typeof entry.after === "number") {
-    return `${getHistoryActionLabel(entry.action)} naar ${ringMap.get(entry.after) || entry.after}`;
+    const nextRing = ringMap.get(entry.after) || String(entry.after);
+
+    return `Status ${nextRing.toUpperCase()}`;
   }
 
   return getHistoryActionLabel(entry.action);
@@ -86,7 +103,7 @@ function getHistoryEntryTitle(
 
 function getHistoryEntryMeta(
   entry: HistoryEntry,
-  ringMap: Map<number, string>,
+  ringMap: Map<number, string>
 ): string | null {
   if (
     entry.action === "ring changed" &&
@@ -96,7 +113,7 @@ function getHistoryEntryMeta(
     const previousRing = ringMap.get(entry.before) || String(entry.before);
     const nextRing = ringMap.get(entry.after) || String(entry.after);
 
-    return `Van ${previousRing} naar ${nextRing}`;
+    return `Van ${previousRing} -> ${nextRing}`;
   }
 
   return null;
@@ -109,7 +126,10 @@ function getLegacyPricingSummary(pricingTiers?: PricingTier[]): string | null {
 
   return pricingTiers
     .slice(0, 2)
-    .map((tier) => `${tier.name}: ${tier.cost}${tier.billing ? ` ${tier.billing}` : ""}`)
+    .map(
+      (tier) =>
+        `${tier.name}: ${tier.cost}${tier.billing ? ` ${tier.billing}` : ""}`
+    )
     .join(" | ");
 }
 
@@ -170,7 +190,7 @@ export default function BlipDetailPage({
     return query(
       collection(db, "experiences"),
       where("toolLinks", "array-contains", id),
-      where("status", "==", "Published"),
+      where("status", "==", "Published")
     );
   }, [authUser, db, hasCompanyAccess, id]);
 
@@ -179,9 +199,10 @@ export default function BlipDetailPage({
   const { data: rings } = useCollection<RadarConfigOption>(ringsQuery);
   const { data: providerDocs } = useCollection<RadarProvider>(providersQuery);
   const { data: familyDocs } = useCollection<RadarFamily>(familiesQuery);
-  const { data: historyEntries } = useCollection<HistoryEntry>(blipHistoryQuery);
+  const { data: historyEntries } =
+    useCollection<HistoryEntry>(blipHistoryQuery);
   const { data: relatedExperiences } = useCollection<Experience>(
-    relatedExperiencesQuery,
+    relatedExperiencesQuery
   );
 
   const providers = useMemo(() => {
@@ -203,7 +224,7 @@ export default function BlipDetailPage({
       mergeConfigOptions(quadrants, seedQuadrants, true).map((option) => [
         option.order,
         option.name,
-      ]),
+      ])
     );
   }, [quadrants]);
   const ringMap = useMemo(() => {
@@ -211,12 +232,12 @@ export default function BlipDetailPage({
       mergeConfigOptions(rings, seedRings).map((option) => [
         option.order,
         option.name,
-      ]),
+      ])
     );
   }, [rings]);
   const sortedHistory = useMemo(() => {
     return [...(historyEntries || [])].sort(
-      (left, right) => right.createdAt - left.createdAt,
+      (left, right) => right.createdAt - left.createdAt
     );
   }, [historyEntries]);
 
@@ -260,7 +281,9 @@ export default function BlipDetailPage({
       <div className="min-h-screen bg-background">
         <Navbar />
         <div className="container mx-auto flex min-h-[60vh] flex-col items-center justify-center gap-4 px-6 text-center">
-          <h1 className="text-4xl font-black">{blipDetailContent.blipNotFound}</h1>
+          <h1 className="text-4xl font-black">
+            {blipDetailContent.blipNotFound}
+          </h1>
           <Button asChild className="rounded-full px-8">
             <Link href="/dashboard">{blipDetailContent.backToDashboard}</Link>
           </Button>
@@ -333,7 +356,11 @@ export default function BlipDetailPage({
               </p>
               <div className="flex flex-wrap gap-3">
                 {item.tags.map((tag) => (
-                  <Badge key={tag} variant="outline" className="rounded-full px-5 py-2">
+                  <Badge
+                    key={tag}
+                    variant="outline"
+                    className="rounded-full px-5 py-2"
+                  >
                     #{tag}
                   </Badge>
                 ))}
@@ -391,7 +418,9 @@ export default function BlipDetailPage({
               </CardContent>
             </Card>
 
-            {(item.availabilitySummary || item.accessNotes || item.accessRequestUrl) ? (
+            {item.availabilitySummary ||
+            item.accessNotes ||
+            item.accessRequestUrl ? (
               <Card className="rounded-[3rem] border-none bg-secondary/10 shadow-none">
                 <CardHeader>
                   <CardTitle className="text-3xl font-black tracking-tight">
@@ -406,7 +435,8 @@ export default function BlipDetailPage({
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="text-sm font-medium text-foreground/90">
-                      {item.availabilitySummary || blipDetailContent.fallbacks.notSet}
+                      {item.availabilitySummary ||
+                        blipDetailContent.fallbacks.notSet}
                     </CardContent>
                   </Card>
                   <Card className="border-none bg-white shadow-none">
@@ -416,7 +446,9 @@ export default function BlipDetailPage({
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3 text-sm font-medium text-foreground/90">
-                      <div>{item.accessNotes || blipDetailContent.fallbacks.notSet}</div>
+                      <div>
+                        {item.accessNotes || blipDetailContent.fallbacks.notSet}
+                      </div>
                       {item.accessRequestUrl ? (
                         <a
                           href={item.accessRequestUrl}
@@ -434,7 +466,7 @@ export default function BlipDetailPage({
               </Card>
             ) : null}
 
-            <Card className="rounded-[3rem] border-none bg-secondary/10 shadow-none">
+            {/* <Card className="rounded-[3rem] border-none bg-secondary/10 shadow-none">
               <CardHeader>
                 <CardTitle className="text-3xl font-black tracking-tight">
                   {blipDetailContent.sections.governanceSnapshot}
@@ -448,7 +480,10 @@ export default function BlipDetailPage({
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4 text-sm font-medium text-foreground/90">
-                    <div>{item.securityNotes || blipDetailContent.fallbacks.needsVerification}</div>
+                    <div>
+                      {item.securityNotes ||
+                        blipDetailContent.fallbacks.needsVerification}
+                    </div>
                     {item.securityCertifications?.length ? (
                       <div className="flex flex-wrap gap-2">
                         {item.securityCertifications.map((reference) =>
@@ -470,7 +505,7 @@ export default function BlipDetailPage({
                             >
                               {reference.label}
                             </span>
-                          ),
+                          )
                         )}
                       </div>
                     ) : null}
@@ -493,7 +528,10 @@ export default function BlipDetailPage({
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3 text-sm font-medium text-foreground/90">
-                    <div>{pricingSummary || blipDetailContent.fallbacks.needsVerification}</div>
+                    <div>
+                      {pricingSummary ||
+                        blipDetailContent.fallbacks.needsVerification}
+                    </div>
                     {item.pricingUrl ? (
                       <a
                         href={item.pricingUrl}
@@ -508,7 +546,7 @@ export default function BlipDetailPage({
                   </CardContent>
                 </Card>
               </CardContent>
-            </Card>
+            </Card> */}
 
             {item.modelEntries?.length ? (
               <Card className="rounded-[3rem] border-none bg-secondary/10 shadow-none">
@@ -583,14 +621,20 @@ export default function BlipDetailPage({
                             {tier.name}
                           </div>
                           <div className="text-sm font-medium text-muted-foreground">
-                            {tier.billing || blipDetailContent.fallbacks.flexibleBilling}
+                            {tier.billing ||
+                              blipDetailContent.fallbacks.flexibleBilling}
                           </div>
                         </div>
-                        <div className="text-2xl font-black text-primary">{tier.cost}</div>
+                        <div className="text-2xl font-black text-primary">
+                          {tier.cost}
+                        </div>
                       </div>
                       <ul className="mt-4 space-y-2">
                         {tier.features.map((feature) => (
-                          <li key={feature} className="flex items-center gap-3 text-sm font-medium">
+                          <li
+                            key={feature}
+                            className="flex items-center gap-3 text-sm font-medium"
+                          >
                             {feature}
                           </li>
                         ))}
@@ -602,10 +646,16 @@ export default function BlipDetailPage({
             ) : null}
 
             <Card className="rounded-[3rem] border-none bg-secondary/10 shadow-none">
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between gap-4">
                 <CardTitle className="text-3xl font-black tracking-tight">
                   {common.labels.relatedExperiences}
                 </CardTitle>
+                <Button asChild className="rounded-full px-6 font-bold">
+                  <Link href={`/experiences/new?toolId=${item.id}`}>
+                    <ArrowUpDown className="mr-2 h-4 w-4" />
+                    {experiencesContent.logExperience}
+                  </Link>
+                </Button>
               </CardHeader>
               <CardContent className="space-y-4">
                 {relatedExperiences?.length ? (
@@ -618,10 +668,12 @@ export default function BlipDetailPage({
                       {(() => {
                         const matchingContext = experience.toolContexts?.find(
                           (context) =>
-                            (context.blipId || context.itemId) === item.id,
+                            (context.blipId || context.itemId) === item.id
                         );
                         const contextFamilyName = matchingContext?.familyId
-                          ? families.find((family) => family.id === matchingContext.familyId)?.name
+                          ? families.find(
+                              (family) => family.id === matchingContext.familyId
+                            )?.name
                           : null;
 
                         return (
@@ -636,17 +688,26 @@ export default function BlipDetailPage({
                               {matchingContext ? (
                                 <div className="flex flex-wrap gap-2 pt-1">
                                   {contextFamilyName ? (
-                                    <Badge variant="outline" className="rounded-full">
+                                    <Badge
+                                      variant="outline"
+                                      className="rounded-full"
+                                    >
                                       {contextFamilyName}
                                     </Badge>
                                   ) : null}
                                   {matchingContext.modelName ? (
-                                    <Badge variant="outline" className="rounded-full">
+                                    <Badge
+                                      variant="outline"
+                                      className="rounded-full"
+                                    >
                                       {matchingContext.modelName}
                                     </Badge>
                                   ) : null}
                                   {matchingContext.modelVersion ? (
-                                    <Badge variant="outline" className="rounded-full">
+                                    <Badge
+                                      variant="outline"
+                                      className="rounded-full"
+                                    >
                                       v{matchingContext.modelVersion}
                                     </Badge>
                                   ) : null}
@@ -669,55 +730,7 @@ export default function BlipDetailPage({
           </div>
 
           <div className="space-y-10 lg:col-span-4">
-            <Card className="rounded-[3rem] border-none bg-white shadow-xl shadow-primary/10">
-              <CardHeader>
-                <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">
-                  {common.labels.lifecycleData}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {item.providerName ? (
-                  <div className="space-y-1">
-                    <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
-                      {common.labels.provider}
-                    </div>
-                    <div className="text-xl font-bold">{item.providerName}</div>
-                  </div>
-                ) : null}
-                {item.familyName ? (
-                  <div className="space-y-1">
-                    <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
-                      {common.labels.family}
-                    </div>
-                    <div className="text-xl font-bold">{item.familyName}</div>
-                  </div>
-                ) : null}
-                <div className="space-y-1">
-                  <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
-                    {common.labels.created}
-                  </div>
-                  <div className="text-xl font-bold">{formatDate(item.createdAt)}</div>
-                </div>
-                {item.submittedAt ? (
-                  <div className="space-y-1">
-                    <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
-                      {common.labels.submitted}
-                    </div>
-                    <div className="text-xl font-bold">{formatDate(item.submittedAt)}</div>
-                  </div>
-                ) : null}
-                {primaryLink ? (
-                  <Button asChild variant="outline" className="w-full rounded-full">
-                    <a href={primaryLink} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="mr-2 h-4 w-4" />
-                      {blipDetailContent.fallbacks.openLink}
-                    </a>
-                  </Button>
-                ) : null}
-              </CardContent>
-            </Card>
-
-            <Card className="rounded-[3rem] border-none bg-white shadow-xl shadow-primary/10">
+            {/* <Card className="rounded-[3rem] border-none bg-white shadow-xl shadow-primary/10">
               <CardHeader>
                 <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">
                   {blipDetailContent.sections.responsibilityNotes}
@@ -741,7 +754,7 @@ export default function BlipDetailPage({
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </Card> */}
 
             <Card className="rounded-[3rem] border-none bg-white shadow-xl shadow-primary/10">
               <CardHeader>
@@ -750,29 +763,114 @@ export default function BlipDetailPage({
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                {sortedHistory.length ? (
-                  sortedHistory.map((entry) => (
-                    <div key={entry.id} className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-foreground">
-                        <FileClock className="h-4 w-4 text-primary" />
-                        {getHistoryEntryTitle(entry, ringMap)}
+                <div className="space-y-6 rounded-[2rem] border border-border/50 bg-secondary/5 p-5">
+                  <div className="space-y-1">
+                    <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                      {common.labels.created}
+                    </div>
+                    <div className="text-xl font-bold">
+                      {formatDate(item.createdAt)}
+                    </div>
+                  </div>
+                  {item.providerName ? (
+                    <div className="space-y-1">
+                      <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                        {common.labels.provider}
                       </div>
-                      {getHistoryEntryMeta(entry, ringMap) ? (
-                        <p className="text-sm font-medium text-foreground/70">
-                          {getHistoryEntryMeta(entry, ringMap)}
-                        </p>
-                      ) : null}
-                      {entry.note ? (
-                        <p className="text-sm font-medium text-muted-foreground">
-                          {entry.note}
-                        </p>
-                      ) : null}
-                      <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
-                        <Clock className="h-3 w-3" />
-                        {formatDate(entry.createdAt)}
+                      <div className="text-xl font-bold">
+                        {item.providerName}
                       </div>
                     </div>
-                  ))
+                  ) : null}
+                  {item.familyName ? (
+                    <div className="space-y-1">
+                      <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                        {common.labels.family}
+                      </div>
+                      <div className="text-xl font-bold">{item.familyName}</div>
+                    </div>
+                  ) : null}
+                  {primaryLink ? (
+                    <Button
+                      asChild
+                      variant="outline"
+                      className="w-full rounded-full"
+                    >
+                      <a
+                        href={primaryLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <ExternalLink className="mr-2 h-4 w-4" />
+                        {blipDetailContent.fallbacks.openLink}
+                      </a>
+                    </Button>
+                  ) : null}
+                </div>
+                {sortedHistory.length ? (
+                  sortedHistory.map((entry) => {
+                    const title = getHistoryEntryTitle(entry, ringMap);
+                    const meta = getHistoryEntryMeta(entry, ringMap);
+                    const note = entry.note?.trim();
+                    const cardBody = (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-foreground">
+                          <FileClock className="h-4 w-4 text-primary" />
+                          {title}
+                        </div>
+                        {meta ? (
+                          <p className="text-sm font-medium text-foreground/70">
+                            {meta}
+                          </p>
+                        ) : null}
+                        <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                          <Clock className="h-3 w-3" />
+                          {formatDate(entry.createdAt)}
+                        </div>
+                      </div>
+                    );
+
+                    if (!note) {
+                      return (
+                        <div
+                          key={entry.id}
+                          className="rounded-[2rem] border border-border/50 bg-secondary/5 p-4"
+                        >
+                          {cardBody}
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <Dialog key={entry.id}>
+                        <DialogTrigger asChild>
+                          <button
+                            type="button"
+                            className="w-full rounded-[2rem] border border-border/50 bg-secondary/5 p-4 text-left transition-colors hover:border-primary/20 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                          >
+                            {cardBody}
+                          </button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-2xl rounded-[2rem] border-none p-0">
+                          <div className="space-y-6 p-8">
+                            <DialogHeader className="space-y-3 text-left">
+                              <DialogTitle className="text-2xl font-black tracking-tight">
+                                {title}
+                              </DialogTitle>
+                              <DialogDescription className="text-sm font-medium text-muted-foreground">
+                                {meta
+                                  ? `${meta} • ${formatDate(entry.createdAt)}`
+                                  : formatDate(entry.createdAt)}
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="whitespace-pre-wrap text-base font-medium leading-relaxed text-foreground/90">
+                              {note}
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    );
+                  })
                 ) : (
                   <div className="text-sm font-medium text-muted-foreground">
                     {blipDetailContent.fallbacks.noHistory}

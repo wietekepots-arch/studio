@@ -31,9 +31,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { useCollection, useDoc, useFirestore, useMemoFirebase } from "@/firebase";
 import { addDocumentNonBlocking } from "@/firebase";
-import { collection, query, where } from "firebase/firestore";
+import { collection, doc, query, where } from "firebase/firestore";
 import { useAppUser } from "@/components/app/AppUserProvider";
 import { PageTitle } from "@/components/layout/PageTitle";
 import { mergeRadarFamilies } from "@/lib/radar-firestore";
@@ -113,9 +113,17 @@ function NewExperiencePageContent(): React.ReactElement {
 
     return collection(db, "radarFamilies");
   }, [db, authUser, hasCompanyAccess]);
+  const prefillToolRef = useMemoFirebase(() => {
+    if (!db || !authUser || !hasCompanyAccess || !prefillToolId) {
+      return null;
+    }
+
+    return doc(db, "radarItems", prefillToolId);
+  }, [authUser, db, hasCompanyAccess, prefillToolId]);
 
   const { data: allTools } = useCollection<Blip>(toolsQuery);
   const { data: familyDocs } = useCollection<RadarFamily>(familiesQuery);
+  const { data: prefillTool } = useDoc<Blip>(prefillToolRef);
 
   const families = useMemo(() => {
     return mergeRadarFamilies(familyDocs, seedFamilies);
@@ -123,6 +131,19 @@ function NewExperiencePageContent(): React.ReactElement {
   const familyMap = useMemo(() => {
     return new Map(families.map((family) => [family.id, family]));
   }, [families]);
+  const toolMap = useMemo(() => {
+    const entries = new Map<string, Blip>();
+
+    for (const tool of allTools || []) {
+      entries.set(tool.id, tool);
+    }
+
+    if (prefillTool?.id) {
+      entries.set(prefillTool.id, prefillTool);
+    }
+
+    return entries;
+  }, [allTools, prefillTool]);
 
   const [formData, setFormData] = useState<ExperienceFormState>({
     title: "",
@@ -142,13 +163,13 @@ function NewExperiencePageContent(): React.ReactElement {
   });
 
   useEffect(() => {
-    if (!prefillToolId || !allTools?.length) {
+    if (!prefillToolId) {
       return;
     }
 
-    const prefillTool = allTools.find((tool) => tool.id === prefillToolId);
+    const toolToPrefill = toolMap.get(prefillToolId);
 
-    if (!prefillTool) {
+    if (!toolToPrefill) {
       return;
     }
 
@@ -162,11 +183,11 @@ function NewExperiencePageContent(): React.ReactElement {
         toolLinks: [...currentState.toolLinks, prefillToolId],
         toolContexts: [
           ...currentState.toolContexts,
-          buildToolContext(prefillTool),
+          buildToolContext(toolToPrefill),
         ],
       };
     });
-  }, [allTools, prefillToolId]);
+  }, [prefillToolId, toolMap]);
 
   useEffect(() => {
     const profileTeam = profile?.team;
@@ -182,14 +203,14 @@ function NewExperiencePageContent(): React.ReactElement {
   }, [formData.team, profile?.team]);
 
   const selectedTools = useMemo(() => {
-    if (!allTools?.length) {
+    if (!toolMap.size) {
       return [];
     }
 
     return formData.toolLinks
-      .map((toolId) => allTools.find((tool) => tool.id === toolId) || null)
+      .map((toolId) => toolMap.get(toolId) || null)
       .filter((tool): tool is Blip => Boolean(tool));
-  }, [allTools, formData.toolLinks]);
+  }, [formData.toolLinks, toolMap]);
   const filteredTools = useMemo(() => {
     if (!allTools?.length) {
       return [];
@@ -211,12 +232,12 @@ function NewExperiencePageContent(): React.ReactElement {
       return existingContext;
     }
 
-    const tool = allTools?.find((candidate) => candidate.id === toolId) || null;
+    const tool = toolMap.get(toolId) || null;
     return buildToolContext(tool);
   }
 
   function handleAddTool(toolId: string): void {
-    const tool = allTools?.find((candidate) => candidate.id === toolId) || null;
+    const tool = toolMap.get(toolId) || null;
 
     setFormData((currentState) => {
       if (currentState.toolLinks.includes(toolId)) {
@@ -303,8 +324,7 @@ function NewExperiencePageContent(): React.ReactElement {
     const toolContexts = formData.toolLinks
       .map((toolId) => {
         const context = getToolContext(toolId);
-        const tool =
-          allTools?.find((candidate) => candidate.id === toolId) || null;
+        const tool = toolMap.get(toolId) || null;
         const familyId = trimToUndefined(context.familyId);
         const modelName = trimToUndefined(context.modelName);
         const modelVersion = trimToUndefined(context.modelVersion);
@@ -521,7 +541,7 @@ function NewExperiencePageContent(): React.ReactElement {
                       {formData.toolLinks.map((toolId) => {
                         const tool = allTools?.find(
                           (candidate) => candidate.id === toolId
-                        );
+                        ) || toolMap.get(toolId);
                         return (
                           <Badge
                             key={toolId}

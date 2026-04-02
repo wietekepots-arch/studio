@@ -4,13 +4,13 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { collection, doc, documentId, query, where } from "firebase/firestore";
 import {
+  Activity,
   ArrowLeft,
   Award,
   ChevronRight,
   ExternalLink,
   Lock,
   MessageSquare,
-  Sparkles,
   Star,
   Tag,
   User as UserIcon,
@@ -233,7 +233,7 @@ export default function ExperienceDetailPage({
 
               <section className="space-y-8">
                 <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-primary">
-                  <Sparkles className="h-6 w-6" />
+                  <Activity className="h-6 w-6" />
                   Key Findings & Outcomes
                 </div>
                 <div className="rounded-[3.5rem] bg-primary/5 p-12 shadow-inner">

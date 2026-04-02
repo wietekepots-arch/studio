@@ -4,12 +4,12 @@ import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { collection, orderBy, query, where } from "firebase/firestore";
 import {
+  Activity,
   ChevronRight,
   Clock,
   Lock,
   Plus,
   Search,
-  Sparkles,
   User as UserIcon,
 } from "lucide-react";
 import { OutcomeStars } from "@/components/experiences";
@@ -294,7 +294,7 @@ export default function ExperiencesPage(): React.ReactElement {
             ) : (
               <div className="space-y-6 py-32 text-center">
                 <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-secondary/20 text-muted-foreground">
-                  <Sparkles className="h-10 w-10" />
+                  <Activity className="h-10 w-10" />
                 </div>
                 <h3 className="text-3xl font-black tracking-tight">
                   {experiencesContent.emptyState.heading}

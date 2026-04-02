@@ -4,6 +4,7 @@ import React, { useMemo } from "react";
 import Link from "next/link";
 import { collection, doc, query, where } from "firebase/firestore";
 import {
+  Activity,
   ArrowUpDown,
   ArrowLeft,
   Clock,
@@ -11,7 +12,6 @@ import {
   FileClock,
   Pencil,
   ShieldCheck,
-  Sparkles,
 } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { useAppUser } from "@/components/app/AppUserProvider";
@@ -714,7 +714,7 @@ export default function BlipDetailPage({
                                 </div>
                               ) : null}
                             </div>
-                            <Sparkles className="h-5 w-5 text-primary" />
+                            <Activity className="h-5 w-5 text-primary" />
                           </div>
                         );
                       })()}

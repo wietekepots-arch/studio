@@ -5,12 +5,12 @@ import Link from "next/link";
 import { signOut } from "firebase/auth";
 import { usePathname } from "next/navigation";
 import {
+  Activity,
   ChevronDown,
   LayoutDashboard,
   LogIn,
   LogOut,
   PlusCircle,
-  Sparkles,
   Radar,
   Search,
 } from "lucide-react";
@@ -72,7 +72,7 @@ export function Navbar({
     {
       label: navigation.experiences,
       href: "/experiences",
-      icon: Sparkles,
+      icon: Activity,
       requiresAuth: true,
     },
     {

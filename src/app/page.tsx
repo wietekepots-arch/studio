@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { collection, orderBy, query, where } from "firebase/firestore";
 import {
+  Activity,
   ChevronRight,
   Clock,
   Plus,
@@ -487,7 +488,7 @@ export default function HomePage(): React.ReactElement {
                     <div className="flex items-start gap-4">
                       <CardTitle className="flex items-center gap-3 text-base font-black uppercase tracking-tighter">
                         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-primary shadow-sm">
-                          <Sparkles className="h-6 w-6" />
+                          <Activity className="h-6 w-6" />
                         </span>
                         <span>{homeContent.latestExperiences.title}</span>
                       </CardTitle>
@@ -499,7 +500,7 @@ export default function HomePage(): React.ReactElement {
                       className="flex h-14 w-14 cursor-pointer items-center justify-center rounded-full border border-border/60 bg-background shadow-sm transition-all duration-200 hover:border-border hover:bg-white"
                     >
                       <CardTitle className="flex items-center justify-center">
-                        <Sparkles className="h-6 w-6 text-primary" />
+                        <Activity className="h-6 w-6 text-primary" />
                         <span className="sr-only">
                           {homeContent.latestExperiences.title}
                         </span>

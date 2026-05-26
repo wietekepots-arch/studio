@@ -708,8 +708,10 @@ export async function seedRadarCollections(
     const shouldFinalize = canFinalizeSeedBlip(existingBlip, userProfile.uid);
 
     if (!existingBlip) {
-      const { reviewedAt, reviewedBy, reviewComment, ...pendingBase } =
-        normalizedBlip;
+      const pendingBase = { ...normalizedBlip };
+      delete pendingBase.reviewedAt;
+      delete pendingBase.reviewedBy;
+      delete pendingBase.reviewComment;
       const pendingBlip: Omit<Blip, "history"> = {
         ...pendingBase,
         status: "Pending",

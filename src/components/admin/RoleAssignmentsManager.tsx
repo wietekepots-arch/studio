@@ -216,7 +216,7 @@ export function RoleAssignmentsManager({
         title: "Rol opgeslagen",
         description: `${row.displayName} staat nu op ${getRoleLabel(nextRole)}.`,
       });
-    } catch (error) {
+    } catch {
       toast({
         title: "Opslaan mislukt",
         description: "De roltoewijzing kon niet worden opgeslagen.",

@@ -179,7 +179,7 @@ export function ProviderManager({
         title: isEditing ? "Provider updated" : "Provider created",
         description: `${name} is ready for family and blip inheritance.`,
       });
-    } catch (error) {
+    } catch {
       toast({
         title: "Save failed",
         description: "The provider profile could not be stored.",

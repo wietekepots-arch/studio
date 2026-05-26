@@ -5,7 +5,6 @@ import Link from "next/link";
 import { collection, orderBy, query, where } from "firebase/firestore";
 import {
   Activity,
-  ChevronRight,
   Clock,
   Lock,
   Plus,

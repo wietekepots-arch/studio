@@ -185,7 +185,7 @@ export function FamilyManager({
         title: isEditing ? "Family updated" : "Family created",
         description: `${name} now resolves defaults through ${selectedProvider?.name || "its provider"}.`,
       });
-    } catch (error) {
+    } catch {
       toast({
         title: "Save failed",
         description: "The family profile could not be stored.",

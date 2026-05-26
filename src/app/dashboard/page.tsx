@@ -214,7 +214,7 @@ export default function DashboardPage(): React.ReactElement {
           }
         ),
       });
-    } catch (error) {
+    } catch {
       toast({
         title: dashboardContent.toasts.approvalFailed.title,
         description: dashboardContent.toasts.approvalFailed.description,
@@ -241,7 +241,7 @@ export default function DashboardPage(): React.ReactElement {
           { name: blip.name }
         ),
       });
-    } catch (error) {
+    } catch {
       toast({
         title: dashboardContent.toasts.reviewFailed.title,
         description: dashboardContent.toasts.reviewFailed.description,

@@ -466,87 +466,89 @@ export default function BlipDetailPage({
               </Card>
             ) : null}
 
-            {/* <Card className="rounded-[3rem] border-none bg-secondary/10 shadow-none">
-              <CardHeader>
-                <CardTitle className="text-3xl font-black tracking-tight">
-                  {blipDetailContent.sections.governanceSnapshot}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="grid gap-6 md:grid-cols-3">
-                <Card className="border-none bg-white shadow-none">
-                  <CardHeader>
-                    <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
-                      {common.labels.security}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4 text-sm font-medium text-foreground/90">
-                    <div>
-                      {item.securityNotes ||
-                        blipDetailContent.fallbacks.needsVerification}
-                    </div>
-                    {item.securityCertifications?.length ? (
-                      <div className="flex flex-wrap gap-2">
-                        {item.securityCertifications.map((reference) =>
-                          reference.url ? (
-                            <a
-                              key={`${item.id}-${reference.label}`}
-                              href={reference.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className={`${badgeVariants({ variant: "outline" })} border-primary/20 text-primary`}
-                            >
-                              {reference.label}
-                            </a>
-                          ) : (
-                            <span
-                              key={`${item.id}-${reference.label}`}
-                              className={`${badgeVariants({ variant: "outline" })} border-primary/20 text-primary`}
-                              title={reference.details}
-                            >
-                              {reference.label}
-                            </span>
-                          )
-                        )}
+            {item.securityNotes || item.securityCertifications?.length || item.origin !== "Other" ? (
+              <Card className="rounded-[3rem] border-none bg-secondary/10 shadow-none">
+                <CardHeader>
+                  <CardTitle className="text-3xl font-black tracking-tight">
+                    {blipDetailContent.sections.governanceSnapshot}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="grid gap-6 md:grid-cols-3">
+                  <Card className="border-none bg-white shadow-none">
+                    <CardHeader>
+                      <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
+                        {common.labels.security}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4 text-sm font-medium text-foreground/90">
+                      <div>
+                        {item.securityNotes ||
+                          blipDetailContent.fallbacks.needsVerification}
                       </div>
-                    ) : null}
-                  </CardContent>
-                </Card>
-                <Card className="border-none bg-white shadow-none">
-                  <CardHeader>
-                    <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
-                      {common.labels.origin}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-sm font-medium text-foreground/90">
-                    {getOriginLabel(item.origin)}
-                  </CardContent>
-                </Card>
-                <Card className="border-none bg-white shadow-none">
-                  <CardHeader>
-                    <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
-                      {common.labels.pricing}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3 text-sm font-medium text-foreground/90">
-                    <div>
-                      {pricingSummary ||
-                        blipDetailContent.fallbacks.needsVerification}
-                    </div>
-                    {item.pricingUrl ? (
-                      <a
-                        href={item.pricingUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 text-primary hover:underline"
-                      >
-                        {blipDetailContent.sections.viewPricing}
-                        <ExternalLink className="h-4 w-4" />
-                      </a>
-                    ) : null}
-                  </CardContent>
-                </Card>
-              </CardContent>
-            </Card> */}
+                      {item.securityCertifications?.length ? (
+                        <div className="flex flex-wrap gap-2">
+                          {item.securityCertifications.map((reference) =>
+                            reference.url ? (
+                              <a
+                                key={`${item.id}-${reference.label}`}
+                                href={reference.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={`${badgeVariants({ variant: "outline" })} border-primary/20 text-primary`}
+                              >
+                                {reference.label}
+                              </a>
+                            ) : (
+                              <span
+                                key={`${item.id}-${reference.label}`}
+                                className={`${badgeVariants({ variant: "outline" })} border-primary/20 text-primary`}
+                                title={reference.details}
+                              >
+                                {reference.label}
+                              </span>
+                            )
+                          )}
+                        </div>
+                      ) : null}
+                    </CardContent>
+                  </Card>
+                  <Card className="border-none bg-white shadow-none">
+                    <CardHeader>
+                      <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
+                        {common.labels.origin}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-sm font-medium text-foreground/90">
+                      {getOriginLabel(item.origin)}
+                    </CardContent>
+                  </Card>
+                  <Card className="border-none bg-white shadow-none">
+                    <CardHeader>
+                      <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
+                        {common.labels.pricing}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3 text-sm font-medium text-foreground/90">
+                      <div>
+                        {pricingSummary ||
+                          blipDetailContent.fallbacks.needsVerification}
+                      </div>
+                      {item.pricingUrl ? (
+                        <a
+                          href={item.pricingUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 text-primary hover:underline"
+                        >
+                          {blipDetailContent.sections.viewPricing}
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
+                      ) : null}
+                    </CardContent>
+                  </Card>
+                </CardContent>
+              </Card>
+            ) : null}
 
             {item.modelEntries?.length ? (
               <Card className="rounded-[3rem] border-none bg-secondary/10 shadow-none">
@@ -730,31 +732,37 @@ export default function BlipDetailPage({
           </div>
 
           <div className="space-y-10 lg:col-span-4">
-            {/* <Card className="rounded-[3rem] border-none bg-white shadow-xl shadow-primary/10">
-              <CardHeader>
-                <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">
-                  {blipDetailContent.sections.responsibilityNotes}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-1">
-                  <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
-                    {common.labels.sustainability}
-                  </div>
-                  <div className="text-sm font-medium text-foreground/90">
-                    {item.sustainabilityNotes || blipDetailContent.fallbacks.needsVerification}
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
-                    {common.labels.ethics}
-                  </div>
-                  <div className="text-sm font-medium text-foreground/90">
-                    {item.ethicsNotes || blipDetailContent.fallbacks.needsVerification}
-                  </div>
-                </div>
-              </CardContent>
-            </Card> */}
+            {item.sustainabilityNotes || item.ethicsNotes ? (
+              <Card className="rounded-[3rem] border-none bg-white shadow-xl shadow-primary/10">
+                <CardHeader>
+                  <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">
+                    {blipDetailContent.sections.responsibilityNotes}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {item.sustainabilityNotes ? (
+                    <div className="space-y-1">
+                      <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                        {common.labels.sustainability}
+                      </div>
+                      <div className="text-sm font-medium text-foreground/90">
+                        {item.sustainabilityNotes}
+                      </div>
+                    </div>
+                  ) : null}
+                  {item.ethicsNotes ? (
+                    <div className="space-y-1">
+                      <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                        {common.labels.ethics}
+                      </div>
+                      <div className="text-sm font-medium text-foreground/90">
+                        {item.ethicsNotes}
+                      </div>
+                    </div>
+                  ) : null}
+                </CardContent>
+              </Card>
+            ) : null}
 
             <Card className="rounded-[3rem] border-none bg-white shadow-xl shadow-primary/10">
               <CardHeader>

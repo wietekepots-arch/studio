@@ -29,7 +29,12 @@ export default function ExperiencesPage(): React.ReactElement {
   const [activeTeam, setActiveTeam] = useState<string | undefined>();
   const [mounted, setMounted] = useState(false);
   const db = useFirestore();
-  const { authUser, hasCompanyAccess, isLoading: isUserLoading } = useAppUser();
+  const {
+    authUser,
+    canReview,
+    hasCompanyAccess,
+    isLoading: isUserLoading,
+  } = useAppUser();
 
   useEffect(() => {
     setMounted(true);
@@ -51,8 +56,15 @@ export default function ExperiencesPage(): React.ReactElement {
       return null;
     }
 
-    return collection(db, "radarItems");
-  }, [authUser, db, hasCompanyAccess]);
+    if (canReview) {
+      return collection(db, "radarItems");
+    }
+
+    return query(
+      collection(db, "radarItems"),
+      where("status", "==", "Approved"),
+    );
+  }, [authUser, canReview, db, hasCompanyAccess]);
 
   const { data: experiences, isLoading } = useCollection<Experience>(experiencesQuery);
   const { data: blips } = useCollection<Blip>(blipsQuery);

@@ -374,7 +374,7 @@ export default function DashboardPage(): React.ReactElement {
 
           {canReview ? (
             <div className="flex flex-col items-start gap-2 md:items-end">
-              {/* <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Button
                   className="h-14 gap-2 rounded-full px-8 font-bold"
                   onClick={handleSeed}
@@ -398,7 +398,7 @@ export default function DashboardPage(): React.ReactElement {
                     {dashboardContent.seed.resetButton}
                   </Button>
                 ) : null}
-              </div> */}
+              </div>
             </div>
           ) : needsSeed ? (
             <div className="flex flex-col items-start gap-2 md:items-end">

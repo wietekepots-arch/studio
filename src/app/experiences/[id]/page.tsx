@@ -38,6 +38,7 @@ export default function ExperienceDetailPage({
   const [mounted, setMounted] = useState(false);
   const {
     authUser,
+    canReview,
     hasCompanyAccess,
     isLoading: isAuthLoading,
   } = useAppUser();
@@ -96,13 +97,33 @@ export default function ExperienceDetailPage({
       return null;
     }
 
+    if (!canReview) {
+      return query(
+        collection(db, "radarItems"),
+        where("status", "==", "Approved"),
+      );
+    }
+
     return query(
       collection(db, "radarItems"),
       where(documentId(), "in", effectiveToolIds),
     );
-  }, [authUser, db, effectiveToolIds, hasCompanyAccess]);
+  }, [authUser, canReview, db, effectiveToolIds, hasCompanyAccess]);
   const { data: linkedTools, isLoading: isLinkedToolsLoading } =
     useCollection<Blip>(linkedToolsQuery);
+  const visibleLinkedTools = React.useMemo(() => {
+    if (!linkedTools?.length) {
+      return [];
+    }
+
+    if (canReview) {
+      return linkedTools;
+    }
+
+    const allowedToolIds = new Set(effectiveToolIds);
+
+    return linkedTools.filter((tool) => allowedToolIds.has(tool.id));
+  }, [canReview, effectiveToolIds, linkedTools]);
 
   function formatDate(timestamp: number): string {
     if (!mounted) {
@@ -356,7 +377,7 @@ export default function ExperienceDetailPage({
                     ))}
                   </div>
                 ) : (
-                  linkedTools?.map((tool) => (
+                  visibleLinkedTools.map((tool) => (
                     <Link key={tool.id} href={`/blips/${tool.id}`}>
                       <Card className="group rounded-[2.5rem] border-2 border-transparent p-6 transition-all hover:border-primary/20 hover:bg-secondary/10">
                         <div className="flex items-center justify-between">

@@ -7,6 +7,8 @@ import {
   type RadarProvider,
   type RadarEntityType,
   type RadarUseCase,
+  type RadarSecurityReference,
+  type Origin,
   type SeedMetadata,
 } from "@/app/lib/radar-types";
 import seedFamiliesData from "@/content/seed/families.json";
@@ -15,7 +17,7 @@ import seedProvidersData from "@/content/seed/providers.json";
 import seedQuadrantsData from "@/content/seed/quadrants.json";
 import seedRingsData from "@/content/seed/rings.json";
 
-export const STARTER_SEED_VERSION = "v3";
+export const STARTER_SEED_VERSION = "v4";
 
 function withSeedMetadata<T extends object>(entity: T): T & SeedMetadata {
   return {
@@ -44,6 +46,9 @@ type SeedBlipInput = {
   dateAdded: string;
   link: string;
   entityType?: RadarEntityType;
+  origin?: Origin;
+  securityNotes?: string;
+  securityCertifications?: RadarSecurityReference[];
 };
 
 type SeedResolvedBlip = Omit<
@@ -174,11 +179,11 @@ function buildSeedBlip(input: SeedBlipInput): SeedResolvedBlip {
     ringId: input.ringId,
     tags: input.tags,
     team: "",
-    origin: "Other",
+    origin: input.origin ?? "Other",
     sustainabilityNotes: "",
-    securityNotes: "",
+    securityNotes: input.securityNotes ?? "",
     ethicsNotes: "",
-    securityCertifications: [],
+    securityCertifications: input.securityCertifications ?? [],
     links: input.link ? [input.link] : [],
   });
 }

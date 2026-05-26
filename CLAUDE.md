@@ -12,6 +12,18 @@ Use this repository as the canonical source for AI workflows shared across devic
 
 Read `rules/rules.md` before making project-level decisions.
 
+## Contribution Workflow
+
+- Never push directly to `main`
+- Never merge pull requests
+- Keep changes small and focused
+- Prefer minimal changes over broad refactors
+- Ask for clarification if the issue or acceptance criteria are unclear
+
+Use GitHub Issues as the entry point for work. Prefer issues that are already
+scoped and ready for implementation. Finish work in a pull request, not on the
+protected branch.
+
 ## Command Mapping
 
 When user intent matches one of these prompts, read and follow the corresponding runbook:
@@ -28,6 +40,36 @@ When user intent matches one of these prompts, read and follow the corresponding
 <!-- END SHARED:command-mappings -->
 
 Do not assume command files auto-run. Select and execute them when intent matches.
+
+## Protected Areas
+
+Do not modify these areas unless the user explicitly requests it:
+
+- authentication
+- payment flows
+- deployment configuration
+- database migrations
+- CI/CD configuration
+
+## Quality Checks
+
+Before finishing, run the checks that exist in this repository:
+
+- `npm run lint`
+- `npm run build`
+- `npm run typecheck`
+
+If a `test` script is added later, run it before handing work back.
+
+## Pull Requests
+
+Every pull request should include:
+
+- a short summary
+- the concrete changes made
+- testing notes
+- screenshots when UI changed
+- risks or specific review points
 
 ## Safety
 

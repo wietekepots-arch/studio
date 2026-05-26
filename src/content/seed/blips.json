@@ -186,7 +186,15 @@
     "ringId": 0,
     "tags": ["LLM", "Workspace", "Generalist"],
     "dateAdded": "2025-12-01",
-    "link": "https://openai.com/chatgpt/pricing/"
+    "link": "https://openai.com/chatgpt/pricing/",
+    "origin": "American",
+    "securityNotes": "Opgericht in San Francisco, VS (OpenAI). EU data residency beschikbaar voor Enterprise/Business via opt-in (feb 2025). Data kan in de EU worden opgeslagen en verwerkt. Valt als VS-bedrijf onder de US CLOUD Act.",
+    "securityCertifications": [
+      {
+        "label": "OpenAI EU Data Residency",
+        "url": "https://openai.com/index/introducing-data-residency-in-europe/"
+      }
+    ]
   },
   {
     "id": "gemini-for-workspace",
@@ -207,7 +215,10 @@
     "ringId": 0,
     "tags": ["Google", "Workspace", "LLM"],
     "dateAdded": "2025-12-01",
-    "link": "https://workspace.google.com/gemini/"
+    "link": "https://workspace.google.com/gemini/",
+    "origin": "American",
+    "securityNotes": "Opgericht in Mountain View, VS (Google). EU data residency beschikbaar via Google Workspace-instellingen. Uitgebreide EU-infrastructuur aanwezig. Valt als VS-bedrijf onder de US CLOUD Act.",
+    "securityCertifications": []
   },
   {
     "id": "claude",
@@ -228,7 +239,19 @@
     "ringId": 1,
     "tags": ["Anthropic", "LLM", "Reasoning"],
     "dateAdded": "2025-12-08",
-    "link": "https://www.anthropic.com/pricing"
+    "link": "https://www.anthropic.com/pricing",
+    "origin": "American",
+    "securityNotes": "Opgericht in San Francisco, VS (Anthropic). EU-regio-routing beschikbaar via API-console; standaard opslag in VS. Valt als VS-bedrijf onder de US CLOUD Act. In Microsoft 365-integratie standaard uitgeschakeld voor EU-gebruikers.",
+    "securityCertifications": [
+      {
+        "label": "Claude Data Residency Docs",
+        "url": "https://platform.claude.com/docs/en/build-with-claude/data-residency"
+      },
+      {
+        "label": "Anthropic Server Locations",
+        "url": "https://privacy.claude.com/en/articles/7996890-where-are-your-servers-located-do-you-host-your-models-on-eu-servers"
+      }
+    ]
   },
   {
     "id": "mistral-platform",
@@ -249,7 +272,19 @@
     "ringId": 1,
     "tags": ["European", "LLM", "Platform"],
     "dateAdded": "2025-12-08",
-    "link": "https://docs.mistral.ai/deployment/laplateforme/overview/"
+    "link": "https://docs.mistral.ai/deployment/laplateforme/overview/",
+    "origin": "European",
+    "securityNotes": "Opgericht in Parijs, Frankrijk (EU). Data standaard opgeslagen in EU. Volledige EU-governance: valt niet onder de US CLOUD Act. Sterkste EU-soevereiniteitsoptie van de hosted LLMs in deze radar.",
+    "securityCertifications": [
+      {
+        "label": "Mistral Data Storage",
+        "url": "https://help.mistral.ai/en/articles/347629-where-do-you-store-my-data-or-my-organization-s-data"
+      },
+      {
+        "label": "Mistral GDPR Compliance",
+        "url": "https://www.waimakers.com/en/resources/gdpr-compliance/mistral-ai"
+      }
+    ]
   },
   {
     "id": "local-llm-usage",
@@ -270,7 +305,10 @@
     "ringId": 2,
     "tags": ["Local", "Privacy", "Experiment"],
     "dateAdded": "2025-12-15",
-    "link": "https://ollama.com/"
+    "link": "https://ollama.com/",
+    "origin": "Other",
+    "securityNotes": "Geen externe server of cloudprovider. Volledige dataverantwoordelijkheid bij eigen infrastructuur. Geen EU/VS-governance van toepassing.",
+    "securityCertifications": []
   },
   {
     "id": "open-weight-model-evaluation",
@@ -291,7 +329,10 @@
     "ringId": 2,
     "tags": ["Open Weights", "Evaluation", "Models"],
     "dateAdded": "2025-12-15",
-    "link": "https://huggingface.co/models"
+    "link": "https://huggingface.co/models",
+    "origin": "Other",
+    "securityNotes": "Modelgewichten zijn vaak via Hugging Face (VS-bedrijf) beschikbaar, maar kunnen lokaal of op eigen EU-infrastructuur worden gedraaid. Governance is afhankelijk van de gekozen host.",
+    "securityCertifications": []
   },
   {
     "id": "self-hosted-open-weight-stack",
@@ -312,7 +353,10 @@
     "ringId": 3,
     "tags": ["Self-hosted", "Operations", "Complexity"],
     "dateAdded": "2025-12-22",
-    "link": "https://ollama.com/"
+    "link": "https://ollama.com/",
+    "origin": "Other",
+    "securityNotes": "Volledige datacontrole bij eigen hosting. EU-governance van toepassing als gehost op EU-infrastructuur. Geen externe partij betrokken.",
+    "securityCertifications": []
   },
   {
     "id": "consumer-ai-companions",
@@ -333,7 +377,10 @@
     "ringId": 3,
     "tags": ["Consumer", "Governance", "Hold"],
     "dateAdded": "2025-12-22",
-    "link": "https://character.ai/"
+    "link": "https://character.ai/",
+    "origin": "American",
+    "securityNotes": "Categorie betreft voornamelijk VS-bedrijven (bijv. Character.ai). Alleen VS-infrastructuur, geen enterprise data-afspraken beschikbaar. Niet geschikt voor gebruik met klant- of bedrijfsgegevens.",
+    "securityCertifications": []
   },
   {
     "id": "cursor",
@@ -354,7 +401,15 @@
     "ringId": 0,
     "tags": ["IDE", "Coding", "AI Editor"],
     "dateAdded": "2026-01-05",
-    "link": "https://cursor.com/pricing"
+    "link": "https://cursor.com/pricing",
+    "origin": "American",
+    "securityNotes": "Opgericht in San Francisco, VS (Anysphere). Geen bekende EU data residency. Codeverzoeken en context worden verwerkt via VS-infrastructuur. Valt onder de US CLOUD Act.",
+    "securityCertifications": [
+      {
+        "label": "Anysphere – Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Anysphere"
+      }
+    ]
   },
   {
     "id": "github-copilot",
@@ -375,7 +430,10 @@
     "ringId": 0,
     "tags": ["GitHub", "Coding", "Assistant"],
     "dateAdded": "2026-01-05",
-    "link": "https://github.com/features/copilot"
+    "link": "https://github.com/features/copilot",
+    "origin": "American",
+    "securityNotes": "Opgericht in VS (Microsoft/GitHub). EU-dataregions beschikbaar via Azure. GDPR DPA beschikbaar. Valt als VS-bedrijf onder de US CLOUD Act.",
+    "securityCertifications": []
   },
   {
     "id": "notion-ai",
@@ -396,7 +454,10 @@
     "ringId": 1,
     "tags": ["Knowledge Work", "Workspace", "Documentation"],
     "dateAdded": "2026-01-12",
-    "link": "https://www.notion.com/ai"
+    "link": "https://www.notion.com/ai",
+    "origin": "American",
+    "securityNotes": "Opgericht in San Francisco, VS (Notion Labs). EU data residency beschikbaar op Business/Enterprise-plan. Valt als VS-bedrijf onder de US CLOUD Act.",
+    "securityCertifications": []
   },
   {
     "id": "transcriptor",
@@ -417,7 +478,10 @@
     "ringId": 1,
     "tags": ["Transcription", "Meetings", "Search"],
     "dateAdded": "2026-01-12",
-    "link": "https://transcriptor.ai/"
+    "link": "https://transcriptor.ai/",
+    "origin": "Other",
+    "securityNotes": "Herkomst en EU-serverstatus onbevestigd. Verificatie van privacybeleid en datalocatie aanbevolen vóór gebruik met klant- of persoonsgegevens.",
+    "securityCertifications": []
   },
   {
     "id": "figma-ai",
@@ -438,7 +502,10 @@
     "ringId": 2,
     "tags": ["Design", "UI", "Concepting"],
     "dateAdded": "2026-01-19",
-    "link": "https://www.figma.com/ai/"
+    "link": "https://www.figma.com/ai/",
+    "origin": "American",
+    "securityNotes": "Opgericht in San Francisco, VS (Figma). Geen dedicated EU data residency. GDPR-compliance via DPA beschikbaar. Valt als VS-bedrijf onder de US CLOUD Act.",
+    "securityCertifications": []
   },
   {
     "id": "gamma",
@@ -459,7 +526,10 @@
     "ringId": 2,
     "tags": ["Presentations", "Storytelling", "Internal"],
     "dateAdded": "2026-01-19",
-    "link": "https://gamma.app/"
+    "link": "https://gamma.app/",
+    "origin": "American",
+    "securityNotes": "Opgericht in San Francisco, VS (Gamma Tech). Geen bekende EU data residency. Valt als VS-bedrijf onder de US CLOUD Act.",
+    "securityCertifications": []
   },
   {
     "id": "fireflies",
@@ -480,7 +550,10 @@
     "ringId": 3,
     "tags": ["Meetings", "Bots", "Hold"],
     "dateAdded": "2026-01-26",
-    "link": "https://fireflies.ai/"
+    "link": "https://fireflies.ai/",
+    "origin": "American",
+    "securityNotes": "Opgericht in San Francisco, VS. Vergaderopnames en transcripties worden via VS-infrastructuur verwerkt. Geen EU data residency beschikbaar.",
+    "securityCertifications": []
   },
   {
     "id": "shortwave",
@@ -501,7 +574,10 @@
     "ringId": 3,
     "tags": ["Email", "Workflow", "Hold"],
     "dateAdded": "2026-01-26",
-    "link": "https://www.shortwave.com/"
+    "link": "https://www.shortwave.com/",
+    "origin": "American",
+    "securityNotes": "Opgericht in VS. Geen EU data residency beschikbaar. Valt als VS-bedrijf onder de US CLOUD Act.",
+    "securityCertifications": []
   },
   {
     "id": "v0",
@@ -522,7 +598,15 @@
     "ringId": 0,
     "tags": ["Prototyping", "Web", "UI"],
     "dateAdded": "2026-02-02",
-    "link": "https://v0.dev/docs/faqs"
+    "link": "https://v0.dev/docs/faqs",
+    "origin": "American",
+    "securityNotes": "Opgericht in San Francisco, VS (Vercel). EU-US Data Privacy Framework-gecertificeerd. Functions kunnen in EU-regio's worden gedraaid, maar geen volledige EU data residency voor v0 specifiek. Valt als VS-bedrijf onder de US CLOUD Act.",
+    "securityCertifications": [
+      {
+        "label": "Vercel EU-US DPF Certificering",
+        "url": "https://vercel.com/changelog/vercel-is-now-certified-under-the-eu-us-data-privacy-framework-dpf"
+      }
+    ]
   },
   {
     "id": "lovable",
@@ -543,7 +627,19 @@
     "ringId": 0,
     "tags": ["MVP", "App Builder", "Concept"],
     "dateAdded": "2026-02-02",
-    "link": "https://lovable.dev/"
+    "link": "https://lovable.dev/",
+    "origin": "European",
+    "securityNotes": "Opgericht in Stockholm, Zweden (EU). Geïncorporeerd in Delaware, VS — dit vermindert maar sluit US CLOUD Act-blootstelling niet volledig uit. Sterkste EU-positie van de codeer-tools in deze radar.",
+    "securityCertifications": [
+      {
+        "label": "Lovable – Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Lovable_(company)"
+      },
+      {
+        "label": "Lovable – TechCrunch",
+        "url": "https://techcrunch.com/2025/02/25/swedens-lovable-an-app-building-ai-platform-rakes-in-16m-after-spectacular-growth/"
+      }
+    ]
   },
   {
     "id": "replit-agent",
@@ -564,7 +660,10 @@
     "ringId": 1,
     "tags": ["Agentic", "Prototype", "Browser IDE"],
     "dateAdded": "2026-02-09",
-    "link": "https://replit.com/products/agent"
+    "link": "https://replit.com/products/agent",
+    "origin": "American",
+    "securityNotes": "Opgericht in San Francisco, VS (Replit). Geen bekende EU data residency. Valt als VS-bedrijf onder de US CLOUD Act.",
+    "securityCertifications": []
   },
   {
     "id": "figma-make",
@@ -585,7 +684,10 @@
     "ringId": 1,
     "tags": ["Figma", "Prototype", "Prompt to Code"],
     "dateAdded": "2026-02-09",
-    "link": "https://developers.figma.com/docs/code/intro-to-figma-make/"
+    "link": "https://developers.figma.com/docs/code/intro-to-figma-make/",
+    "origin": "American",
+    "securityNotes": "Opgericht in San Francisco, VS (Figma). Geen dedicated EU data residency. GDPR-compliance via DPA beschikbaar. Valt als VS-bedrijf onder de US CLOUD Act.",
+    "securityCertifications": []
   },
   {
     "id": "bolt",
@@ -606,7 +708,10 @@
     "ringId": 2,
     "tags": ["App Builder", "Web", "Assess"],
     "dateAdded": "2026-02-16",
-    "link": "https://bolt.new/"
+    "link": "https://bolt.new/",
+    "origin": "American",
+    "securityNotes": "Opgericht in San Francisco, VS (StackBlitz). Geen bekende EU data residency. Valt als VS-bedrijf onder de US CLOUD Act.",
+    "securityCertifications": []
   },
   {
     "id": "builder-visual-copilot",
@@ -627,7 +732,10 @@
     "ringId": 2,
     "tags": ["Design to Code", "Automation", "Components"],
     "dateAdded": "2026-02-16",
-    "link": "https://www.builder.io/ai"
+    "link": "https://www.builder.io/ai",
+    "origin": "American",
+    "securityNotes": "Opgericht in VS (Builder.io). Geen bekende EU data residency. Valt als VS-bedrijf onder de US CLOUD Act.",
+    "securityCertifications": []
   },
   {
     "id": "firebase-studio",
@@ -648,7 +756,10 @@
     "ringId": 3,
     "tags": ["Prototype", "Legacy", "Hold"],
     "dateAdded": "2026-02-23",
-    "link": "https://firebase.google.com/docs/studio"
+    "link": "https://firebase.google.com/docs/studio",
+    "origin": "American",
+    "securityNotes": "Opgericht in VS (Google). EU-regio's beschikbaar via Google Cloud Platform. Valt als VS-bedrijf onder de US CLOUD Act.",
+    "securityCertifications": []
   },
   {
     "id": "autonomous-backend-generation",

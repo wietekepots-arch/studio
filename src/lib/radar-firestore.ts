@@ -721,6 +721,26 @@ export async function seedRadarCollections(
       result = { ...result, blips: result.blips + 1 };
     }
 
+    // For existing approved blips that are seed-managed but on an older seed
+    // version, selectively sync only the governance fields. This preserves any
+    // manual edits the user has made to other fields (notes, ring, etc.).
+    if (
+      !shouldFinalize &&
+      existingBlip &&
+      existingBlip.seedManaged &&
+      existingBlip.seedVersion !== seedBlip.seedVersion
+    ) {
+      await updateDoc(doc(db, RADAR_BLIPS_COLLECTION, blip.id), {
+        origin: seedBlip.origin,
+        securityNotes: seedBlip.securityNotes,
+        securityCertifications: seedBlip.securityCertifications ?? [],
+        seedVersion: seedBlip.seedVersion,
+        updatedAt: now,
+        updatedBy: userProfile.uid,
+      });
+      continue;
+    }
+
     if (!shouldFinalize) {
       continue;
     }

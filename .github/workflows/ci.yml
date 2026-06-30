@@ -21,6 +21,9 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      - run: bash scripts/check-ai-workflows-sync.sh
+        env:
+          AI_WORKFLOWS_TOKEN: ${{ secrets.AI_WORKFLOWS_TOKEN }}
       - run: npm run lint
       - run: npm run build
       - run: npm run typecheck

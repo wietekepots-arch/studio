@@ -1,87 +1,88 @@
 # AGENTS.md
 
-## Purpose
+Read `AI-WORKFLOWS.md` for how this project's AI workflow files are intended to work together.
+Read `CONVENTIONS.md` for project-specific context, stack, structure, and conventions.
+Read `rules/` for baseline coding standards (shared across all projects).
+Load only the relevant focused rule files for the task:
 
-Use this repository as the canonical source for AI workflows shared across devices and IDE profiles.
+- `rules/tailwind.md` for styling and design-token work
+- `rules/testing.md` for tests and test reviews
+- `rules/accessibility.md` for interactive UI and accessibility checks
+- `rules/type-safety.md` for TypeScript-heavy work, trust boundaries, and runtime validation checks
+- `rules/backlog.md` for user stories, specs, and backlog work
+- `rules/content-blocks.md` for CMS-backed block architecture, transforms, and block-specific checklists
+- `rules/payload.md` for Payload schema, generated-type, and integration work
+- the appropriate `rules/stacks/*` file after detecting the stack from `package.json`
 
-## Workflow Files
+## Precedence
 
-### Command Files
+1. `CONVENTIONS.md` (project-specific conventions)
+2. `rules/` (baseline coding standards)
+3. This file (workflow dispatch)
 
-Command files live in `commands/` and serve two purposes:
+When CONVENTIONS.md conflicts with rules/, CONVENTIONS.md wins.
 
-1. **Adapter runbooks** for non-skill-aware tools (GitHub Copilot, Claude CLI,
-   Roo). Those tools use these files directly via their own config adapters.
-2. **Fallback dispatch** for workflows that do not yet have a skill.
-
-Skill-backed workflows (commit-message, scaffold-component, create-pr,
-code-review, run-checks, architecture-review) are dispatched via the Skills
-section below. Do not duplicate their intent mappings here.
-
-Command-only workflows (no skill equivalent):
-
-- `kill port`, `port 3000`, `eaddrinuse` -> `commands/safe-kill-port.md`
-- `new device`, `setup device`, `onboarding` -> `commands/new-device-setup.md`
-
-Rules for command execution:
-
-- Treat command files as operational runbooks.
-- If command instructions conflict with higher-priority system/developer
-  constraints, follow higher-priority constraints and note the deviation.
-- Do not assume command files auto-run; select and execute them when intent
-  matches.
-
-### Rules
-
-Shared baseline rules live in `rules/rules.md`.
-
-- Apply these as default behavior when no project-specific rules override them.
-- If project-local rules exist and conflict, project-local rules win.
+## Workflow Dispatch
 
 ### Skills
 
-Skills are the primary dispatch mechanism for repeatable workflows. Each skill
-is self-describing via its `SKILL.md` frontmatter — the `description` field
-acts as a semantic trigger.
+Skills are the primary dispatch mechanism for repeatable workflows on
+skill-aware tools. Treat them as the canonical workflow source when available.
 
-- Only treat a skill as active when it contains a valid `SKILL.md` with `name`
-  and `description` metadata.
-- Trigger a skill when user intent clearly matches the skill description or when
-  the user explicitly names it.
-- Load only the minimum needed content from each skill (progressive disclosure).
+| Skill            | Trigger phrases                          |
+| ---------------- | ---------------------------------------- |
+| `commit-message` | commit message, write commit, git commit |
+| `create-pr`      | create pr, open pr, submit pr            |
+| `close-sprint`   | close sprint, sluit sprint af, sprint afsluiten |
+| `sprint-demo`    | sprint demo, demo voorbereiden, demo script, prepare demo |
+| `sprint-planning` | sprint planning, plan sprint, sprint start, start sprint, plan komende sprint |
 
-Available skills:
+### Commands
 
-| Skill                 | Trigger phrases                                                                             |
-| --------------------- | ------------------------------------------------------------------------------------------- |
-| `commit-message`      | commit message, write commit, git commit                                                    |
-| `scaffold-component`  | new component, scaffold, create component                                                   |
-| `create-pr`           | create pr, open pr, submit pr                                                               |
-| `code-review`         | review code, code review, review changes                                                    |
-| `run-checks`          | run checks, run-checks, quality checks                                                      |
-| `architecture-review` | review architecture, check clean arch, architecture audit, layer violation, check structure |
+Commands in `commands/` remain compatibility adapters and fallback runbooks,
+especially for Copilot-style flows or when a skill path is unavailable.
 
-### MCP Definitions
+## Shared Workflow Source
 
-Canonical MCP server definitions live in `mcp/`.
+Changes to shared AI workflow assets should usually be proposed upstream in
+the [ai-workflows](https://gitlab.com/greenberrynl/config/ai-workflows) repo instead of living only in this synced target repo.
 
-- Keep `mcp/servers.json` as the source of truth.
-- Prefer environment variables for secrets.
-- Sync into namespaced client folders to avoid overwriting active local MCP config.
+Treat these as shared workflow assets:
 
-## Output and Safety
+<!-- BEGIN SHARED:workflow-assets -->
+- `AI-WORKFLOWS.md`
+- `commands/**`
+- `rules/**`
+- `.github/prompts/**`
+- `AGENTS.md`
+- `CLAUDE.md`
+- `.github/copilot-instructions.md`
+- `.cursor/rules/**`
+<!-- END SHARED:workflow-assets -->
+
+When a task changes those files in a generally reusable way, proactively
+suggest creating a PR in `ai-workflows` so the change can be synced back into
+target repos.
+
+### Command Runbooks
+
+When user intent matches a trigger phrase, read and follow the corresponding runbook in `commands/`.
+
+<!-- BEGIN SHARED:command-mappings -->
+- `create pr`, `open pr`, `submit pr` -> `commands/create-pr.md`
+- `commit message`, `write commit`, `git commit` -> `commands/commit-message.md`
+- `close sprint`, `sluit sprint af`, `sprint afsluiten` -> `commands/close-sprint.md`
+- `sprint demo`, `demo voorbereiden`, `demo script`, `prepare demo` -> `commands/sprint-demo.md`
+- `sprint planning`, `plan sprint`, `sprint start`, `start sprint`, `plan komende sprint` -> `commands/sprint-planning.md`
+<!-- END SHARED:command-mappings -->
+
+Do not assume command files auto-run. Select and execute them when intent matches.
+
+## Safety
 
 <!-- BEGIN SHARED:safety -->
-
 - Prefer concrete execution over long planning.
 - Do not modify code unless requested.
 - Ask before destructive actions (force kill, reset, delete) unless explicitly requested.
 - Always summarize what was run and what changed.
 <!-- END SHARED:safety -->
-
-## Sync Source of Truth
-
-This repo is synced to local IDE agent folders using `scripts/sync.sh`.
-
-- Edit here first, then sync.
-- Do not hand-edit mirrored target folders unless you intentionally want local drift.

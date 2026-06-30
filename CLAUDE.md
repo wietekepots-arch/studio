@@ -1,80 +1,71 @@
 # CLAUDE.md
 
-## Purpose
+Read `AI-WORKFLOWS.md` for how this project's AI workflow files are intended to work together.
+Read `CONVENTIONS.md` for project-specific context, stack, structure, and conventions.
+Read `rules/` for baseline coding standards (shared across all projects).
+Load only the relevant focused rule files for the task:
 
-Use this repository as the canonical source for AI workflows shared across devices and IDE profiles.
+- `rules/tailwind.md` for styling and design-token work
+- `rules/testing.md` for tests and test reviews
+- `rules/accessibility.md` for interactive UI and accessibility checks
+- `rules/type-safety.md` for TypeScript-heavy work, trust boundaries, and runtime validation checks
+- `rules/backlog.md` for user stories, specs, and backlog work
+- `rules/content-blocks.md` for CMS-backed block architecture, transforms, and block-specific checklists
+- `rules/payload.md` for Payload schema, generated-type, and integration work
+- the appropriate `rules/stacks/*` file after detecting the stack from `package.json`
 
-## Source Of Truth
+## Precedence
 
-- Canonical policy: `AGENTS.md`
-- Baseline defaults: `rules/rules.md`
-- Runbooks: `commands/*.md`
+1. `CONVENTIONS.md` (project-specific conventions)
+2. `rules/` (baseline coding standards)
+3. This file (tool adapter)
 
-Read `rules/rules.md` before making project-level decisions.
+When CONVENTIONS.md conflicts with rules/, CONVENTIONS.md wins.
 
-## Contribution Workflow
+## Shared Workflow Source
 
-- Never push directly to `main`
-- Never merge pull requests
-- Keep changes small and focused
-- Prefer minimal changes over broad refactors
-- Ask for clarification if the issue or acceptance criteria are unclear
+When a change touches shared workflow assets in a reusable way, suggest
+upstreaming it to the [ai-workflows](https://gitlab.com/greenberrynl/config/ai-workflows) repo rather than keeping it only in this
+synced target repo.
 
-Use GitHub Issues as the entry point for work. Prefer issues that are already
-scoped and ready for implementation. Finish work in a pull request, not on the
-protected branch.
+Shared workflow assets:
+
+<!-- BEGIN SHARED:workflow-assets -->
+- `AI-WORKFLOWS.md`
+- `commands/**`
+- `rules/**`
+- `.github/prompts/**`
+- `AGENTS.md`
+- `CLAUDE.md`
+- `.github/copilot-instructions.md`
+- `.cursor/rules/**`
+<!-- END SHARED:workflow-assets -->
+
+## Workflow Strategy
+
+On Claude, use a mixed workflow model:
+
+- prefer a matching skill when the workflow is available and fits the task well
+- use `commands/` as the compatibility and fallback path
+- keep `rules/` as the policy source of truth
 
 ## Command Mapping
 
-When user intent matches one of these prompts, read and follow the corresponding runbook:
+When user intent matches one of these triggers, read and follow the corresponding runbook in `commands/`:
 
 <!-- BEGIN SHARED:command-mappings -->
-
-- `run checks`, `run-checks`, `quality checks` -> `commands/run-checks.md`
-- `review code`, `code review`, `review changes` -> `commands/review-code.md`
 - `create pr`, `open pr`, `submit pr` -> `commands/create-pr.md`
-- `kill port`, `port 3000`, `eaddrinuse` -> `commands/safe-kill-port.md`
 - `commit message`, `write commit`, `git commit` -> `commands/commit-message.md`
-- `new component`, `scaffold`, `create component` -> `commands/scaffold-component.md`
-- `new device`, `setup device`, `onboarding` -> `commands/new-device-setup.md`
+- `close sprint`, `sluit sprint af`, `sprint afsluiten` -> `commands/close-sprint.md`
+- `sprint demo`, `demo voorbereiden`, `demo script`, `prepare demo` -> `commands/sprint-demo.md`
+- `sprint planning`, `plan sprint`, `sprint start`, `start sprint`, `plan komende sprint` -> `commands/sprint-planning.md`
 <!-- END SHARED:command-mappings -->
 
 Do not assume command files auto-run. Select and execute them when intent matches.
 
-## Protected Areas
-
-Do not modify these areas unless the user explicitly requests it:
-
-- authentication
-- payment flows
-- deployment configuration
-- database migrations
-- CI/CD configuration
-
-## Quality Checks
-
-Before finishing, run the checks that exist in this repository:
-
-- `npm run lint`
-- `npm run build`
-- `npm run typecheck`
-
-If a `test` script is added later, run it before handing work back.
-
-## Pull Requests
-
-Every pull request should include:
-
-- a short summary
-- the concrete changes made
-- testing notes
-- screenshots when UI changed
-- risks or specific review points
-
 ## Safety
 
 <!-- BEGIN SHARED:safety -->
-
 - Prefer concrete execution over long planning.
 - Do not modify code unless requested.
 - Ask before destructive actions (force kill, reset, delete) unless explicitly requested.

@@ -21,6 +21,11 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      - run: bash scripts/check-ai-workflows-sync.sh
+        env:
+          # Public GitHub mirror; the GitLab origin is private and the
+          # AI_WORKFLOWS_TOKEN secret is not configured on this repo.
+          AI_WORKFLOWS_REPO: https://github.com/wpots/ai-workflows.git
       - run: npm run lint
       - run: npm run build
       - run: npm run typecheck

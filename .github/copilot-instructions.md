@@ -111,7 +111,7 @@ When project conventions conflict with the core baseline, project conventions wi
 ## Shared Workflow Source
 
 When a change touches shared workflow assets in a reusable way, suggest
-upstreaming it to the [ai-workflows](https://gitlab.com/greenberrynl/config/ai-workflows) repo rather than keeping it only in this
+upstreaming it to the [ai-workflows](https://github.com/wpots/ai-workflows) repo rather than keeping it only in this
 synced target repo.
 
 Treat these as shared workflow assets:
@@ -134,6 +134,7 @@ When user intent matches one of these prompts, read and follow the corresponding
 <!-- BEGIN SHARED:command-mappings -->
 - `create pr`, `open pr`, `submit pr` -> `commands/create-pr.md`
 - `commit message`, `write commit`, `git commit` -> `commands/commit-message.md`
+- `backlog item`, `user story`, `feature spec`, `bug item`, `bli` -> `commands/backlog.md`
 - `close sprint`, `sluit sprint af`, `sprint afsluiten` -> `commands/close-sprint.md`
 - `sprint demo`, `demo voorbereiden`, `demo script`, `prepare demo` -> `commands/sprint-demo.md`
 - `sprint planning`, `plan sprint`, `sprint start`, `start sprint`, `plan komende sprint` -> `commands/sprint-planning.md`

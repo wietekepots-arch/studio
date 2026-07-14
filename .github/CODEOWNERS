@@ -1,0 +1,21 @@
+# Rode zone — wijzigingen aan deze paden vereisen review van een code owner.
+# Zie ONBOARDING.md (sectie 5) en docs/dev-workflow.md voor het waarom.
+
+/src/firebase/           @wietekepots-arch
+/src/ai/                 @wietekepots-arch
+/firestore.rules         @wietekepots-arch
+/firestore.indexes.json  @wietekepots-arch
+/firebase.json           @wietekepots-arch
+/apphosting.yaml         @wietekepots-arch
+
+/.github/                @wietekepots-arch
+/.claude/                @wietekepots-arch
+/package.json            @wietekepots-arch
+/package-lock.json       @wietekepots-arch
+
+# Synced AI-workflow-assets: wijzigingen horen upstream in ai-workflows
+/rules/                  @wietekepots-arch
+/commands/               @wietekepots-arch
+/CLAUDE.md               @wietekepots-arch
+/AGENTS.md               @wietekepots-arch
+/CONVENTIONS.md          @wietekepots-arch
